@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "rosenraum-app",
+    "dev": "rosenraum-app"
+  }
+}
