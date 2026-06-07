@@ -1,0 +1,40 @@
+runConfig:
+  runtime: nodejs20
+  minInstances: 0
+  maxInstances: 10
+  concurrency: 80
+  memoryMiB: 512
+
+env:
+  # ── Public (safe to expose, needed at BUILD time for Next.js static generation) ──
+  # Werte direkt hier eintragen — kein Secret nötig
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: <project-id>
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: <project-id>.firebaseapp.com
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: <project-id>.firebasestorage.app
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "<messaging-sender-id>"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: <api-key>
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: <app-id>
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_BASE_URL
+    value: https://<live-url>
+    availability: [BUILD, RUNTIME]
+
+  # ── Secrets (server-only, runtime only) ────────────────────────────────────
+  # Setzen via: firebase apphosting:secrets:set SECRET_NAME --project <project-id>
+  - variable: FIREBASE_ADMIN_PROJECT_ID
+    secret: FIREBASE_ADMIN_PROJECT_ID
+  - variable: FIREBASE_ADMIN_CLIENT_EMAIL
+    secret: FIREBASE_ADMIN_CLIENT_EMAIL
+  - variable: FIREBASE_ADMIN_PRIVATE_KEY
+    secret: FIREBASE_ADMIN_PRIVATE_KEY

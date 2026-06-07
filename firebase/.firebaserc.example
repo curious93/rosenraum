@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default":    "<project-id>",
+    "dev":        "<project-id>",
+    "staging":    "<project-id>-staging",
+    "production": "<project-id>-prod"
+  }
+}
