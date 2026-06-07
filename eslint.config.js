@@ -1,30 +1,18 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+import { FlatCompat } from '@eslint/eslintrc'
 import tseslint from 'typescript-eslint'
 import jsdoc from 'eslint-plugin-jsdoc'
-import { defineConfig, globalIgnores } from 'eslint/config'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
-    languageOptions: {
-      globals: globals.browser,
-    },
-  },
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
-  // ─── JSDoc enforcement ───────────────────────────────────────────────────────
-  // Alle exportierten Funktionen, Typen und Interfaces müssen dokumentiert sein.
-  // Why: Außenstehende Entwickler (Review, Weiterentwicklung) müssen die API
-  //      verstehen können, ohne den Quellcode vollständig zu lesen.
+const compat = new FlatCompat({ baseDirectory: __dirname })
+
+export default tseslint.config(
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+
+  // JSDoc enforcement — alle exportierten APIs müssen dokumentiert sein
   {
     files: ['src/**/*.{ts,tsx}'],
     plugins: { jsdoc },
@@ -50,4 +38,4 @@ export default defineConfig([
       'jsdoc/check-types': 'error',
     },
   },
-])
+)
