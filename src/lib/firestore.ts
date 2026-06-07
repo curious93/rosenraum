@@ -42,9 +42,8 @@ export interface Message {
   hasLearningDots: boolean
 }
 
-/** Ein Raum. */
+/** Ein Raum (Firestore-Daten ohne ID). */
 export interface Room {
-  id: string
   createdAt: Timestamp
   roomName?: string
   /** 6-stelliger alphanumerischer Einladungscode. */
