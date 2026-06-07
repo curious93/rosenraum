@@ -33,7 +33,7 @@ export default function RoomPage() {
   const [showInvite, setShowInvite] = useState(false)
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
-  const participantId = useRef<string>('')
+  const [participantId, setParticipantId] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Raum laden und Participant-ID sicherstellen
