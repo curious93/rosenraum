@@ -1,0 +1,32 @@
+runConfig:
+  runtime: nodejs20
+  minInstances: 0
+  maxInstances: 10
+  concurrency: 80
+  memoryMiB: 512
+
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: rosenraum-app
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: rosenraum-app.firebaseapp.com
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: rosenraum-app.firebasestorage.app
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "1088277870578"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyDQOPYUhoxmjlwhv5_ZhE1TBkclzBpfdFs
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:1088277870578:web:fca22f4fe04523c614dd6b
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_BASE_URL
+    value: https://rosenraum-app--rosenraum-web.us-central1.hosted.app
+    availability: [BUILD, RUNTIME]
+
+  - variable: CLAUDE_OAUTH_TOKEN
+    secret: CLAUDE_OAUTH_TOKEN
