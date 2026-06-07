@@ -44,9 +44,7 @@ export default function RoomPage() {
       if (!room) { setNotFound(true); setLoading(false); return }
 
       const pid = getOrCreateParticipantId(roomId)
-      participantId.current = pid
-
-      // Prüfen ob Participant wirklich im Raum ist
+      setParticipantId(pid)
       setInviteCode(room.inviteCode)
       setLoading(false)
     })
