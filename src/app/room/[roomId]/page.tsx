@@ -63,10 +63,10 @@ export default function RoomPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function handleSend(text: string) {
-    if (!participantId.current) return
+  const handleSend = useCallback(async (text: string) => {
+    if (!participantId) return
     await sendMessage(roomId, {
-      senderId: participantId.current,
+      senderId: participantId,
       originalText: text,
       sentVersion: 'original',
       hasLearningDots: false,
