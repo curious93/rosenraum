@@ -4,6 +4,8 @@ import Link from 'next/link'
 
 /**
  * Rosenraum Landingpage — CTA zu Raum erstellen.
+ *
+ * @returns Landingpage JSX
  */
 export default function HomePage() {
   return (
