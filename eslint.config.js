@@ -2,7 +2,7 @@
 import nextConfig from 'eslint-config-next'
 import jsdoc from 'eslint-plugin-jsdoc'
 
-export default [
+const config = [
   ...nextConfig,
 
   // JSDoc enforcement — alle exportierten APIs müssen dokumentiert sein
