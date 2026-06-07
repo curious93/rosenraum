@@ -150,7 +150,9 @@ export async function createRoom(options: {
  * Tritt einem bestehenden Raum bei. Prüft die maximale Teilnehmerzahl (2) und den PIN.
  *
  * @param roomId - Die Firestore-Dokument-ID des Raums
- * @param options - Name und optionaler PIN
+ * @param options - Beitrittsoptionen
+ * @param options.participantName - Optionaler Name des Beitretenden
+ * @param options.pin - PIN falls der Raum geschützt ist
  * @returns participantId oder Fehler
  * @example
  * const result = await joinRoom('abc123', { participantName: 'Lena', pin: '1234' })
