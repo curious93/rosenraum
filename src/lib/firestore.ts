@@ -111,7 +111,10 @@ export function clearParticipantId(roomId: string): void {
 /**
  * Erstellt einen neuen Raum und trägt den Ersteller als ersten Participant ein.
  *
- * @param options - Optionale Konfiguration (Name, PIN)
+ * @param options - Optionale Konfiguration
+ * @param options.roomName - Optionaler Raumname
+ * @param options.participantName - Optionaler Name des Erstellers
+ * @param options.pin - Optionaler PIN (4–6 Stellen)
  * @returns Raum-ID und participantId
  * @example
  * const { roomId, participantId } = await createRoom({ roomName: 'Unser Raum', pin: '1234' })
