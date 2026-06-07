@@ -7,6 +7,8 @@ import { createRoom } from '@/lib/firestore'
 /**
  * Seite zum Erstellen eines neuen Raums.
  * Name und PIN sind optional.
+ *
+ * @returns Create-Page JSX
  */
 export default function CreatePage() {
   const router = useRouter()
