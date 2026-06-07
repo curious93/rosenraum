@@ -1,0 +1,195 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  getRoom,
+  getOrCreateParticipantId,
+  subscribeToMessages,
+  subscribeToParticipants,
+  sendMessage,
+  type Message,
+  type Participant,
+} from '@/lib/firestore'
+import { ChatBubble } from '@/components/chat/ChatBubble'
+import { ChatInput } from '@/components/chat/ChatInput'
+import { InviteSheet } from '@/components/invite/InviteSheet'
+
+/**
+ * Haupt-Chat-Seite für einen Rosenraum.
+ * Echtzeit-Chat via Firestore, Einladungs-Sheet, PIN-geschützter Raum.
+ *
+ * @returns Room-Page JSX
+ */
+export default function RoomPage() {
+  const params = useParams<{ roomId: string }>()
+  const router = useRouter()
+  const roomId = params.roomId ?? ''
+
+  const [messages, setMessages] = useState<Message[]>([])
+  const [participants, setParticipants] = useState<Record<string, Participant>>({})
+  const [inviteCode, setInviteCode] = useState('')
+  const [showInvite, setShowInvite] = useState(false)
+  const [notFound, setNotFound] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const participantId = useRef<string>('')
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  // Raum laden und Participant-ID sicherstellen
+  useEffect(() => {
+    if (!roomId) return
+
+    getRoom(roomId).then(room => {
+      if (!room) { setNotFound(true); setLoading(false); return }
+
+      const pid = getOrCreateParticipantId(roomId)
+      participantId.current = pid
+
+      // Prüfen ob Participant wirklich im Raum ist
+      setInviteCode(room.inviteCode)
+      setLoading(false)
+    })
+  }, [roomId])
+
+  // Echtzeit-Subscriptions
+  useEffect(() => {
+    if (!roomId || loading) return
+    const unsubMsgs = subscribeToMessages(roomId, setMessages)
+    const unsubParts = subscribeToParticipants(roomId, setParticipants)
+    return () => { unsubMsgs(); unsubParts() }
+  }, [roomId, loading])
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  async function handleSend(text: string) {
+    if (!participantId.current) return
+    await sendMessage(roomId, {
+      senderId: participantId.current,
+      originalText: text,
+      sentVersion: 'original',
+      hasLearningDots: false,
+    })
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+  const inviteUrl = `${baseUrl}/join/${inviteCode}`
+
+  const partnerCount = Object.keys(participants).length
+  const myName = participants[participantId.current]?.name
+  const partnerName = Object.entries(participants)
+    .find(([id]) => id !== participantId.current)?.[1].name
+
+  if (notFound) {
+    return (
+      <main
+        className="flex flex-col items-center justify-center min-h-screen px-6 text-center"
+        style={{ background: 'var(--color-bg-page)' }}
+      >
+        <div className="space-y-3">
+          <div className="text-4xl">🌱</div>
+          <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            Dieser Raum existiert nicht
+          </h1>
+          <button
+            onClick={() => router.push('/')}
+            className="text-sm"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            Zurück zur Startseite
+          </button>
+        </div>
+      </main>
+    )
+  }
+
+  if (loading) {
+    return (
+      <main className="flex items-center justify-center min-h-screen" style={{ background: 'var(--color-bg-page)' }}>
+        <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Lade Raum…</div>
+      </main>
+    )
+  }
+
+  return (
+    <main
+      className="flex flex-col h-screen mx-auto"
+      style={{ maxWidth: 'var(--max-width-chat)', background: 'var(--color-bg-page)' }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
+        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-surface)' }}
+      >
+        <div>
+          <div className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            🌹 {myName ?? 'Ich'}{partnerName ? ` & ${partnerName}` : ''}
+          </div>
+          <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            {partnerCount < 2 ? 'Warte auf deinen Gesprächspartner…' : 'Ihr seid verbunden'}
+          </div>
+        </div>
+        <button
+          onClick={() => setShowInvite(true)}
+          className="text-xs px-3 py-1.5 rounded-xl transition-opacity hover:opacity-70"
+          style={{
+            background: 'var(--color-bg-elevated)',
+            color: 'var(--color-text-secondary)',
+          }}
+          aria-label="Einladen"
+        >
+          Einladen
+        </button>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto pt-4">
+        <AnimatePresence initial={false}>
+          {messages.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center h-full px-8 text-center space-y-2 py-20"
+            >
+              <div className="text-3xl">🌸</div>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                {partnerCount < 2
+                  ? 'Schick den Link weiter, damit ihr loschatten könnt.'
+                  : 'Sag einfach hallo.'}
+              </p>
+            </motion.div>
+          ) : (
+            messages.map(msg => (
+              <ChatBubble
+                key={msg.id}
+                message={msg}
+                isOwn={msg.senderId === participantId.current}
+              />
+            ))
+          )}
+        </AnimatePresence>
+        <div ref={bottomRef} className="h-4" />
+      </div>
+
+      {/* Input */}
+      <div className="flex-shrink-0">
+        <ChatInput onSend={handleSend} />
+      </div>
+
+      {/* Invite Sheet */}
+      <AnimatePresence>
+        {showInvite && (
+          <InviteSheet
+            inviteCode={inviteCode}
+            inviteUrl={inviteUrl}
+            onClose={() => setShowInvite(false)}
+          />
+        )}
+      </AnimatePresence>
+    </main>
+  )
+}
