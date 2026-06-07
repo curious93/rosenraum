@@ -233,6 +233,11 @@ export async function getRoom(roomId: string): Promise<(Room & { id: string }) |
  *
  * @param roomId - Firestore-Dokument-ID des Raums
  * @param message - Nachrichteninhalte
+ * @param message.senderId - ID des Senders
+ * @param message.originalText - Ursprünglicher Nachrichtentext
+ * @param message.rosenbergText - Optionale GFK-Version
+ * @param message.sentVersion - Welche Version gesendet wird
+ * @param message.hasLearningDots - Ob Lern-Dots angezeigt werden sollen
  * @returns ID der erstellten Nachricht
  * @example
  * const msgId = await sendMessage('room123', {
