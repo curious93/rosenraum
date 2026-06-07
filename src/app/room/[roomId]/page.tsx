@@ -71,15 +71,15 @@ export default function RoomPage() {
       sentVersion: 'original',
       hasLearningDots: false,
     })
-  }
+  }, [participantId, roomId])
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
   const inviteUrl = `${baseUrl}/join/${inviteCode}`
 
   const partnerCount = Object.keys(participants).length
-  const myName = participants[participantId.current]?.name
+  const myName = participants[participantId]?.name
   const partnerName = Object.entries(participants)
-    .find(([id]) => id !== participantId.current)?.[1].name
+    .find(([id]) => id !== participantId)?.[1].name
 
   if (notFound) {
     return (
