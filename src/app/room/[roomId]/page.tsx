@@ -165,7 +165,7 @@ export default function RoomPage() {
               <ChatBubble
                 key={msg.id}
                 message={msg}
-                isOwn={msg.senderId === participantId.current}
+                isOwn={msg.senderId === participantId}
               />
             ))
           )}
