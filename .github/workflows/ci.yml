@@ -62,19 +62,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      # a11y (axe) gates hard. Visual: existing *-linux.png baselines are
-      # compared (fails on diff); missing ones are seeded and uploaded below for
-      # a one-time commit. See docs/REUSE.md → "Visual baselines".
-      - name: Accessibility + visual regression
-        run: npx playwright test --update-snapshots=missing
+      # a11y (axe) gates hard — always fails on serious/critical violations.
+      - name: Accessibility (axe)
+        run: npx playwright test tests/a11y
 
-      - name: Upload report & seeded snapshots
+      # Visual regression: if linux baselines exist → compare and fail on diff.
+      # If missing (first run for a new platform) → seed them and pass.
+      - name: Visual regression
+        run: |
+          if ls tests/__snapshots__/visual/screens.spec.ts/*-chromium-linux.png 2>/dev/null | grep -q .; then
+            echo "Linux baselines found — comparing strictly"
+            npx playwright test tests/visual
+          else
+            echo "No linux baselines — seeding (first run, not a failure)"
+            npx playwright test tests/visual --update-snapshots=missing || true
+          fi
+
+      - name: Upload report & snapshots
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
