@@ -16,7 +16,7 @@ export const THEMES: ThemeMeta[] = [
   { id: 'lila',    name: 'Lila',    swatches: ['#7B6EA8', '#EBE6F6', '#D4E8D4', '#F8F7FB'] },
   { id: 'ozean',   name: 'Ozean',   swatches: ['#6A66A3', '#DDE8F5', '#B3CBB9', '#F4F6FB'] },
   { id: 'koralle', name: 'Koralle', swatches: ['#028090', '#F0F3BD', '#C8EDD8', '#F8FCFC'] },
-  { id: 'meer',    name: 'Meer',    swatches: ['#004A54', '#CFF2F8', '#C8E8CC', '#FDF7EC'] },
+  { id: 'meer',    name: 'Himmel',  swatches: ['#004A54', '#CFF2F8', '#C8E8CC', '#FDF7EC'] },
 ]
 
 /** Colour-mode options. 'system' follows the OS `prefers-color-scheme`. */
