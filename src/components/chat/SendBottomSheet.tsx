@@ -360,10 +360,7 @@ function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardPro
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-sm leading-relaxed"
-            style={{
-              color: (isAlreadyOpen || isError) ? 'var(--color-text-secondary)' : 'var(--color-text-primary)',
-              fontStyle: (isAlreadyOpen || isError) ? 'italic' : 'normal',
-            }}
+            style={{ color: 'var(--color-text-primary)' }}
           >
             {isAlreadyOpen
               ? 'Diese Nachricht klingt bereits offen und wertschätzend.'
