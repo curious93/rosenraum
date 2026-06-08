@@ -142,8 +142,18 @@ export default function RoomPage() {
 
   return (
     <main
-      className="flex flex-col mx-auto"
-      style={{ height: '100dvh', maxWidth: 'var(--max-width-chat)', background: 'var(--color-bg-page)', overflow: 'hidden' }}
+      className="flex flex-col"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        maxWidth: 'var(--max-width-chat)',
+        marginInline: 'auto',
+        background: 'var(--color-bg-page)',
+        overflow: 'hidden',
+      }}
     >
       {/* ── Header ─────────────────────────────────────────────────────────────── */}
       <div
