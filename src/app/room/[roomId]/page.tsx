@@ -32,6 +32,7 @@ export default function RoomPage() {
   const [participants, setParticipants] = useState<Record<string, Participant>>({})
   const [inviteCode, setInviteCode] = useState('')
   const [showInvite, setShowInvite] = useState(false)
+  const [pendingText, setPendingText] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
   const [participantId, setParticipantId] = useState('')
