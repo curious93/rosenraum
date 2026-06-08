@@ -34,6 +34,13 @@ Format: Decision · Alternatives considered · Reason · Affected · Date · Rol
 - **Affected:** [THEME_OPTIONS.md](THEME_OPTIONS.md), `ThemeSheet.tsx`.
 - **Date:** 2026-06-08 · **Rollback:** n/a (documentation-level).
 
+### Palette tightened to WCAG 2.2 AA
+- **Decision:** Darkened `text-muted` per theme/mode (≥4.6:1 on elevated surfaces); set rose `on-primary` to dark text; added per-mode `on-status` (white in light, dark in dark) for status fills; darkened light `success`/`warning`; added a mode-aware `--color-primary-text` (= `primary-dark` light, `primary-light` dark) for primary-coloured links. Replaced hardcoded `text-white` button text with `text-primary-foreground`.
+- **Alternatives:** Keep the vibrant palette and treat contrast as advisory (rejected by user); subtle tinted badges instead of solid fills (larger redesign).
+- **Reason:** User chose "tighten to AA". Axe now reports **0 serious/critical violations** across 4 screens × light/dark (was 54). Brand hues stay recognizable; only grays/foregrounds shifted.
+- **Affected:** `design/tokens.json`, `build-tokens.mjs`, `ui/button.tsx`, `ui/badge.tsx`, `page.tsx`, `create/page.tsx`, `join/*`, `SendBottomSheet.tsx`.
+- **Date:** 2026-06-08 · **Rollback:** revert the token values + the `text-primary-foreground` swap.
+
 ### `suppressHydrationWarning` on `<html>`
 - **Decision:** The FOUC script mutates `<html>` (data-theme + `dark`) before hydration; `<html>` carries `suppressHydrationWarning`.
 - **Alternatives:** Render theme server-side (impossible — preference is client-only in localStorage); accept the console error (noisy, masks real issues).
