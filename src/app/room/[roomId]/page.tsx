@@ -19,6 +19,7 @@ import { InviteSheet } from '@/components/invite/InviteSheet'
 import { SendBottomSheet, type SendVersion } from '@/components/chat/SendBottomSheet'
 import { ThemeSheet } from '@/components/ThemeSheet'
 import { LernverlaufSheet } from '@/components/chat/LernverlaufSheet'
+import { StatistikSheet } from '@/components/chat/StatistikSheet'
 
 function getDateLabel(date: Date): string {
   const today = new Date()
