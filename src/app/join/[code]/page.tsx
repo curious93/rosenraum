@@ -184,7 +184,7 @@ export default function JoinByCodePage() {
         <button
           onClick={handleJoin}
           disabled={joining || (needsPin && pin.length < 4)}
-          className="w-full py-3.5 px-6 rounded-2xl text-white font-medium text-base transition-opacity disabled:opacity-40"
+          className="w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity disabled:opacity-40"
           style={{ background: 'var(--color-primary)' }}
         >
           {joining ? 'Betrete Raum…' : 'Raum betreten'}

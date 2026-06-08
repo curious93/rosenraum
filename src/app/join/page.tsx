@@ -121,7 +121,7 @@ export default function JoinPage() {
         <button
           onClick={handleJoin}
           disabled={code.length < 6 || loading}
-          className="w-full py-3.5 px-6 rounded-2xl text-white font-medium text-base transition-opacity disabled:opacity-40"
+          className="w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity disabled:opacity-40"
           style={{ background: 'var(--color-primary)' }}
         >
           {loading ? 'Suche…' : 'Raum betreten'}

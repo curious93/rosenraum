@@ -177,7 +177,7 @@ export default function CreatePage() {
         <button
           onClick={handleCreate}
           disabled={loading || (showPin && pin.length > 0 && pin.length < 4)}
-          className="w-full py-3.5 px-6 rounded-2xl text-white font-medium text-base transition-opacity disabled:opacity-50"
+          className="w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity disabled:opacity-50"
           style={{ background: 'var(--color-primary)' }}
         >
           {loading ? 'Raum wird erstellt…' : 'Raum erstellen'}

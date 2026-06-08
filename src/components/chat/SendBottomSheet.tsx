@@ -120,7 +120,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           <button
             onClick={handleSend}
             disabled={analyzing && selected === 'rosenberg'}
-            className="flex-[2] py-3 rounded-2xl text-sm font-medium text-white transition-opacity disabled:opacity-40"
+            className="flex-[2] py-3 rounded-2xl text-sm font-medium text-primary-foreground transition-opacity disabled:opacity-40"
             style={{ background: 'var(--color-primary)' }}
           >
             Senden →
