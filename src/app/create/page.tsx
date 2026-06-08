@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Heart } from 'lucide-react'
 import { createRoom } from '@/lib/firestore'
 
 /**
