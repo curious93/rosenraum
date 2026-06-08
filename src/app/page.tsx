@@ -330,7 +330,7 @@ export default function HomePage() {
               className="text-2xl font-semibold text-center"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              In drei Schritten zu echten Gesprächen.
+              In vier Schritten zu echten Gesprächen.
             </motion.h2>
 
             <div className="space-y-6">
@@ -348,7 +348,12 @@ export default function HomePage() {
                 {
                   num: '3',
                   title: 'Du entscheidest',
-                  desc: 'Sende deine Version oder die KI-Version — du hast immer die Wahl. Kein Druck, kein Urteil. Und mit jeder Nachricht lernst du ein bisschen mehr.',
+                  desc: 'Sende deine Version oder die KI-Version — du hast immer die Wahl. Kein Druck, kein Urteil.',
+                },
+                {
+                  num: '4',
+                  title: 'Aktives Lernen',
+                  desc: 'Mit jeder Nachricht siehst du, was sich verändert hat — als stille Einladung zur Reflexion, nicht als Bewertung.',
                 },
               ].map((step) => (
                 <motion.div key={step.num} variants={fadeUp} className="flex gap-4 items-start">
