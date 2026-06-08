@@ -46,9 +46,9 @@
 
 :root {
   /* Layout */
-  --max-width-chat: 680px;
+  --max-width-chat: 720px;
   --max-width-sheet: 480px;
-  --input-height: 52px;
+  --input-height: 58px;
   --bubble-radius: var(--radius-bubble);
   --bubble-radius-tail: var(--radius-bubble-tail);
 
