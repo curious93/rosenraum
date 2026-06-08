@@ -763,7 +763,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 7. FOOTER ────────────────────────────────────────────────────────── */}
+      {/* ── 10. FOOTER ───────────────────────────────────────────────────────── */}
       <footer
         className="px-6 py-10 text-center space-y-2"
         style={{ borderTop: '1px solid var(--color-border-subtle)' }}
