@@ -77,56 +77,26 @@ export default function CreatePage() {
             Neuen Raum erstellen
           </h1>
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            Alles optional — du kannst auch anonym bleiben.
+            Wie heißt du? Optional — du kannst auch anonym bleiben.
           </p>
         </div>
 
         <div className="space-y-3">
-          {/* Dein Name */}
-          <div>
-            <label
-              className="block text-sm font-medium mb-1.5"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              Dein Name
-            </label>
-            <input
-              type="text"
-              value={participantName}
-              onChange={e => setParticipantName(e.target.value)}
-              placeholder="z.B. Lena"
-              maxLength={30}
-              className="w-full px-4 py-3 rounded-xl text-base outline-none border transition-colors"
-              style={{
-                background: 'var(--color-bg-page)',
-                borderColor: 'var(--color-border)',
-                color: 'var(--color-text-primary)',
-              }}
-            />
-          </div>
-
-          {/* Raumname */}
-          <div>
-            <label
-              className="block text-sm font-medium mb-1.5"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              Raumname
-            </label>
-            <input
-              type="text"
-              value={roomName}
-              onChange={e => setRoomName(e.target.value)}
-              placeholder="z.B. Unser Raum"
-              maxLength={50}
-              className="w-full px-4 py-3 rounded-xl text-base outline-none border transition-colors"
-              style={{
-                background: 'var(--color-bg-page)',
-                borderColor: 'var(--color-border)',
-                color: 'var(--color-text-primary)',
-              }}
-            />
-          </div>
+          <input
+            type="text"
+            value={participantName}
+            onChange={e => setParticipantName(e.target.value)}
+            placeholder="Dein Name, z.B. Lena"
+            maxLength={30}
+            autoFocus
+            className="w-full px-4 py-3 rounded-xl text-base outline-none border transition-colors"
+            style={{
+              background: 'var(--color-bg-page)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+            onKeyDown={e => e.key === 'Enter' && !showPin && handleCreate()}
+          />
 
           {/* PIN-Toggle */}
           <div>
