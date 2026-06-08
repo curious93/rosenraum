@@ -404,7 +404,230 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ── 6. QUICK-CREATE ──────────────────────────────────────────────────── */}
+      {/* ── 6. FÜR WEN? ─────────────────────────────────────────────────────── */}
+      <section className="px-6 py-20">
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <motion.div
+            className="space-y-10"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+          >
+            <motion.div variants={fadeUp} className="space-y-3 text-center">
+              <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                Für wen ist Rosenraum?
+              </h2>
+              <p className="text-base leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                Immer dann, wenn es um mehr geht als nur Informationen auszutauschen.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                {
+                  Icon: Heart,
+                  title: 'Paare',
+                  desc: 'Wenn alte Muster die Verbindung blockieren und ein Gespräch wichtiger ist als Recht haben.',
+                },
+                {
+                  Icon: Users,
+                  title: 'Familien',
+                  desc: 'Für schwierige Themen zwischen Eltern, Kindern oder Geschwistern — mit mehr Geduld als im Alltag.',
+                },
+                {
+                  Icon: Briefcase,
+                  title: 'Teams',
+                  desc: 'Wenn Feedback gegeben oder empfangen werden muss, ohne dass jemand das Gesicht verliert.',
+                },
+                {
+                  Icon: MessageCircle,
+                  title: 'Freundschaften',
+                  desc: 'Für den Moment, wo etwas zwischen euch steht und du nicht weißt, wie du es ansprechen sollst.',
+                },
+              ].map((card) => (
+                <motion.div
+                  key={card.title}
+                  variants={fadeUp}
+                  className="p-4 rounded-2xl space-y-2.5"
+                  style={{
+                    background: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border-subtle)',
+                  }}
+                >
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center"
+                    style={{ background: 'var(--color-primary-light)' }}
+                  >
+                    <card.Icon className="w-4.5 h-4.5" style={{ color: 'var(--color-primary-dark)' }} aria-hidden="true" />
+                  </div>
+                  <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    {card.title}
+                  </div>
+                  <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                    {card.desc}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── 7. WAS PASSIERT MIT MEINER NACHRICHT? ────────────────────────────── */}
+      <section
+        className="px-6 py-20"
+        style={{
+          background: 'var(--color-bg-surface)',
+          borderTop: '1px solid var(--color-border-subtle)',
+          borderBottom: '1px solid var(--color-border-subtle)',
+        }}
+      >
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <motion.div
+            className="space-y-10"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+          >
+            <motion.div variants={fadeUp} className="space-y-3 text-center">
+              <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                Was passiert mit meiner Nachricht?
+              </h2>
+              <p className="text-base leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                Die KI liest deinen Text nicht um zu urteilen — sondern um zuzuhören.
+              </p>
+            </motion.div>
+
+            <div className="relative space-y-0">
+              {[
+                {
+                  Icon: Eye,
+                  step: '1',
+                  title: 'Bewertungen erkennen',
+                  desc: 'Die KI erkennt Formulierungen, die als Vorwurf ankommen könnten — auch wenn sie das gar nicht so gemeint sind. "Du machst immer…" oder "Du bist nie…"',
+                },
+                {
+                  Icon: Heart,
+                  step: '2',
+                  title: 'Gefühle freilegen',
+                  desc: 'Hinter jedem Vorwurf steckt ein Gefühl. Die KI sucht nach dem, was du eigentlich ausdrücken möchtest — Enttäuschung, Sehnsucht, Erschöpfung.',
+                },
+                {
+                  Icon: Leaf,
+                  step: '3',
+                  title: 'Bedürfnisse benennen',
+                  desc: 'Sie formuliert dein Anliegen als Ich-Botschaft: konkret, ehrlich und ohne Schuldzuweisung.',
+                },
+                {
+                  Icon: Sparkles,
+                  step: '4',
+                  title: 'Du entscheidest',
+                  desc: 'Der Vorschlag ist ein Angebot — kein Urteil. Du sendest, was sich richtig anfühlt. Immer.',
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.step}
+                  variants={fadeUp}
+                  transition={{ delay: i * 0.07 }}
+                  className="flex gap-4 items-start"
+                >
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center z-10 relative"
+                      style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+                    >
+                      <item.Icon className="w-4.5 h-4.5" aria-hidden="true" />
+                    </div>
+                    {i < 3 && (
+                      <div
+                        className="w-px flex-1 mt-1 mb-1"
+                        style={{ background: 'var(--color-border)', height: '28px' }}
+                      />
+                    )}
+                  </div>
+                  <div className="pb-5 pt-1 space-y-1">
+                    <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      {item.title}
+                    </div>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                      {item.desc}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── 8. TIPPS FÜR GUTE GESPRÄCHE ─────────────────────────────────────── */}
+      <section className="px-6 py-20">
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <motion.div
+            className="space-y-8"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+          >
+            <motion.div variants={fadeUp} className="space-y-2 text-center">
+              <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                Tipps für gute Gespräche
+              </h2>
+              <p className="text-base" style={{ color: 'var(--color-text-secondary)' }}>
+                Nicht als Regeln — sondern als Einladung.
+              </p>
+            </motion.div>
+
+            <div className="space-y-3">
+              {[
+                {
+                  tip: 'Sprich von dir, nicht über die andere Person.',
+                  detail: '"Ich fühle mich allein" trifft anders als "Du bist nie da für mich."',
+                },
+                {
+                  tip: 'Beobachte, bevor du interpretierst.',
+                  detail: 'Was ist wirklich passiert — ohne Deutung, ohne Geschichte drumherum?',
+                },
+                {
+                  tip: 'Bedürfnisse sind keine Vorwürfe.',
+                  detail: 'Wenn du sagst, was du brauchst, gibst du der anderen Person eine Chance — keine Schuld.',
+                },
+                {
+                  tip: 'Stille ist manchmal das Klügste.',
+                  detail: 'Wenn du in Rage bist, ist jetzt vielleicht nicht der Moment für das Gespräch. Rosenraum wartet.',
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  variants={fadeUp}
+                  className="flex gap-3 p-4 rounded-2xl"
+                  style={{
+                    background: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border-subtle)',
+                  }}
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <Lightbulb className="w-4 h-4" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                      {item.tip}
+                    </div>
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+                      {item.detail}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── 9. QUICK-CREATE ──────────────────────────────────────────────────── */}
       <section
         ref={quickCreateRef}
         id="quick-create"
