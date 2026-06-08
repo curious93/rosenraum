@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Link from 'next/link'
 import { getRoomByCode, joinRoom, getRoom } from '@/lib/firestore'
 
 /**
@@ -77,7 +78,7 @@ export default function JoinByCodePage() {
         className="flex flex-col items-center justify-center min-h-screen px-6 text-center"
         style={{ background: 'var(--color-bg-page)' }}
       >
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="text-4xl">🌱</div>
           <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Dieser Raum existiert nicht
@@ -85,6 +86,13 @@ export default function JoinByCodePage() {
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
             Vielleicht ist der Link abgelaufen oder der Code wurde falsch eingegeben.
           </p>
+          <Link
+            href="/"
+            className="inline-block text-sm mt-2 transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            Zur Startseite
+          </Link>
         </div>
       </main>
     )
@@ -92,11 +100,37 @@ export default function JoinByCodePage() {
 
   return (
     <main
-      className="flex flex-col items-center justify-center min-h-screen px-6"
+      className="relative flex flex-col items-center justify-center min-h-screen px-6 pt-14"
       style={{ background: 'var(--color-bg-page)' }}
     >
-      <div className="w-full max-w-sm space-y-6">
+      {/* Top nav */}
+      <div
+        className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 h-14"
+        style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
+      >
+        <Link
+          href="/"
+          className="text-sm flex items-center gap-1 transition-opacity hover:opacity-60"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          ← Zurück
+        </Link>
+        <span className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
+          🌹 Rosenraum
+        </span>
+        <div style={{ width: '4rem' }} />
+      </div>
+
+      {/* Card */}
+      <div
+        className="w-full max-w-sm rounded-2xl p-6 space-y-6"
+        style={{
+          background: 'var(--color-bg-surface)',
+          boxShadow: '0 2px 20px rgba(0,0,0,0.06)',
+        }}
+      >
         <div className="space-y-1">
+          <div className="text-3xl mb-2">🌹</div>
           <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Du wurdest eingeladen
           </h1>
@@ -112,30 +146,30 @@ export default function JoinByCodePage() {
             onChange={e => setName(e.target.value)}
             placeholder="Dein Name (optional)"
             maxLength={30}
-            className="w-full px-4 py-3 rounded-xl text-base outline-none border"
+            autoFocus
+            className="w-full px-4 py-3 rounded-xl text-base outline-none border transition-colors"
             style={{
-              background: 'var(--color-bg-surface)',
+              background: 'var(--color-bg-page)',
               borderColor: 'var(--color-border)',
               color: 'var(--color-text-primary)',
             }}
+            onKeyDown={e => e.key === 'Enter' && !needsPin && handleJoin()}
           />
 
           {needsPin && (
-            <div>
-              <input
-                type="tel"
-                value={pin}
-                onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="PIN eingeben"
-                inputMode="numeric"
-                className="w-full px-4 py-3 rounded-xl text-base outline-none border tracking-widest"
-                style={{
-                  background: 'var(--color-bg-surface)',
-                  borderColor: 'var(--color-border)',
-                  color: 'var(--color-text-primary)',
-                }}
-              />
-            </div>
+            <input
+              type="tel"
+              value={pin}
+              onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              placeholder="PIN eingeben"
+              inputMode="numeric"
+              className="w-full px-4 py-3 rounded-xl text-base outline-none border tracking-widest transition-colors"
+              style={{
+                background: 'var(--color-bg-page)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
           )}
         </div>
 
