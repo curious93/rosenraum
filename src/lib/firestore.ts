@@ -122,7 +122,7 @@ export async function createRoom(options: {
   roomName?: string
   participantName?: string
   pin?: string
-}): Promise<{ roomId: string; participantId: string }> {
+}): Promise<{ roomId: string; participantId: string; inviteCode: string }> {
   const inviteCode = generateInviteCode()
   const pinHash = options.pin ? await sha256(options.pin) : undefined
 
