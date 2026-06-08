@@ -62,7 +62,7 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
         ? { type: 'spring', stiffness: 500, damping: 22, mass: 0.6 }
         : { type: 'spring', stiffness: 400, damping: 28, mass: 0.8 }
       }
-      className={`flex ${isOwn ? 'justify-end' : 'justify-start'} px-4 mb-1`}
+      className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} px-4 mb-1`}
     >
       <div className="relative max-w-[75%]">
 
