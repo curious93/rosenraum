@@ -20,6 +20,15 @@ import { SendBottomSheet, type SendVersion } from '@/components/chat/SendBottomS
 import { ThemeSheet } from '@/components/ThemeSheet'
 import { LernverlaufSheet } from '@/components/chat/LernverlaufSheet'
 
+function getDateLabel(date: Date): string {
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (date.toDateString() === today.toDateString()) return 'Heute'
+  if (date.toDateString() === yesterday.toDateString()) return 'Gestern'
+  return date.toLocaleDateString('de-DE', { day: 'numeric', month: 'long' })
+}
+
 /**
  * Haupt-Chat-Seite für einen Rosenraum.
  * Echtzeit-Chat via Firestore, Einladungs-Sheet, Avatar-Chips, Inline-Invite.
