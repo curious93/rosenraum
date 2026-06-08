@@ -317,7 +317,7 @@ function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardPro
       }}
     >
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+        <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--color-primary-dark)' }}>
           GFK-Version
           <InfoTooltip text="Die GFK-Version formuliert deine Nachricht nach den Prinzipien der Gewaltfreien Kommunikation: Beobachtung, Gefühl, Bedürfnis, Bitte — aus der Ich-Perspektive." label="Was ist die GFK-Version?" />
         </span>
