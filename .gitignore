@@ -13,6 +13,12 @@
 # testing
 /coverage
 
+# playwright (commit baselines in tests/__snapshots__, ignore run output)
+/test-results/
+/playwright-report/
+/playwright/.cache/
+.last-run.json
+
 # next.js
 /.next/
 /out/
