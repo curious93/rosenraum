@@ -28,8 +28,5 @@ env:
     value: https://rosenraum-1--rosenraum-app.europe-west4.hosted.app
     availability: [BUILD, RUNTIME]
 
-  - variable: CLAUDE_OAUTH_TOKEN
-    secret: CLAUDE_OAUTH_TOKEN
-
-  - variable: CLAUDE_REFRESH_TOKEN
-    secret: CLAUDE_REFRESH_TOKEN
+  - variable: ANTHROPIC_API_KEY
+    secret: ANTHROPIC_API_KEY
