@@ -15,7 +15,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
-  snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{-projectName}{ext}',
+  // Include {platform}: snapshots are OS-specific (system-ui fonts differ), so
+  // darwin (local) and linux (CI) baselines are stored as separate files.
+  snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{-projectName}{-platform}{ext}',
 
   use: {
     baseURL: 'http://localhost:3000',
