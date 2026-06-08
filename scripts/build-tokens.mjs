@@ -4,11 +4,11 @@
  * Token build step — single source of truth.
  *
  * Reads design/tokens.json and emits src/app/tokens.generated.css:
- *   - `@theme` block      → primitive scales become Tailwind v4 utilities
+ *   - `@theme`            → primitive scales become Tailwind v4 utilities
  *   - `@theme inline`     → shadcn/ui color names bridge onto Rosenraum semantic vars
  *   - `:root`             → primitives (raw) + default preset light + status defaults + bridge indirection
  *   - `[data-theme="x"]`  → per-preset light overrides
- *   - `.dark` scopes      → per-preset dark overrides (when present in tokens.json)
+ *   - `.dark` scopes      → per-preset dark overrides (only when present in tokens.json)
  *
  * The generated file is committed so the app builds without this script; CI
  * verifies it stays in sync (scripts/check-tokens-in-sync.mjs).
@@ -26,47 +26,44 @@ const OUT = join(ROOT, 'src', 'app', 'tokens.generated.css')
 
 /** @type {any} */
 const t = JSON.parse(readFileSync(SRC, 'utf8'))
+const p = t.primitive
 
 /**
- * Render a flat object as `  --prefix-key: value;` lines.
+ * Render `--prefix-key: value;` lines for a flat token map.
  *
- * @param {Record<string,string>} obj - Key/value token map.
- * @param {string} prefix - CSS custom-property prefix (without trailing dash).
- * @param {string} indent - Leading whitespace per line.
- * @returns {string} Newline-joined declaration lines.
+ * @param {Record<string,string>} obj - Token map.
+ * @param {string} prefix - Custom-property prefix (no trailing dash); '' for raw keys.
+ * @returns {string} Declaration lines.
  */
-function decls(obj, prefix, indent = '  ') {
-  return Object.entries(obj)
-    .map(([k, v]) => `${indent}--${prefix}-${k}: ${v};`)
-    .join('\n')
+function decls(obj, prefix) {
+  const pre = prefix ? `${prefix}-` : ''
+  return Object.entries(obj).map(([k, v]) => `  --${pre}${k}: ${v};`).join('\n')
 }
 
 /**
- * Merge status defaults under a preset's own values for a given mode.
+ * Merge status defaults beneath a preset's own values for one mode.
  *
  * @param {string} mode - 'light' or 'dark'.
- * @param {Record<string,string>} presetMode - The preset's mode-specific tokens.
- * @returns {Record<string,string>} Complete semantic map for the mode.
+ * @param {Record<string,string>} presetMode - Preset's mode-specific tokens.
+ * @returns {Record<string,string>} Complete semantic map.
  */
 function withStatus(mode, presetMode) {
   return { ...t.semantic.statusDefaults[mode], ...presetMode }
 }
 
 /**
- * Emit semantic `--color-*` declarations for one preset/mode.
+ * Emit `--color-*` declarations in canonical token order.
  *
- * @param {Record<string,string>} semantic - Resolved semantic token map.
- * @param {string} indent - Leading whitespace per line.
+ * @param {Record<string,string>} semantic - Resolved semantic map.
  * @returns {string} Declaration lines.
  */
-function semanticDecls(semantic, indent = '  ') {
+function semanticDecls(semantic) {
   return t.semantic.tokens
-    .filter((/** @type {string} */ name) => semantic[name] !== undefined)
-    .map((/** @type {string} */ name) => `${indent}--color-${name}: ${semantic[name]};`)
+    .filter((/** @type {string} */ n) => semantic[n] !== undefined)
+    .map((/** @type {string} */ n) => `  --color-${n}: ${semantic[n]};`)
     .join('\n')
 }
 
-const p = t.primitive
 const defaultPreset = t.semantic.presets[t.meta.defaultPreset]
 
 // ── @theme: primitives become Tailwind utilities ─────────────────────────────
@@ -74,27 +71,22 @@ const themeBlock = [
   '@theme {',
   decls(p.radius, 'radius'),
   decls(p.shadow, 'shadow'),
-  decls(p.motion, 'ease').split('\n').filter(l => l.includes('--ease')).join('\n'),
-  Object.entries(p.motion)
-    .filter(([k]) => k.startsWith('duration'))
-    .map(([k, v]) => `  --${k}: ${v};`)
-    .join('\n'),
+  decls(p.motion, ''),
   `  --font-body: ${p.typography['font-body']};`,
   '}',
 ].join('\n')
 
-// ── @theme inline: shadcn color names → Rosenraum semantic vars ──────────────
+// ── @theme inline: shadcn color names → semantic vars ────────────────────────
 const bridgeTheme = [
   '@theme inline {',
-  Object.keys(t.bridge.map)
-    .map(name => `  --color-${name}: var(--${name});`)
-    .join('\n'),
+  Object.keys(t.bridge.map).map(n => `  --color-${n}: var(--${n});`).join('\n'),
   '  --radius-sm: calc(var(--radius-md) - 4px);',
   '  --radius-lg: var(--radius-bubble);',
   '}',
 ].join('\n')
 
 // ── :root — primitives (raw) + default light + bridge indirection ────────────
+const { 'font-body': _fb, ...typeScale } = p.typography
 const bridgeDecls = Object.entries(t.bridge.map)
   .map(([shadcn, semantic]) => `  --${shadcn}: var(--color-${semantic});`)
   .join('\n')
@@ -102,20 +94,17 @@ const bridgeDecls = Object.entries(t.bridge.map)
 const root = [
   ':root {',
   '  /* Layout */',
-  decls(p.layout, 'layout').replace(/--layout-/g, '--'),
+  decls(p.layout, ''),
   '  --bubble-radius: var(--radius-bubble);',
   '  --bubble-radius-tail: var(--radius-bubble-tail);',
   '',
   '  /* Typography */',
-  Object.entries(p.typography)
-    .filter(([k]) => k !== 'font-body')
-    .map(([k, v]) => `  --text-${k.replace(/^size-/, '').replace(/^/, k.startsWith('size-') ? '' : '')}: ${v};`)
-    .join('\n'),
+  decls(typeScale, ''),
   '',
-  '  /* Motion (also exposed as raw vars for inline styles) */',
-  Object.entries(p.motion).map(([k, v]) => `  --${k}: ${v};`).join('\n'),
+  '  /* Motion (raw vars for inline styles) */',
+  decls(p.motion, ''),
   '',
-  '  /* Semantic colors — default preset (' + t.meta.defaultPreset + ') light */',
+  `  /* Semantic colors — default preset (${t.meta.defaultPreset}) light */`,
   semanticDecls(withStatus('light', defaultPreset.light)),
   '',
   '  /* shadcn/ui bridge */',
@@ -127,32 +116,29 @@ const root = [
 /** @type {string[]} */
 const presetBlocks = []
 for (const [id, preset] of Object.entries(t.semantic.presets)) {
-  // @ts-ignore
   if (id === t.meta.defaultPreset) continue
   presetBlocks.push(
     `[data-theme="${id}"] {\n${semanticDecls(withStatus('light', /** @type {any} */ (preset).light))}\n}`
   )
 }
 
-// ── Dark mode (Phase 1+): emitted only when a preset defines `dark` ───────────
+// ── Dark mode (Phase 1+): only when a preset defines `dark` ───────────────────
 /** @type {string[]} */
 const darkBlocks = []
 for (const [id, preset] of Object.entries(t.semantic.presets)) {
-  // @ts-ignore
-  const dark = preset.dark
+  const dark = /** @type {any} */ (preset).dark
   if (!dark) continue
   const sel =
     id === t.meta.defaultPreset
-      ? '.dark, [data-color-mode="dark"]:root'
+      ? ':root.dark, :root[data-color-mode="dark"]'
       : `[data-theme="${id}"].dark, [data-theme="${id}"][data-color-mode="dark"]`
   darkBlocks.push(`${sel} {\n${semanticDecls(withStatus('dark', dark))}\n}`)
 }
 
-const header = `/* AUTO-GENERATED from design/tokens.json by scripts/build-tokens.mjs.
-   Do NOT edit by hand — run \`npm run tokens\` to regenerate. */\n`
-
 const css = [
-  header,
+  `/* AUTO-GENERATED from design/tokens.json by scripts/build-tokens.mjs.
+   Do NOT edit by hand — run \`npm run tokens\` to regenerate. */`,
+  '',
   themeBlock,
   '',
   bridgeTheme,
@@ -160,9 +146,13 @@ const css = [
   root,
   '',
   ...presetBlocks,
-  ...(darkBlocks.length ? ['', '/* ── Dark mode ─────────────────────────────────────────────── */', ...darkBlocks] : []),
+  ...(darkBlocks.length
+    ? ['', '/* ── Dark mode ─────────────────────────────────────────── */', ...darkBlocks]
+    : []),
   '',
 ].join('\n')
 
 writeFileSync(OUT, css)
-console.log(`✓ tokens.generated.css written (${Object.keys(t.semantic.presets).length} presets, ${darkBlocks.length} dark scopes)`)
+console.log(
+  `✓ tokens.generated.css — ${Object.keys(t.semantic.presets).length} presets, ${darkBlocks.length} dark scope(s)`
+)
