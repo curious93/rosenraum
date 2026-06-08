@@ -41,3 +41,13 @@ body {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.45; }
 }
+
+/* iOS/Android: Zoom beim Tippen verhindern — font-size < 16px triggert iOS-AutoZoom */
+input, textarea, select {
+  font-size: max(16px, 1rem);
+}
+
+/* Doppel-Tap-Zoom auf Buttons/Links deaktivieren (iOS + Android) */
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
