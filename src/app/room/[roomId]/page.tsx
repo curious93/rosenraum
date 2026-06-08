@@ -134,12 +134,14 @@ export default function RoomPage() {
   return (
     <main
       className="flex flex-col mx-auto"
-      style={{ height: '100dvh', maxWidth: 'var(--max-width-chat)', background: 'var(--color-bg-page)' }}
+      style={{ height: '100dvh', maxWidth: 'var(--max-width-chat)', background: 'var(--color-bg-page)', overflow: 'hidden' }}
     >
       {/* ── Header ─────────────────────────────────────────────────────────────── */}
       <div
-        className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+        className="flex items-center gap-3 px-4 flex-shrink-0"
         style={{
+          paddingTop: 'max(12px, env(safe-area-inset-top))',
+          paddingBottom: '12px',
           background: 'var(--color-bg-surface)',
           borderBottom: '1px solid var(--color-border)',
           boxShadow: '0 1px 8px rgba(0,0,0,0.04)',
