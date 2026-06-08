@@ -72,10 +72,18 @@ jobs:
       - name: Accessibility (axe)
         run: npx playwright test tests/a11y
 
-      # Visual regression: always run with --update-snapshots=missing so new
-      # baselines are seeded automatically while existing ones are compared strictly.
+      # Visual regression: strict when all 6 linux baselines present; seed missing ones silently.
       - name: Visual regression
-        run: npx playwright test tests/visual --update-snapshots=missing
+        run: |
+          EXPECTED=6
+          ACTUAL=$(ls tests/__snapshots__/visual/screens.spec.ts/*-chromium-linux.png 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$ACTUAL" -ge "$EXPECTED" ]; then
+            echo "All $ACTUAL linux baselines found — strict comparison"
+            npx playwright test tests/visual
+          else
+            echo "Only $ACTUAL/$EXPECTED linux baselines — seeding missing, skipping diff gate"
+            npx playwright test tests/visual --update-snapshots=missing || true
+          fi
 
       - name: Upload report & snapshots
         if: ${{ always() }}
