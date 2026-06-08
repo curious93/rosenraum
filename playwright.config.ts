@@ -19,7 +19,7 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:3000',
-    reducedMotion: 'reduce',
+    contextOptions: { reducedMotion: 'reduce' },
     viewport: { width: 1280, height: 800 },
   },
 
