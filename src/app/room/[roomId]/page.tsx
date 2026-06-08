@@ -196,7 +196,7 @@ export default function RoomPage() {
                 >
                   <motion.span
                     className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ background: '#5CB85C', display: 'inline-block' }}
+                    style={{ background: 'var(--color-success)', display: 'inline-block' }}
                     animate={{ scale: [1, 1.5, 1] }}
                     transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
                   />
