@@ -80,6 +80,42 @@ export function ThemeSheet({ onClose }: ThemeSheetProps) {
         </div>
 
         <div className="px-5 pb-5 pt-3">
+          {/* Hell / Dunkel / System */}
+          <p
+            className="text-xs font-medium mb-2 uppercase tracking-wide"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Modus
+          </p>
+          <div
+            className="flex gap-1 p-1 rounded-2xl mb-5"
+            style={{ background: 'var(--color-bg-elevated)' }}
+            role="radiogroup"
+            aria-label="Farbmodus"
+          >
+            {MODES.map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                onClick={() => handleMode(id)}
+                role="radio"
+                aria-checked={mode === id}
+                className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium"
+                style={{ color: mode === id ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}
+              >
+                {mode === id && (
+                  <motion.span
+                    layoutId="mode-pill"
+                    className="absolute inset-0 rounded-xl"
+                    style={{ background: 'var(--color-bg-surface)', boxShadow: 'var(--shadow-sm)' }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <Icon size={14} aria-hidden="true" className="relative z-10" />
+                <span className="relative z-10">{label}</span>
+              </button>
+            ))}
+          </div>
+
           <p
             className="text-xs font-medium mb-4 uppercase tracking-wide"
             style={{ color: 'var(--color-text-muted)' }}
