@@ -199,7 +199,7 @@ export default function RoomPage() {
 
       {/* Input */}
       <div className="flex-shrink-0">
-        <ChatInput onSend={handleSend} />
+        <ChatInput onSend={handleInputSend} disabled={!!pendingText} />
       </div>
 
       {/* Invite Sheet */}
