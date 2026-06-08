@@ -108,7 +108,7 @@ export function InviteSheet({ inviteCode, inviteUrl, onClose }: InviteSheetProps
               {inviteCode}
             </div>
           </div>
-          <span className="text-2xl">🔢</span>
+          <Hash className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-text-muted)' }} aria-hidden="true" />
         </div>
 
         {/* QR-Code */}
