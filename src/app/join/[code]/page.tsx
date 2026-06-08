@@ -63,7 +63,7 @@ export default function JoinByCodePage() {
   if (loading) {
     return (
       <main
-        className="flex items-center justify-center min-h-screen"
+        className="flex items-center justify-center min-h-dvh"
         style={{ background: 'var(--color-bg-page)' }}
       >
         <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
@@ -76,7 +76,7 @@ export default function JoinByCodePage() {
   if (notFound) {
     return (
       <main
-        className="flex flex-col items-center justify-center min-h-screen px-6 text-center"
+        className="flex flex-col items-center justify-center min-h-dvh px-6 text-center"
         style={{ background: 'var(--color-bg-page)' }}
       >
         <div className="space-y-4">
@@ -101,7 +101,7 @@ export default function JoinByCodePage() {
 
   return (
     <main
-      className="relative flex flex-col items-center justify-center min-h-screen px-6 pt-14"
+      className="relative flex flex-col items-center justify-center min-h-dvh px-6 pt-14"
       style={{ background: 'var(--color-bg-page)' }}
     >
       {/* Top nav */}
