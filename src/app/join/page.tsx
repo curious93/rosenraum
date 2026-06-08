@@ -86,10 +86,7 @@ export default function JoinPage() {
           <input
             type="text"
             value={code}
-            onChange={e => {
-              setError('')
-              setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))
-            }}
+            onChange={e => handleCodeChange(e.target.value)}
             placeholder="z.B. K3XM7R"
             autoCapitalize="characters"
             autoComplete="off"
