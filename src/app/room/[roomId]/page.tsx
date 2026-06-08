@@ -252,10 +252,10 @@ export default function RoomPage() {
               whileTap={{ scale: 0.88 }}
               onClick={() => setShowLernverlauf(true)}
               className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
-              style={{ color: 'var(--color-primary)', background: 'var(--color-primary-light)' }}
+              style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-elevated)' }}
               aria-label="Lernverlauf anzeigen"
             >
-              <BookOpen size={15} aria-hidden="true" />
+              <BookOpen size={16} strokeWidth={2} aria-hidden="true" />
             </motion.button>
           )}
         </AnimatePresence>
@@ -265,10 +265,10 @@ export default function RoomPage() {
           whileTap={{ scale: 0.88 }}
           onClick={() => setShowTheme(true)}
           className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
-          style={{ color: 'var(--color-text-muted)' }}
+          style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-elevated)' }}
           aria-label="Stil auswählen"
         >
-          <Settings size={16} aria-hidden="true" />
+          <Settings size={16} strokeWidth={2} aria-hidden="true" />
         </motion.button>
 
         {/* Einladen-Button — immer sichtbar */}
