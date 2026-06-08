@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import { Heart, Leaf, Sparkles, Check, Link2, MessageCircle, MessageSquare, BookOpen, Eye, Star, Palette } from 'lucide-react'
+import { Heart, Leaf, Sparkles, Check, Link2, MessageCircle, MessageSquare, BookOpen, Eye, Star, Palette, Users, Briefcase, Lightbulb } from 'lucide-react'
 import { createRoom } from '@/lib/firestore'
 import { ThemeSheet } from '@/components/ThemeSheet'
 
