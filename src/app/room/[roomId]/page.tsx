@@ -220,6 +220,25 @@ export default function RoomPage() {
           </div>
         </div>
 
+        {/* Lernverlauf-Button — nur sichtbar wenn eigene Lern-Nachrichten existieren */}
+        <AnimatePresence>
+          {messages.some(m => m.senderId === participantId && m.hasLearningDots) && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+              whileTap={{ scale: 0.88 }}
+              onClick={() => setShowLernverlauf(true)}
+              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
+              style={{ color: 'var(--color-primary)', background: 'var(--color-primary-light)' }}
+              aria-label="Lernverlauf anzeigen"
+            >
+              <BookOpen size={15} aria-hidden="true" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
         {/* Stil-Button */}
         <motion.button
           whileTap={{ scale: 0.88 }}
