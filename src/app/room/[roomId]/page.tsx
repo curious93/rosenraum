@@ -19,7 +19,7 @@ import { SendBottomSheet, type SendVersion } from '@/components/chat/SendBottomS
 
 /**
  * Haupt-Chat-Seite für einen Rosenraum.
- * Echtzeit-Chat via Firestore, Einladungs-Sheet, PIN-geschützter Raum.
+ * Echtzeit-Chat via Firestore, Einladungs-Sheet, Avatar-Chips, Inline-Invite.
  *
  * @returns Room-Page JSX
  */
@@ -36,15 +36,13 @@ export default function RoomPage() {
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
   const [participantId, setParticipantId] = useState('')
+  const [copied, setCopied] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Raum laden und Participant-ID sicherstellen
   useEffect(() => {
     if (!roomId) return
-
     getRoom(roomId).then(room => {
       if (!room) { setNotFound(true); setLoading(false); return }
-
       const pid = getOrCreateParticipantId(roomId)
       setParticipantId(pid)
       setInviteCode(room.inviteCode)
@@ -52,7 +50,6 @@ export default function RoomPage() {
     })
   }, [roomId])
 
-  // Echtzeit-Subscriptions
   useEffect(() => {
     if (!roomId || loading) return
     const unsubMsgs = subscribeToMessages(roomId, setMessages)
@@ -60,7 +57,6 @@ export default function RoomPage() {
     return () => { unsubMsgs(); unsubParts() }
   }, [roomId, loading])
 
-  // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -85,13 +81,23 @@ export default function RoomPage() {
     })
   }, [participantId, roomId, pendingText])
 
+  async function copyInviteLink() {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+    await navigator.clipboard.writeText(`${baseUrl}/join/${inviteCode}`)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
   const inviteUrl = `${baseUrl}/join/${inviteCode}`
 
   const partnerCount = Object.keys(participants).length
   const myName = participants[participantId]?.name
-  const partnerName = Object.entries(participants)
-    .find(([id]) => id !== participantId)?.[1].name
+  const partnerEntry = Object.entries(participants).find(([id]) => id !== participantId)
+  const partnerName = partnerEntry?.[1].name
+
+  const myInitial = (myName || 'I').charAt(0).toUpperCase()
+  const partnerInitial = partnerName ? partnerName.charAt(0).toUpperCase() : null
 
   if (notFound) {
     return (
@@ -104,11 +110,7 @@ export default function RoomPage() {
           <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Dieser Raum existiert nicht
           </h1>
-          <button
-            onClick={() => router.push('/')}
-            className="text-sm"
-            style={{ color: 'var(--color-primary)' }}
-          >
+          <button onClick={() => router.push('/')} className="text-sm" style={{ color: 'var(--color-primary)' }}>
             Zurück zur Startseite
           </button>
         </div>
@@ -129,80 +131,250 @@ export default function RoomPage() {
       className="flex flex-col h-screen mx-auto"
       style={{ maxWidth: 'var(--max-width-chat)', background: 'var(--color-bg-page)' }}
     >
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────────────────── */}
       <div
-        className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
-        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-surface)' }}
+        className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+        style={{
+          background: 'var(--color-bg-surface)',
+          borderBottom: '1px solid var(--color-border)',
+          boxShadow: '0 1px 8px rgba(0,0,0,0.04)',
+        }}
       >
-        <div>
-          <div className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-            🌹 {myName ?? 'Ich'}{partnerName ? ` & ${partnerName}` : ''}
-          </div>
-          <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            {partnerCount < 2 ? 'Warte auf deinen Gesprächspartner…' : 'Ihr seid verbunden'}
+        {/* Avatar-Chips */}
+        <div className="flex -space-x-1.5">
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 z-10"
+            style={{
+              background: 'var(--color-primary-light)',
+              color: 'var(--color-primary-dark)',
+              borderColor: 'var(--color-bg-surface)',
+            }}
+          >
+            {myInitial}
+          </motion.div>
+
+          <AnimatePresence>
+            {partnerInitial && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0, x: -4 }}
+                animate={{ scale: 1, opacity: 1, x: 0 }}
+                exit={{ scale: 0, opacity: 0, x: -4 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2"
+                style={{
+                  background: 'var(--color-bg-elevated)',
+                  color: 'var(--color-text-secondary)',
+                  borderColor: 'var(--color-bg-surface)',
+                }}
+              >
+                {partnerInitial}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Name + Status */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
+            {myName ?? 'Ich'}{partnerName ? ` & ${partnerName}` : ''}
+          </p>
+          <div className="flex items-center gap-1.5 h-4">
+            <AnimatePresence mode="wait">
+              {partnerCount >= 2 ? (
+                <motion.div
+                  key="connected"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-1.5"
+                >
+                  <motion.span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ background: '#5CB85C', display: 'inline-block' }}
+                    animate={{ scale: [1, 1.5, 1] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                  />
+                  <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Verbunden</span>
+                </motion.div>
+              ) : (
+                <motion.span
+                  key="waiting"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-xs"
+                  style={{ color: 'var(--color-text-muted)' }}
+                >
+                  Warte auf Gesprächspartner…
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-        <button
-          onClick={() => setShowInvite(true)}
-          className="text-xs px-3 py-1.5 rounded-xl transition-opacity hover:opacity-70 font-medium"
-          style={partnerCount < 2 ? {
-            background: 'var(--color-primary)',
-            color: '#ffffff',
-          } : {
-            background: 'var(--color-bg-elevated)',
-            color: 'var(--color-text-secondary)',
-          }}
-          aria-label="Einladen"
-        >
-          {partnerCount < 2 ? '+ Einladen' : 'Einladen'}
-        </button>
+
+        {/* Einladen-Button — nur sichtbar wenn allein */}
+        <AnimatePresence>
+          {partnerCount < 2 && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              onClick={() => setShowInvite(true)}
+              className="text-xs px-3 py-1.5 rounded-xl font-medium transition-opacity hover:opacity-80 flex-shrink-0"
+              style={{ background: 'var(--color-primary)', color: '#ffffff' }}
+              aria-label="Einladen"
+            >
+              + Einladen
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto pt-4">
-        <AnimatePresence initial={false}>
-          {messages.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center h-full px-8 text-center space-y-2 py-20"
-            >
-              <div className="text-3xl">🌸</div>
-              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                {partnerCount < 2
-                  ? 'Teile den Raum und warte auf deine Gesprächspartnerin.'
-                  : 'Ihr seid beide da. Sag einfach hallo.'}
-              </p>
-              {partnerCount < 2 && (
-                <button
-                  onClick={() => setShowInvite(true)}
-                  className="text-sm px-4 py-2 rounded-xl font-medium transition-opacity hover:opacity-80"
-                  style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }}
+      {/* ── Messages ───────────────────────────────────────────────────────────── */}
+      <div
+        className="flex-1 overflow-y-auto pt-4 messages-area"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {messages.length === 0 ? (
+          <AnimatePresence mode="wait">
+            {partnerCount < 2 ? (
+              /* ── Inline Invite-Card ─── */
+              <motion.div
+                key="invite"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center justify-center h-full px-6 text-center gap-5 py-12"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05, type: 'spring', stiffness: 300, damping: 24 }}
+                  className="space-y-2"
                 >
-                  Link teilen →
-                </button>
-              )}
-            </motion.div>
-          ) : (
-            messages.map(msg => (
+                  <div className="text-3xl">🌹</div>
+                  <p className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    Dein Raum ist bereit.
+                  </p>
+                  <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                    Teile den Code mit einer Person,<br />der du vertraust.
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15, type: 'spring', stiffness: 300, damping: 26 }}
+                  className="w-full max-w-xs rounded-2xl overflow-hidden"
+                  style={{
+                    background: 'var(--color-bg-surface)',
+                    border: '1px solid var(--color-border)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                  }}
+                >
+                  {/* Code */}
+                  <div
+                    className="px-5 pt-5 pb-4 text-center"
+                    style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
+                  >
+                    <p className="text-xs mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                      Einladungscode
+                    </p>
+                    <p
+                      className="text-3xl font-bold font-mono"
+                      style={{
+                        color: 'var(--color-text-primary)',
+                        letterSpacing: '0.2em',
+                      }}
+                    >
+                      {inviteCode}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="p-3 space-y-2">
+                    <motion.button
+                      onClick={copyInviteLink}
+                      whileTap={{ scale: 0.97 }}
+                      className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
+                      style={{ background: 'var(--color-primary)', color: '#ffffff' }}
+                    >
+                      <AnimatePresence mode="wait">
+                        {copied ? (
+                          <motion.span
+                            key="copied"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                          >
+                            ✅ Kopiert!
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="copy"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                          >
+                            🔗 Link kopieren
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
+
+                    <button
+                      onClick={() => setShowInvite(true)}
+                      className="w-full py-2 text-xs transition-opacity hover:opacity-70"
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
+                      QR-Code anzeigen →
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            ) : (
+              /* ── Beide da, noch keine Nachrichten ─── */
+              <motion.div
+                key="together"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="flex flex-col items-center justify-center h-full text-center gap-2 py-20"
+              >
+                <div className="text-3xl">🌸</div>
+                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                  Ihr seid beide hier. Sag einfach hallo.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        ) : (
+          <AnimatePresence initial={false}>
+            {messages.map(msg => (
               <ChatBubble
                 key={msg.id}
                 message={msg}
                 isOwn={msg.senderId === participantId}
               />
-            ))
-          )}
-        </AnimatePresence>
+            ))}
+          </AnimatePresence>
+        )}
         <div ref={bottomRef} className="h-4" />
       </div>
 
-      {/* Input */}
+      {/* ── Input ──────────────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0">
         <ChatInput onSend={handleInputSend} disabled={!!pendingText} />
       </div>
 
-      {/* Invite Sheet */}
+      {/* ── Invite Sheet ───────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {showInvite && (
           <InviteSheet
@@ -213,7 +385,7 @@ export default function RoomPage() {
         )}
       </AnimatePresence>
 
-      {/* Send Bottom Sheet — KI-Vorschau vor dem Senden */}
+      {/* ── Send Bottom Sheet ──────────────────────────────────────────────────── */}
       <AnimatePresence>
         {pendingText && (
           <SendBottomSheet
