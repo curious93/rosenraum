@@ -239,7 +239,7 @@ export default function RoomPage() {
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               onClick={() => setShowInvite(true)}
               className="text-xs px-3 py-1.5 rounded-xl font-medium transition-opacity hover:opacity-80 flex-shrink-0"
-              style={{ background: 'var(--color-primary)', color: '#ffffff' }}
+              style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
               aria-label="Einladen"
             >
               + Einladen
@@ -320,7 +320,7 @@ export default function RoomPage() {
                       onClick={copyInviteLink}
                       whileTap={{ scale: 0.97 }}
                       className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
-                      style={{ background: 'var(--color-primary)', color: '#ffffff' }}
+                      style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
                     >
                       <AnimatePresence mode="wait">
                         {copied ? (
