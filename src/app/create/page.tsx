@@ -27,7 +27,6 @@ export default function CreatePage() {
 
     try {
       const { roomId } = await createRoom({
-        roomName: roomName.trim() || undefined,
         participantName: participantName.trim() || undefined,
         pin: pin.trim() || undefined,
       })
