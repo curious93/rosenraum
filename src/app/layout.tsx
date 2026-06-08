@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { PageTransition } from '@/components/PageTransition'
 
 export const metadata: Metadata = {
   title: 'Rosenraum',
