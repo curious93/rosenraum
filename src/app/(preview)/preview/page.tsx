@@ -162,7 +162,142 @@ export default function PreviewPage() {
         <Section title="Error state">
           <ErrorState className="w-full" title="Verbindung verloren" description="Wir konnten den Raum nicht laden." action={<Button size="sm" variant="outline">Erneut versuchen</Button>} />
         </Section>
+
+        <Section title="Animationen">
+          <AnimationShowcase />
+        </Section>
       </div>
     </main>
+  )
+}
+
+/** Interaktive Showcase-Sektion für alle Animations-Patterns */
+function AnimationShowcase() {
+  const [bubbleKey, setBubbleKey] = useState(0)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [dotVisible, setDotVisible] = useState(true)
+  const [bounceKey, setBounceKey] = useState(0)
+  const [shimmerVisible, setShimmerVisible] = useState(true)
+
+  return (
+    <div className="w-full space-y-6">
+      {/* Spring Button */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Spring Button</p>
+        <motion.button
+          key={bounceKey}
+          onClick={() => setBounceKey(k => k + 1)}
+          whileTap={{ scale: 0.82 }}
+          animate={bounceKey > 0 ? { scale: [1, 1.18, 0.95, 1.05, 1] } : {}}
+          transition={{ type: 'spring', stiffness: 600, damping: 20 }}
+          className="px-5 py-2.5 rounded-2xl text-sm font-medium"
+          style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+        >
+          Klick mich ✦
+        </motion.button>
+      </div>
+
+      {/* Chat Bubble Pop */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Chat Bubble — Pop-Animation</p>
+        <div className="flex flex-col gap-2 min-h-[80px]">
+          <AnimatePresence>
+            <motion.div
+              key={bubbleKey}
+              initial={{ opacity: 0, scale: 0.75, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 22, mass: 0.6 }}
+              className="self-end px-4 py-2.5 rounded-[18px_18px_4px_18px] text-sm"
+              style={{ background: 'var(--color-bubble-own)', color: 'var(--color-text-primary)', maxWidth: '240px' }}
+            >
+              Ich wünsche mir mehr Zeit mit dir. 💬
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => setBubbleKey(k => k + 1)}>Bubble neu abspielen</Button>
+      </div>
+
+      {/* Shimmer Skeleton */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Shimmer Skeleton (GFK lädt…)</p>
+        <AnimatePresence>
+          {shimmerVisible && (
+            <div className="space-y-1.5">
+              {[100, 85, 60].map((w, i) => (
+                <div
+                  key={i}
+                  className="h-3 rounded-full relative overflow-hidden"
+                  style={{ width: `${w}%`, background: 'var(--color-skeleton)' }}
+                >
+                  <motion.div
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)' }}
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: 'linear', delay: i * 0.1 }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </AnimatePresence>
+        <Button size="sm" variant="outline" onClick={() => setShimmerVisible(v => !v)}>
+          {shimmerVisible ? 'Skeleton ausblenden' : 'Skeleton einblenden'}
+        </Button>
+      </div>
+
+      {/* Lern-Dot */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Lern-Dot (nach Senden)</p>
+        <div className="flex items-center gap-3">
+          <AnimatePresence>
+            {dotVisible && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: [0, 1.4, 1] }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ background: 'var(--color-dot-learning)' }}
+              />
+            )}
+          </AnimatePresence>
+          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Lernpunkt sichtbar</span>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => setDotVisible(v => !v)}>Dot toggling</Button>
+      </div>
+
+      {/* Bottom Sheet */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Bottom Sheet Slide-in</p>
+        <Button size="sm" variant="outline" onClick={() => setSheetOpen(true)}>Sheet öffnen</Button>
+        <AnimatePresence>
+          {sheetOpen && (
+            <>
+              <motion.div
+                className="fixed inset-0 z-40"
+                style={{ background: 'rgba(0,0,0,0.2)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSheetOpen(false)}
+              />
+              <motion.div
+                className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl px-5 pt-5 pb-8"
+                style={{ background: 'var(--color-bg-surface)', boxShadow: '0 -4px 24px rgba(0,0,0,0.10)', maxWidth: '720px', margin: '0 auto' }}
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              >
+                <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'var(--color-border)' }} />
+                <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>Bottom Sheet</p>
+                <p className="text-sm mb-4" style={{ color: 'var(--color-text-muted)' }}>Spring slide-in, damping 28, stiffness 320.</p>
+                <Button onClick={() => setSheetOpen(false)}>Schließen</Button>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
   )
 }
