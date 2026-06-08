@@ -142,7 +142,7 @@ export async function createRoom(options: {
     rosenbergMode: false,
   })
 
-  return { roomId: roomRef.id, participantId }
+  return { roomId: roomRef.id, participantId, inviteCode }
 }
 
 /**
