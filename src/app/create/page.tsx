@@ -14,7 +14,6 @@ import { createRoom } from '@/lib/firestore'
  */
 export default function CreatePage() {
   const router = useRouter()
-  const [roomName, setRoomName] = useState('')
   const [participantName, setParticipantName] = useState('')
   const [pin, setPin] = useState('')
   const [showPin, setShowPin] = useState(false)
