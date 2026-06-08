@@ -431,6 +431,17 @@ export default function RoomPage() {
         )}
       </AnimatePresence>
 
+      {/* ── Lernverlauf Sheet ──────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showLernverlauf && (
+          <LernverlaufSheet
+            messages={messages}
+            participantId={participantId}
+            onClose={() => setShowLernverlauf(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── Send Bottom Sheet ──────────────────────────────────────────────────── */}
       <AnimatePresence>
         {pendingText && (
