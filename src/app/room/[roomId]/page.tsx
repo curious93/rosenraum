@@ -65,15 +65,25 @@ export default function RoomPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleSend = useCallback(async (text: string) => {
+  const handleInputSend = useCallback((text: string) => {
+    setPendingText(text)
+  }, [])
+
+  const handleConfirmSend = useCallback(async (
+    text: string,
+    version: SendVersion,
+    rosenbergText?: string
+  ) => {
+    setPendingText(null)
     if (!participantId) return
     await sendMessage(roomId, {
       senderId: participantId,
-      originalText: text,
-      sentVersion: 'original',
-      hasLearningDots: false,
+      originalText: pendingText ?? text,
+      rosenbergText: rosenbergText ?? undefined,
+      sentVersion: version,
+      hasLearningDots: !!rosenbergText,
     })
-  }, [participantId, roomId])
+  }, [participantId, roomId, pendingText])
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
   const inviteUrl = `${baseUrl}/join/${inviteCode}`
