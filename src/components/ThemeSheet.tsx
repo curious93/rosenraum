@@ -37,6 +37,16 @@ export interface ThemeSheetProps {
 export function ThemeSheet({ onClose }: ThemeSheetProps) {
   const [active, setActive] = useState<Theme>(getStoredTheme)
   const [mode, setMode] = useState<ColorMode>(getStoredMode)
+  const [balance, setBalance] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch('/api/credits')
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { balanceEur?: number } | null) => {
+        if (d?.balanceEur !== undefined) setBalance(d.balanceEur)
+      })
+      .catch(() => undefined)
+  }, [])
 
   function handleSelect(theme: Theme) {
     setActive(theme)
