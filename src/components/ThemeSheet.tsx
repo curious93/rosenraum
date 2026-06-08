@@ -20,11 +20,7 @@ export interface ThemeSheetProps {
  * @returns ThemeSheet JSX
  */
 export function ThemeSheet({ onClose }: ThemeSheetProps) {
-  const [active, setActive] = useState<Theme>('rose')
-
-  useEffect(() => {
-    setActive(getStoredTheme())
-  }, [])
+  const [active, setActive] = useState<Theme>(getStoredTheme)
 
   function handleSelect(theme: Theme) {
     setActive(theme)
