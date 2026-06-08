@@ -2,6 +2,16 @@
 
 @styles.md
 
+## Design-System Router
+
+For **any** UI / UX / frontend / styling / component / layout / navigation / dashboard / form / modal / dropdown / notification / search / table / AI-interaction task, first read:
+- `docs/PRODUCT_SYSTEM.md` · `docs/DESIGN_SYSTEM.md` · `docs/COMPONENT_REGISTRY.md` · `docs/COMPONENT_STANDARDS.md` · `docs/AI_UX_RULES.md` · `docs/ACCESSIBILITY_CHECKLIST.md` · `docs/UI_REVIEW_CHECKLIST.md` · `design/tokens.json`
+
+For any **theme / colour / icon / dark-mode / settings / branding** task, also read:
+- `docs/THEME_OPTIONS.md`
+
+Token rule: never hardcode a colour, spacing, radius, font size or duration — edit `design/tokens.json`, run `npm run tokens`. Every UI task ends with the [UI Review Checklist](docs/UI_REVIEW_CHECKLIST.md). Reuse across projects: `docs/REUSE.md`.
+
 ## Stack
 
 - **Frontend:** Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui, framer-motion
