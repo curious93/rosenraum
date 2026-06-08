@@ -25,7 +25,10 @@ export default defineConfig({
 
   expect: {
     toHaveScreenshot: {
-      maxDiffPixelRatio: 0.01,
+      // Strict: baselines and checks run on the same platform, so anti-aliasing
+      // is consistent. Catches colour/layout drift; tolerates sub-0.1% noise.
+      maxDiffPixelRatio: 0.001,
+      threshold: 0.2,
       animations: 'disabled',
       caret: 'hide',
     },
