@@ -25,7 +25,7 @@ env:
     value: 1:1088277870578:web:fca22f4fe04523c614dd6b
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_BASE_URL
-    value: https://rosenraum-app--rosenraum-web.us-central1.hosted.app
+    value: https://rosenraum-1--rosenraum-app.europe-west4.hosted.app
     availability: [BUILD, RUNTIME]
 
   - variable: CLAUDE_OAUTH_TOKEN
