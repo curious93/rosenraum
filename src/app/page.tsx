@@ -285,32 +285,22 @@ export default function HomePage() {
               </p>
             </motion.div>
 
-            <div className="space-y-4">
-              {gfkSteps.map((step, i) => (
-                <motion.div
-                  key={step.title}
-                  variants={fadeUp}
-                  transition={{ delay: i * 0.08 }}
-                  className="flex gap-4 p-4 rounded-2xl"
-                  style={{ background: 'var(--color-bg-elevated)' }}
-                >
-                  <div
-                    className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{ background: 'var(--color-primary-light)' }}
-                  >
-                    <step.Icon className="w-5 h-5" style={{ color: 'var(--color-primary-dark)' }} aria-hidden="true" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>{step.num}</span>
-                      <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{step.title}</span>
-                    </div>
-                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{step.desc}</p>
-                    <p className="text-xs italic" style={{ color: 'var(--color-text-muted)' }}>{step.example}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <motion.div variants={fadeUp} className="space-y-4 text-base leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+              <p>
+                Gewaltfreie Kommunikation basiert auf einer einfachen Idee: Hinter jedem Angriff, jedem
+                Schweigen, jeder Überreaktion steckt ein unerfülltes Bedürfnis. Kein böser Wille —
+                nur eine Sprache, die uns nicht beigebracht wurde.
+              </p>
+              <p>
+                Marshall Rosenberg entwickelte in den 1960er Jahren einen Weg, diese Bedürfnisse sichtbar
+                zu machen — ohne Vorwurf, ohne Urteil, ohne Schuld. Aus der Ich-Perspektive statt aus der
+                Anklage.
+              </p>
+              <p>
+                Rosenraum bringt diese Idee in echte Gespräche. Nicht als Theorie, sondern als sanfte
+                Einladung — Nachricht für Nachricht.
+              </p>
+            </motion.div>
           </motion.div>
         </div>
       </section>
