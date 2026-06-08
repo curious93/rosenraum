@@ -182,6 +182,16 @@ export function ThemeSheet({ onClose }: ThemeSheetProps) {
               </motion.button>
             ))}
           </div>
+
+          {/* Guthaben */}
+          {balance !== null && (
+            <p
+              className="mt-4 text-xs text-right"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              KI-Guthaben: {balance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            </p>
+          )}
         </div>
       </motion.div>
     </>
