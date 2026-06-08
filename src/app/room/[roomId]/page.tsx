@@ -212,6 +212,17 @@ export default function RoomPage() {
           />
         )}
       </AnimatePresence>
+
+      {/* Send Bottom Sheet — KI-Vorschau vor dem Senden */}
+      <AnimatePresence>
+        {pendingText && (
+          <SendBottomSheet
+            originalText={pendingText}
+            onSend={handleConfirmSend}
+            onClose={() => setPendingText(null)}
+          />
+        )}
+      </AnimatePresence>
     </main>
   )
 }
