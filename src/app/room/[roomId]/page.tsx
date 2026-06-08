@@ -133,7 +133,6 @@ export default function RoomPage() {
     <main
       className="flex flex-col mx-auto"
       style={{ height: '100dvh', maxWidth: 'var(--max-width-chat)', background: 'var(--color-bg-page)' }}
-      style={{ maxWidth: 'var(--max-width-chat)', background: 'var(--color-bg-page)' }}
     >
       {/* ── Header ─────────────────────────────────────────────────────────────── */}
       <div
