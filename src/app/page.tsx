@@ -163,7 +163,7 @@ export default function HomePage() {
           <motion.div variants={fadeUp} className="space-y-3">
             <button
               onClick={scrollToCreate}
-              className="block w-full py-3.5 px-6 rounded-2xl text-white font-medium text-base transition-opacity hover:opacity-90 active:opacity-80"
+              className="block w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity hover:opacity-90 active:opacity-80"
               style={{ background: 'var(--color-primary)' }}
             >
               Raum erstellen
@@ -441,7 +441,7 @@ export default function HomePage() {
                   <button
                     onClick={handleCreate}
                     disabled={createState === 'loading'}
-                    className="w-full py-3.5 px-6 rounded-2xl text-white font-medium text-base transition-opacity disabled:opacity-60"
+                    className="w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity disabled:opacity-60"
                     style={{ background: 'var(--color-primary)' }}
                   >
                     {createState === 'loading' ? 'Raum wird erstellt…' : 'Raum erstellen →'}
@@ -515,7 +515,7 @@ export default function HomePage() {
 
                   <button
                     onClick={() => router.push(`/room/${createdRoom!.roomId}`)}
-                    className="w-full py-3.5 px-6 rounded-2xl text-white font-medium text-base transition-opacity hover:opacity-90"
+                    className="w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity hover:opacity-90"
                     style={{ background: 'var(--color-primary)' }}
                   >
                     Raum betreten →
