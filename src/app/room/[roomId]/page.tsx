@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Heart, Leaf, Sparkles, Check, Link2, Palette } from 'lucide-react'
 import {
   getRoom,
   getOrCreateParticipantId,
@@ -16,6 +17,7 @@ import { ChatBubble } from '@/components/chat/ChatBubble'
 import { ChatInput } from '@/components/chat/ChatInput'
 import { InviteSheet } from '@/components/invite/InviteSheet'
 import { SendBottomSheet, type SendVersion } from '@/components/chat/SendBottomSheet'
+import { ThemeSheet } from '@/components/ThemeSheet'
 
 /**
  * Haupt-Chat-Seite für einen Rosenraum.
@@ -32,6 +34,7 @@ export default function RoomPage() {
   const [participants, setParticipants] = useState<Record<string, Participant>>({})
   const [inviteCode, setInviteCode] = useState('')
   const [showInvite, setShowInvite] = useState(false)
+  const [showTheme, setShowTheme] = useState(false)
   const [pendingText, setPendingText] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -106,7 +109,7 @@ export default function RoomPage() {
         style={{ background: 'var(--color-bg-page)' }}
       >
         <div className="space-y-3">
-          <div className="text-4xl">🌱</div>
+          <Leaf className="w-10 h-10 mx-auto" style={{ color: 'var(--color-text-muted)' }} aria-hidden="true" />
           <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Dieser Raum existiert nicht
           </h1>
@@ -215,6 +218,17 @@ export default function RoomPage() {
           </div>
         </div>
 
+        {/* Stil-Button */}
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          onClick={() => setShowTheme(true)}
+          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
+          style={{ color: 'var(--color-text-muted)' }}
+          aria-label="Stil auswählen"
+        >
+          <Palette size={16} aria-hidden="true" />
+        </motion.button>
+
         {/* Einladen-Button — nur sichtbar wenn allein */}
         <AnimatePresence>
           {partnerCount < 2 && (
@@ -256,7 +270,12 @@ export default function RoomPage() {
                   transition={{ delay: 0.05, type: 'spring', stiffness: 300, damping: 24 }}
                   className="space-y-2"
                 >
-                  <div className="text-3xl">🌹</div>
+                  <Heart
+                    className="w-10 h-10 mx-auto"
+                    style={{ color: 'var(--color-primary)' }}
+                    fill="var(--color-primary-light)"
+                    aria-hidden="true"
+                  />
                   <p className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     Dein Raum ist bereit.
                   </p>
@@ -311,8 +330,9 @@ export default function RoomPage() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.8, opacity: 0 }}
                             transition={{ duration: 0.15 }}
+                            className="flex items-center gap-1.5"
                           >
-                            ✅ Kopiert!
+                            <Check size={14} aria-hidden="true" /> Kopiert!
                           </motion.span>
                         ) : (
                           <motion.span
@@ -321,8 +341,9 @@ export default function RoomPage() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.8, opacity: 0 }}
                             transition={{ duration: 0.15 }}
+                            className="flex items-center gap-1.5"
                           >
-                            🔗 Link kopieren
+                            <Link2 size={14} aria-hidden="true" /> Link kopieren
                           </motion.span>
                         )}
                       </AnimatePresence>
@@ -348,7 +369,7 @@ export default function RoomPage() {
                 transition={{ duration: 0.25 }}
                 className="flex flex-col items-center justify-center h-full text-center gap-2 py-20"
               >
-                <div className="text-3xl">🌸</div>
+                <Sparkles className="w-8 h-8 mx-auto mb-1" style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
                 <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                   Ihr seid beide hier. Sag einfach hallo.
                 </p>
@@ -382,6 +403,13 @@ export default function RoomPage() {
             inviteUrl={inviteUrl}
             onClose={() => setShowInvite(false)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* ── Theme Sheet ────────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showTheme && (
+          <ThemeSheet onClose={() => setShowTheme(false)} />
         )}
       </AnimatePresence>
 
