@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
+import { Check, Link2, Hash } from 'lucide-react'
 
 /** Props für das Invite-Sheet. */
 export interface InviteSheetProps {
