@@ -109,8 +109,15 @@ const root = [
   '',
   '  /* shadcn/ui bridge */',
   bridgeDecls,
+  '',
+  '  /* Mode-aware primary for text/links (AA on the active background) */',
+  '  --color-primary-text: var(--color-primary-dark);',
   '}',
 ].join('\n')
+
+// Primary-as-text flips to the light tint in dark mode so it stays legible.
+const primaryTextDark =
+  ':root.dark, :root[data-color-mode="dark"] {\n  --color-primary-text: var(--color-primary-light);\n}'
 
 // ── Per-preset light overrides ───────────────────────────────────────────────
 /** @type {string[]} */
