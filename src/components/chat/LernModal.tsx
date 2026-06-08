@@ -15,6 +15,9 @@ interface LernModalProps {
  * Öffnet sich wenn der Sender auf seine eigene Bubble tippt.
  *
  * @param props - Modal-Props
+ * @param props.message
+ * @param props.open
+ * @param props.onClose
  */
 export function LernModal({ message, open, onClose }: LernModalProps) {
   const originalText = message.originalText

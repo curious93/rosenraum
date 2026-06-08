@@ -18,6 +18,8 @@ export interface ChatBubbleProps {
  * Eigene Bubbles mit Lern-Dot öffnen bei Tap das LernModal.
  *
  * @param props - Bubble-Props
+ * @param props.message
+ * @param props.isOwn
  * @returns Chat-Bubble JSX
  */
 export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
