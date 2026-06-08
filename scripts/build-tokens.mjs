@@ -153,6 +153,9 @@ const css = [
   root,
   '',
   ...presetBlocks,
+  '',
+  '/* ── Mode-aware aliases ─────────────────────────────────── */',
+  primaryTextDark,
   ...(darkBlocks.length
     ? ['', '/* ── Dark mode ─────────────────────────────────────────── */', ...darkBlocks]
     : []),
