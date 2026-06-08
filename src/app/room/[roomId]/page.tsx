@@ -75,7 +75,7 @@ export default function RoomPage() {
     await sendMessage(roomId, {
       senderId: participantId,
       originalText: pendingText ?? text,
-      rosenbergText: rosenbergText ?? undefined,
+      rosenbergText: rosenbergText,
       sentVersion: version,
       hasLearningDots: !!rosenbergText,
     })
