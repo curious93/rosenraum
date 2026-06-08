@@ -56,9 +56,12 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.85, y: 8 }}
+      initial={{ opacity: 0, scale: isOwn ? 0.75 : 0.88, y: isOwn ? 12 : 8 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.8 }}
+      transition={isOwn
+        ? { type: 'spring', stiffness: 500, damping: 22, mass: 0.6 }
+        : { type: 'spring', stiffness: 400, damping: 28, mass: 0.8 }
+      }
       className={`flex ${isOwn ? 'justify-end' : 'justify-start'} px-4 mb-1`}
     >
       <div className="relative max-w-[75%]">
