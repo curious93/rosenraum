@@ -117,6 +117,9 @@
   --border: var(--color-border);
   --input: var(--color-border);
   --ring: var(--color-primary);
+
+  /* Mode-aware primary for text/links (AA on the active background) */
+  --color-primary-text: var(--color-primary-dark);
 }
 
 [data-theme="forst"] {
@@ -233,6 +236,11 @@
   --color-destructive: #C0392B;
   --color-on-primary: #FFFFFF;
   --color-on-status: #FFFFFF;
+}
+
+/* ── Mode-aware aliases ─────────────────────────────────── */
+:root.dark, :root[data-color-mode="dark"] {
+  --color-primary-text: var(--color-primary-light);
 }
 
 /* ── Dark mode ─────────────────────────────────────────── */
