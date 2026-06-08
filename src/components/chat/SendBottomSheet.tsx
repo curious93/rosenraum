@@ -313,7 +313,6 @@ function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardPro
       style={{
         background: 'var(--color-bubble-gfk)',
         border: `2px solid ${borderColor}`,
-        opacity: (isAlreadyOpen || isError) ? 0.75 : 1,
         transition: 'border-color 200ms',
       }}
     >
