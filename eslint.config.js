@@ -31,6 +31,17 @@ const config = [
       'jsdoc/check-types': 'error',
     },
   },
+
+  // Vendored shadcn/ui primitives + dev-only preview pages are exempt from the
+  // JSDoc-everything rule — they stay idiomatic so they remain upgradable.
+  {
+    files: ['src/components/ui/**/*.{ts,tsx}', 'src/app/(preview)/**/*.{ts,tsx}'],
+    rules: {
+      'jsdoc/require-jsdoc': 'off',
+      'jsdoc/require-param': 'off',
+      'jsdoc/require-returns': 'off',
+    },
+  },
 ]
 
 export default config
