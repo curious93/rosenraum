@@ -57,7 +57,7 @@ export function ChatInput({ onSend, disabled = false, placeholder = 'Schreib etw
       className="px-3 py-2.5 flex-shrink-0"
       style={{
         background: 'var(--color-bg-page)',
-        paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
+        paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
       }}
     >
       <div
