@@ -30,3 +30,6 @@ env:
 
   - variable: CLAUDE_OAUTH_TOKEN
     secret: CLAUDE_OAUTH_TOKEN
+
+  - variable: CLAUDE_REFRESH_TOKEN
+    secret: CLAUDE_REFRESH_TOKEN
