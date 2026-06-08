@@ -256,10 +256,15 @@ export async function sendMessage(
     hasLearningDots: boolean
   }
 ): Promise<string> {
-  const ref = await addDoc(collection(db, 'rooms', roomId, 'messages'), {
-    ...message,
+  const messageData: Record<string, unknown> = {
+    senderId: message.senderId,
+    originalText: message.originalText,
+    sentVersion: message.sentVersion,
     timestamp: serverTimestamp(),
-  })
+    hasLearningDots: message.hasLearningDots,
+  }
+  if (message.rosenbergText) messageData.rosenbergText = message.rosenbergText
+  const ref = await addDoc(collection(db, 'rooms', roomId, 'messages'), messageData)
   return ref.id
 }
 
