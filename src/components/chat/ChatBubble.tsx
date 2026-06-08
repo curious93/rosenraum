@@ -52,32 +52,29 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
         }
         className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} px-4 mb-1`}
       >
-        <div className="relative max-w-[75%]">
-
-          {/* Bubble — klickbar wenn Lernen verfügbar */}
-          <motion.div
+        <div
+          className="relative max-w-[75%]"
+          style={{ cursor: canLearn ? 'pointer' : 'default' }}
+          onClick={canLearn ? () => setShowModal(true) : undefined}
+          role={canLearn ? 'button' : undefined}
+          aria-label={canLearn ? 'Lernmoment anzeigen' : undefined}
+        >
+          {/* Bubble */}
+          <div
             className="px-4 py-2.5 text-base leading-relaxed"
             style={{
               background: bgColor,
               color: 'var(--color-text-primary)',
               borderRadius: isOwn ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
               boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-              cursor: canLearn ? 'pointer' : 'default',
             }}
-            whileTap={canLearn ? { scale: 0.97 } : undefined}
-            onClick={canLearn ? () => setShowModal(true) : undefined}
-            role={canLearn ? 'button' : undefined}
-            aria-label={canLearn ? 'Lernmoment anzeigen' : undefined}
           >
             {sentText}
-          </motion.div>
+          </div>
 
-          {/* Lern-Dot — visueller Indikator, kein eigener Klick mehr */}
+          {/* Lern-Dot — rein visuell */}
           {canLearn && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, type: 'spring', stiffness: 500, damping: 25 }}
+            <div
               className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 pointer-events-none"
               style={{
                 background: 'var(--color-dot-learning)',
