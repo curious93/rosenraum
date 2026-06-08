@@ -105,7 +105,7 @@ export default function RoomPage() {
   if (notFound) {
     return (
       <main
-        className="flex flex-col items-center justify-center min-h-screen px-6 text-center"
+        className="flex flex-col items-center justify-center min-h-dvh px-6 text-center"
         style={{ background: 'var(--color-bg-page)' }}
       >
         <div className="space-y-3">
@@ -123,7 +123,7 @@ export default function RoomPage() {
 
   if (loading) {
     return (
-      <main className="flex items-center justify-center min-h-screen" style={{ background: 'var(--color-bg-page)' }}>
+      <main className="flex items-center justify-center min-h-dvh" style={{ background: 'var(--color-bg-page)' }}>
         <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Lade Raum…</div>
       </main>
     )
@@ -131,7 +131,8 @@ export default function RoomPage() {
 
   return (
     <main
-      className="flex flex-col h-screen mx-auto"
+      className="flex flex-col mx-auto"
+      style={{ height: '100dvh', maxWidth: 'var(--max-width-chat)', background: 'var(--color-bg-page)' }}
       style={{ maxWidth: 'var(--max-width-chat)', background: 'var(--color-bg-page)' }}
     >
       {/* ── Header ─────────────────────────────────────────────────────────────── */}
