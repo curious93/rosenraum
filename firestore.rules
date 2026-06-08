@@ -3,60 +3,40 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Hilfsfunktionen ────────────────────────────────────────────────────────
-
-    /** Prüft ob ein Participant mit der gegebenen ID im Raum existiert. */
-    function participantExists(roomId, participantId) {
-      return exists(/databases/$(database)/documents/rooms/$(roomId)/participants/$(participantId));
-    }
-
-    /** Liest den participantId aus dem Request oder Resource. */
-    function requestParticipantId() {
-      return request.resource.data.get('participantId', '');
-    }
-
     // ── Räume ──────────────────────────────────────────────────────────────────
-
     match /rooms/{roomId} {
 
-      // Raum lesen: Participant muss im Raum sein
-      allow read: if participantExists(roomId, requestParticipantId())
-        || request.auth != null;
+      // Raum lesen: offen (roomId ist 20-stellig zufällig — kein Brute-Force möglich)
+      allow read: if true;
 
-      // Raum erstellen: immer erlaubt (erster Participant wird direkt miterstellt)
+      // Raum erstellen: immer erlaubt
       allow create: if true;
 
-      // Raum updaten: nur existierende Participants
-      allow update: if participantExists(roomId, requestParticipantId());
+      // Raum updaten: gesperrt (Felder sind immutable)
+      allow update: if false;
+      allow delete: if false;
 
       // ── Participants ─────────────────────────────────────────────────────────
-
       match /participants/{participantId} {
+        allow read: if true;
 
-        // Participant lesen: jeder im Raum
-        allow read: if participantExists(roomId, request.auth != null ? request.auth.uid : participantId)
-          || true; // Kein Auth-System — LocalStorage-basiert
-
-        // Participant beitreten: immer erlaubt (max. 2 wird in App-Logik geprüft)
+        // Beitreten: immer erlaubt (Limit von 2 wird in App-Logik geprüft)
         allow create: if true;
 
-        // Participant updaten: nur eigener Eintrag
-        allow update: if request.resource.id == participantId;
+        // Eigenen Eintrag updaten (z.B. rosenbergMode)
+        allow update: if true;
+        allow delete: if false;
       }
 
       // ── Nachrichten ──────────────────────────────────────────────────────────
-
       match /messages/{messageId} {
-
-        // Nachrichten lesen: jeder der den Raum kennt
         allow read: if true;
 
-        // Nachricht senden: Sender muss im Raum sein
-        allow create: if participantExists(roomId, request.resource.data.senderId)
-          && request.resource.data.keys().hasAll(['senderId', 'sentVersion', 'timestamp'])
+        // Nachricht senden: senderId muss als Participant existieren
+        allow create: if exists(/databases/$(database)/documents/rooms/$(roomId)/participants/$(request.resource.data.senderId))
+          && request.resource.data.keys().hasAll(['senderId', 'sentVersion', 'originalText', 'timestamp'])
           && request.resource.data.sentVersion in ['original', 'rosenberg'];
 
-        // Nachrichten nicht änderbar (immutable)
         allow update: if false;
         allow delete: if false;
       }
