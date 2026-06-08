@@ -4,10 +4,11 @@ Known inconsistencies and shortcuts, tracked so they're deliberate, not forgotte
 
 | Issue | Location | Severity | Proposed fix | Owner / status |
 |---|---|---|---|---|
-| Primary buttons use hardcoded `text-white` instead of `var(--color-on-primary)` | `page.tsx`, `create`, `join`, `room`, `join/[code]` | low | Replace with `--color-on-primary` so button text adapts per mode/theme | open — acceptable; on-primary is white in both modes today |
-| Light-mode primary buttons sit ~3.4:1 white-on-primary (below AA 4.5:1 for normal text) | all primary CTAs | med | Either darken primaries or enlarge/bolden button text to qualify as large text (3:1) | open — pre-existing shipped design; revisit with a11y pass |
-| Status colours (success/warning/destructive) are shared defaults, not per-theme tuned | `tokens.json` `statusDefaults` | low | Tune per preset if a theme needs it; currently unused in UI | open — fine until a status surface ships |
-| Some exotic preset×dark bubble combos not contrast-verified beyond primary surfaces | dark bubble-gfk / bubble-own | low | axe contrast sweep in Phase 4 across all 6 presets in dark | open — Phase 4 |
-| Icon family not yet centralised to semantic map | components import Lucide icons directly | low | Route through `src/lib/icons.ts` semantic map | open — Phase 3 |
+| Primary-coloured text links on **untested** pages (e.g. room header, "Zur Startseite") may use `--color-primary` directly | `room/page.tsx`, `join/[code]` | low | Sweep remaining primary-as-text to `--color-primary-text`; only `/`, `/create`, `/join`, `/preview` are axe-gated today | open — extend a11y test paths when room is testable |
+| Status colours (success/warning/destructive) are shared defaults, not per-theme tuned | `tokens.json` `statusDefaults` | low | Tune per preset if a theme needs it | open — fine, all status combos pass AA |
+| Existing components import Lucide icons directly instead of via `src/lib/icons.ts` | `chat/*`, `invite/*`, pages | low | Migrate to the semantic `icons` map opportunistically | open — non-blocking |
+| Landing page (`/`) visual regression deferred (scroll-triggered framer entrances are non-deterministic) | `app/page.tsx` | low | Gate entrance animations on a test flag, or snapshot the hero viewport only | open — a11y covers `/`; visual covers stable screens |
+
+**Resolved (2026-06-08):** hardcoded `text-white` buttons → `text-primary-foreground`; white-on-primary AA failure → per-theme `on-primary` + AA palette tightening (0 axe violations); dark bubble/surface contrast → swept in the Phase 4 axe pass.
 
 > Empty severity columns are a smell — if it's here, it has a severity and a proposed fix.
