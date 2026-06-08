@@ -33,6 +33,8 @@ export function getStoredTheme(): Theme {
 /**
  * Applies a theme by setting `data-theme` on <html> and persisting to localStorage.
  * 'rose' removes the attribute so `:root` defaults apply.
+ *
+ * @param theme - The theme identifier to activate
  */
 export function applyTheme(theme: Theme): void {
   if (theme === 'rose') {
