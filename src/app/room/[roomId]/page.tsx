@@ -132,14 +132,17 @@ export default function RoomPage() {
         </div>
         <button
           onClick={() => setShowInvite(true)}
-          className="text-xs px-3 py-1.5 rounded-xl transition-opacity hover:opacity-70"
-          style={{
+          className="text-xs px-3 py-1.5 rounded-xl transition-opacity hover:opacity-70 font-medium"
+          style={partnerCount < 2 ? {
+            background: 'var(--color-primary)',
+            color: '#ffffff',
+          } : {
             background: 'var(--color-bg-elevated)',
             color: 'var(--color-text-secondary)',
           }}
           aria-label="Einladen"
         >
-          Einladen
+          {partnerCount < 2 ? '+ Einladen' : 'Einladen'}
         </button>
       </div>
 
