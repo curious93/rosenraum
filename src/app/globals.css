@@ -66,3 +66,14 @@ body {
 body {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* Scrollbar in der Message-Area verstecken */
+.messages-area::-webkit-scrollbar {
+  display: none;
+}
+
+/* Pulse-Animation für Skeleton */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
