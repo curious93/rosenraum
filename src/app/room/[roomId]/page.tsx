@@ -268,7 +268,7 @@ export default function RoomPage() {
           style={{ color: 'var(--color-text-muted)' }}
           aria-label="Stil auswählen"
         >
-          <Palette size={16} aria-hidden="true" />
+          <Settings size={16} aria-hidden="true" />
         </motion.button>
 
         {/* Einladen-Button — immer sichtbar */}
