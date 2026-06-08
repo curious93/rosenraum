@@ -159,9 +159,18 @@ export default function RoomPage() {
               <div className="text-3xl">🌸</div>
               <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 {partnerCount < 2
-                  ? 'Schick den Link weiter, damit ihr loschatten könnt.'
-                  : 'Sag einfach hallo.'}
+                  ? 'Teile den Raum und warte auf deine Gesprächspartnerin.'
+                  : 'Ihr seid beide da. Sag einfach hallo.'}
               </p>
+              {partnerCount < 2 && (
+                <button
+                  onClick={() => setShowInvite(true)}
+                  className="text-sm px-4 py-2 rounded-xl font-medium transition-opacity hover:opacity-80"
+                  style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }}
+                >
+                  Link teilen →
+                </button>
+              )}
             </motion.div>
           ) : (
             messages.map(msg => (
