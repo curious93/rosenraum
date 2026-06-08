@@ -14,9 +14,7 @@ interface LernModalProps {
  * Großes Lern-Modal das die GFK-Transformation einer Nachricht erklärt.
  * Öffnet sich wenn der Sender auf seine eigene Bubble tippt.
  *
- * @param props.message - Die Nachricht mit Original + GFK-Version
- * @param props.open - Ob das Modal sichtbar ist
- * @param props.onClose - Callback zum Schließen
+ * @param props - Modal-Props
  */
 export function LernModal({ message, open, onClose }: LernModalProps) {
   const originalText = message.originalText
