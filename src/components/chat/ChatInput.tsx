@@ -84,7 +84,7 @@ export function ChatInput({ onSend, disabled = false, placeholder = 'Schreib etw
           className="flex-1 resize-none text-base leading-relaxed outline-none bg-transparent py-1.5 disabled:opacity-50"
           style={{
             color: 'var(--color-text-primary)',
-            minHeight: '28px',
+            minHeight: '36px',
             maxHeight: '120px',
           }}
         />
