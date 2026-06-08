@@ -2,8 +2,23 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check } from 'lucide-react'
-import { THEMES, type Theme, getStoredTheme, applyTheme } from '@/lib/theme'
+import { Check, Sun, Moon, Monitor } from 'lucide-react'
+import {
+  THEMES,
+  type Theme,
+  type ColorMode,
+  getStoredTheme,
+  applyTheme,
+  getStoredMode,
+  applyMode,
+} from '@/lib/theme'
+
+/** Colour-mode options rendered as a segmented control. */
+const MODES: { id: ColorMode; label: string; Icon: typeof Sun }[] = [
+  { id: 'light', label: 'Hell', Icon: Sun },
+  { id: 'dark', label: 'Dunkel', Icon: Moon },
+  { id: 'system', label: 'System', Icon: Monitor },
+]
 
 /** Props für das Theme-Selector-Sheet. */
 export interface ThemeSheetProps {
