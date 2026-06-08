@@ -16,6 +16,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" className="h-full">
+      <head>
+        {/* Applies stored theme before first paint to avoid flash of unstyled content */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('rosenraum_theme');if(t&&t!=='rose')document.documentElement.setAttribute('data-theme',t)}catch(e){}})()` }} />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   )
