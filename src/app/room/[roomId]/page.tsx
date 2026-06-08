@@ -407,13 +407,34 @@ export default function RoomPage() {
           </AnimatePresence>
         ) : (
           <AnimatePresence initial={false}>
-            {messages.map(msg => (
-              <ChatBubble
-                key={msg.id}
-                message={msg}
-                isOwn={msg.senderId === participantId}
-              />
-            ))}
+            {messages.reduce<React.ReactNode[]>((acc, msg, i) => {
+              const msgDate = msg.timestamp?.toDate()
+              if (msgDate) {
+                const prevDate = i > 0 ? messages[i - 1].timestamp?.toDate() : null
+                if (!prevDate || prevDate.toDateString() !== msgDate.toDateString()) {
+                  acc.push(
+                    <div
+                      key={`sep-${msg.id}`}
+                      className="flex items-center gap-3 px-4 py-2"
+                    >
+                      <div className="flex-1 h-px" style={{ background: 'var(--color-border-subtle)' }} />
+                      <span style={{ fontSize: 'var(--text-micro)', color: 'var(--color-text-muted)' }}>
+                        {getDateLabel(msgDate)}
+                      </span>
+                      <div className="flex-1 h-px" style={{ background: 'var(--color-border-subtle)' }} />
+                    </div>
+                  )
+                }
+              }
+              acc.push(
+                <ChatBubble
+                  key={msg.id}
+                  message={msg}
+                  isOwn={msg.senderId === participantId}
+                />
+              )
+              return acc
+            }, [])}
           </AnimatePresence>
         )}
         <div ref={bottomRef} className="h-4" />
