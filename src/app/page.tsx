@@ -4,7 +4,9 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
+import { Heart, Leaf, Sparkles, Check, Link2, MessageCircle, MessageSquare, BookOpen, Eye, Star, Palette } from 'lucide-react'
 import { createRoom } from '@/lib/firestore'
+import { ThemeSheet } from '@/components/ThemeSheet'
 
 type CreateState = 'idle' | 'loading' | 'created'
 
@@ -37,6 +39,7 @@ export default function HomePage() {
   const [createState, setCreateState] = useState<CreateState>('idle')
   const [createdRoom, setCreatedRoom] = useState<CreatedRoom | null>(null)
   const [copied, setCopied] = useState(false)
+  const [showTheme, setShowTheme] = useState(false)
 
   function scrollToCreate() {
     quickCreateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -64,6 +67,58 @@ export default function HomePage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const problemCards = [
+    {
+      Icon: MessageCircle,
+      title: 'Das unbeabsichtigte Vorwurf',
+      quote: '"Du hörst mir nie zu."',
+      body: 'Gemeint war: Ich vermisse das Gefühl, dass dir wichtig ist, was ich fühle. Die Sprache der Bewertung löst Verteidigung aus — nicht Verbindung.',
+    },
+    {
+      Icon: MessageSquare,
+      title: 'Das Schweigen',
+      quote: null,
+      body: 'Wenn Worte fehlen, schweigen wir. Oder wir sagen das Falsche. Nicht weil wir nichts fühlen — sondern weil uns niemand beigebracht hat, Gefühle in Worte zu fassen.',
+    },
+    {
+      Icon: BookOpen,
+      title: 'Das Wissen hilft nicht allein',
+      quote: null,
+      body: 'Gewaltfreie Kommunikation klingt in der Theorie einfach. Aber in echten Gesprächen, wenn Emotionen hochkommen, fallen wir in alte Muster zurück. GFK lernt man nicht durch Lesen. Man lernt es durch Üben — in echten Gesprächen.',
+    },
+  ]
+
+  const gfkSteps = [
+    {
+      num: '①',
+      Icon: Eye,
+      title: 'Beobachtung',
+      desc: 'Was passiert konkret — ohne Bewertung, ohne Interpretation?',
+      example: '"Du bist dreimal zu spät gekommen" statt "Du bist immer unzuverlässig."',
+    },
+    {
+      num: '②',
+      Icon: Heart,
+      title: 'Gefühl',
+      desc: 'Wie fühle ich mich dabei?',
+      example: '"Ich bin besorgt" statt "Du machst mich wahnsinnig."',
+    },
+    {
+      num: '③',
+      Icon: Leaf,
+      title: 'Bedürfnis',
+      desc: 'Welches Bedürfnis steckt dahinter?',
+      example: '"Mir ist Verlässlichkeit wichtig" — ein Bedürfnis, das jeder Mensch kennt.',
+    },
+    {
+      num: '④',
+      Icon: Star,
+      title: 'Bitte',
+      desc: 'Was wünsche ich mir konkret?',
+      example: '"Kannst du mir Bescheid geben, wenn du später kommst?"',
+    },
+  ]
+
   return (
     <div style={{ background: 'var(--color-bg-page)', color: 'var(--color-text-primary)' }}>
 
@@ -79,7 +134,12 @@ export default function HomePage() {
           animate="visible"
         >
           <motion.div variants={fadeUp} className="space-y-3">
-            <div style={{ fontSize: '3.5rem', lineHeight: 1 }}>🌹</div>
+            <Heart
+              className="w-14 h-14 mx-auto"
+              style={{ color: 'var(--color-primary)' }}
+              fill="var(--color-primary-light)"
+              aria-hidden="true"
+            />
             <h1
               className="font-semibold tracking-tight"
               style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', color: 'var(--color-text-primary)' }}
@@ -156,26 +216,7 @@ export default function HomePage() {
             </motion.div>
 
             <div className="space-y-4">
-              {[
-                {
-                  icon: '💬',
-                  title: 'Das unbeabsichtigte Vorwurf',
-                  quote: '"Du hörst mir nie zu."',
-                  body: 'Gemeint war: Ich vermisse das Gefühl, dass dir wichtig ist, was ich fühle. Die Sprache der Bewertung löst Verteidigung aus — nicht Verbindung.',
-                },
-                {
-                  icon: '😶',
-                  title: 'Das Schweigen',
-                  quote: null,
-                  body: 'Wenn Worte fehlen, schweigen wir. Oder wir sagen das Falsche. Nicht weil wir nichts fühlen — sondern weil uns niemand beigebracht hat, Gefühle in Worte zu fassen.',
-                },
-                {
-                  icon: '📚',
-                  title: 'Das Wissen hilft nicht allein',
-                  quote: null,
-                  body: 'Gewaltfreie Kommunikation klingt in der Theorie einfach. Aber in echten Gesprächen, wenn Emotionen hochkommen, fallen wir in alte Muster zurück. GFK lernt man nicht durch Lesen. Man lernt es durch Üben — in echten Gesprächen.',
-                },
-              ].map((card) => (
+              {problemCards.map((card) => (
                 <motion.div
                   key={card.title}
                   variants={fadeUp}
@@ -183,7 +224,7 @@ export default function HomePage() {
                   style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
                 >
                   <div className="flex items-center gap-2">
-                    <span style={{ fontSize: '1.25rem' }}>{card.icon}</span>
+                    <card.Icon className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
                     <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                       {card.title}
                     </span>
@@ -232,36 +273,7 @@ export default function HomePage() {
             </motion.div>
 
             <div className="space-y-4">
-              {[
-                {
-                  num: '①',
-                  emoji: '👁',
-                  title: 'Beobachtung',
-                  desc: 'Was passiert konkret — ohne Bewertung, ohne Interpretation?',
-                  example: '"Du bist dreimal zu spät gekommen" statt "Du bist immer unzuverlässig."',
-                },
-                {
-                  num: '②',
-                  emoji: '❤️',
-                  title: 'Gefühl',
-                  desc: 'Wie fühle ich mich dabei?',
-                  example: '"Ich bin besorgt" statt "Du machst mich wahnsinnig."',
-                },
-                {
-                  num: '③',
-                  emoji: '🌱',
-                  title: 'Bedürfnis',
-                  desc: 'Welches Bedürfnis steckt dahinter?',
-                  example: '"Mir ist Verlässlichkeit wichtig" — ein Bedürfnis, das jeder Mensch kennt.',
-                },
-                {
-                  num: '④',
-                  emoji: '🙏',
-                  title: 'Bitte',
-                  desc: 'Was wünsche ich mir konkret?',
-                  example: '"Kannst du mir Bescheid geben, wenn du später kommst?"',
-                },
-              ].map((step, i) => (
+              {gfkSteps.map((step, i) => (
                 <motion.div
                   key={step.title}
                   variants={fadeUp}
@@ -270,10 +282,10 @@ export default function HomePage() {
                   style={{ background: 'var(--color-bg-elevated)' }}
                 >
                   <div
-                    className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg"
-                    style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)' }}
+                    className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ background: 'var(--color-primary-light)' }}
                   >
-                    {step.emoji}
+                    <step.Icon className="w-5 h-5" style={{ color: 'var(--color-primary-dark)' }} aria-hidden="true" />
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -444,9 +456,15 @@ export default function HomePage() {
                   transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
                   className="max-w-sm mx-auto space-y-4"
                 >
-                  <div className="text-center space-y-1">
+                  <div className="text-center space-y-2">
+                    <Heart
+                      className="w-8 h-8 mx-auto"
+                      style={{ color: 'var(--color-primary)' }}
+                      fill="var(--color-primary-light)"
+                      aria-hidden="true"
+                    />
                     <p className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                      Dein Raum ist bereit. 🌹
+                      Dein Raum ist bereit.
                     </p>
                     <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                       Teile diesen Link mit der Person, mit der du sprechen möchtest.
@@ -488,8 +506,11 @@ export default function HomePage() {
                     className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl text-base font-medium transition-opacity hover:opacity-80"
                     style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
                   >
-                    <span>{copied ? '✅' : '🔗'}</span>
-                    <span>{copied ? 'Link kopiert!' : 'Link kopieren'}</span>
+                    {copied ? (
+                      <><Check className="w-4 h-4" aria-hidden="true" /> Link kopiert!</>
+                    ) : (
+                      <><Link2 className="w-4 h-4" aria-hidden="true" /> Link kopieren</>
+                    )}
                   </button>
 
                   <button
@@ -508,16 +529,29 @@ export default function HomePage() {
 
       {/* ── 7. FOOTER ────────────────────────────────────────────────────────── */}
       <footer
-        className="px-6 py-10 text-center space-y-1"
+        className="px-6 py-10 text-center space-y-2"
         style={{ borderTop: '1px solid var(--color-border-subtle)' }}
       >
-        <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-          🌹 Rosenraum — Ein Raum für echte Gespräche.
+        <p className="text-sm font-medium flex items-center justify-center gap-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+          <Heart className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-primary)' }} fill="var(--color-primary)" aria-hidden="true" />
+          Rosenraum — Ein Raum für echte Gespräche.
         </p>
         <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
           Kein Tracking. Kein Account. Keine Daten.
         </p>
+        <button
+          onClick={() => setShowTheme(true)}
+          className="inline-flex items-center gap-1.5 text-xs transition-opacity hover:opacity-70 mt-1"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          <Palette className="w-3.5 h-3.5" aria-hidden="true" /> Stil ändern
+        </button>
       </footer>
+
+      {/* ── Theme Sheet ──────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showTheme && <ThemeSheet onClose={() => setShowTheme(false)} />}
+      </AnimatePresence>
 
     </div>
   )
