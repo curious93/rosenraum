@@ -127,6 +127,16 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
           />
         )}
       </div>
+
+      {/* Timestamp */}
+      {message.timestamp && (
+        <div
+          className="mt-0.5"
+          style={{ fontSize: 'var(--text-micro)', color: 'var(--color-text-muted)' }}
+        >
+          {message.timestamp.toDate().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+        </div>
+      )}
     </motion.div>
   )
 }
