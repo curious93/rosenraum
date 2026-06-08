@@ -127,6 +127,19 @@ export default function HomePage() {
         className="relative flex flex-col items-center justify-center min-h-svh px-6 text-center"
         style={{ maxWidth: '680px', margin: '0 auto' }}
       >
+        {/* Palette-Button oben rechts */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          whileTap={{ scale: 0.88 }}
+          onClick={() => setShowTheme(true)}
+          className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
+          style={{ color: 'var(--color-text-muted)', background: 'var(--color-bg-elevated)' }}
+          aria-label="Stil ändern"
+        >
+          <Palette size={15} aria-hidden="true" />
+        </motion.button>
         <motion.div
           className="space-y-6 w-full max-w-sm"
           variants={stagger}
