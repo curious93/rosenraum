@@ -66,6 +66,5 @@ DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName
 
 export {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuGroup,
-  DropdownMenuSeparatorRoot, Check as DropdownMenuCheck, ChevronRight as DropdownMenuChevron,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuGroup, DropdownMenuSeparatorRoot,
 }
