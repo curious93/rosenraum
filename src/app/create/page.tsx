@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createRoom } from '@/lib/firestore'
 
 /**
@@ -39,10 +40,35 @@ export default function CreatePage() {
 
   return (
     <main
-      className="flex flex-col items-center justify-center min-h-screen px-6"
+      className="relative flex flex-col items-center justify-center min-h-screen px-6 pt-14"
       style={{ background: 'var(--color-bg-page)' }}
     >
-      <div className="w-full max-w-sm space-y-6">
+      {/* Top nav */}
+      <div
+        className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 h-14"
+        style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
+      >
+        <Link
+          href="/"
+          className="text-sm flex items-center gap-1 transition-opacity hover:opacity-60"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          ← Zurück
+        </Link>
+        <span className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
+          🌹 Rosenraum
+        </span>
+        <div style={{ width: '4rem' }} />
+      </div>
+
+      {/* Card */}
+      <div
+        className="w-full max-w-sm rounded-2xl p-6 space-y-6"
+        style={{
+          background: 'var(--color-bg-surface)',
+          boxShadow: '0 2px 20px rgba(0,0,0,0.06)',
+        }}
+      >
         <div className="space-y-1">
           <h1
             className="text-2xl font-semibold"
@@ -72,7 +98,7 @@ export default function CreatePage() {
               maxLength={30}
               className="w-full px-4 py-3 rounded-xl text-base outline-none border transition-colors"
               style={{
-                background: 'var(--color-bg-surface)',
+                background: 'var(--color-bg-page)',
                 borderColor: 'var(--color-border)',
                 color: 'var(--color-text-primary)',
               }}
@@ -95,7 +121,7 @@ export default function CreatePage() {
               maxLength={50}
               className="w-full px-4 py-3 rounded-xl text-base outline-none border transition-colors"
               style={{
-                background: 'var(--color-bg-surface)',
+                background: 'var(--color-bg-page)',
                 borderColor: 'var(--color-border)',
                 color: 'var(--color-text-primary)',
               }}
@@ -127,7 +153,7 @@ export default function CreatePage() {
                   inputMode="numeric"
                   className="w-full px-4 py-3 rounded-xl text-base outline-none border transition-colors tracking-widest"
                   style={{
-                    background: 'var(--color-bg-surface)',
+                    background: 'var(--color-bg-page)',
                     borderColor: 'var(--color-border)',
                     color: 'var(--color-text-primary)',
                   }}
