@@ -91,10 +91,11 @@
   --color-border-subtle: #F0E6E2;
   --color-dot-learning: #D0747F;
   --color-skeleton: #EDE8E4;
-  --color-success: #2F855A;
-  --color-warning: #B7791F;
+  --color-success: #2E8258;
+  --color-warning: #9D681B;
   --color-destructive: #C0392B;
   --color-on-primary: #2C2020;
+  --color-on-status: #FFFFFF;
 
   /* shadcn/ui bridge */
   --background: var(--color-bg-page);
@@ -112,7 +113,7 @@
   --accent: var(--color-primary-light);
   --accent-foreground: var(--color-text-primary);
   --destructive: var(--color-destructive);
-  --destructive-foreground: var(--color-on-primary);
+  --destructive-foreground: var(--color-on-status);
   --border: var(--color-border);
   --input: var(--color-border);
   --ring: var(--color-primary);
@@ -135,10 +136,11 @@
   --color-border-subtle: #E8F0E6;
   --color-dot-learning: #4A7C59;
   --color-skeleton: #DCE8D8;
-  --color-success: #2F855A;
-  --color-warning: #B7791F;
+  --color-success: #2E8258;
+  --color-warning: #9D681B;
   --color-destructive: #C0392B;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #FFFFFF;
 }
 [data-theme="lila"] {
   --color-primary: #7B6EA8;
@@ -157,10 +159,11 @@
   --color-border-subtle: #EDE9F4;
   --color-dot-learning: #7B6EA8;
   --color-skeleton: #DED8F0;
-  --color-success: #2F855A;
-  --color-warning: #B7791F;
+  --color-success: #2E8258;
+  --color-warning: #9D681B;
   --color-destructive: #C0392B;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #FFFFFF;
 }
 [data-theme="ozean"] {
   --color-primary: #6A66A3;
@@ -179,10 +182,11 @@
   --color-border-subtle: #DDE6F2;
   --color-dot-learning: #0087BD;
   --color-skeleton: #D4DCF0;
-  --color-success: #2F855A;
-  --color-warning: #B7791F;
+  --color-success: #2E8258;
+  --color-warning: #9D681B;
   --color-destructive: #C0392B;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #FFFFFF;
 }
 [data-theme="koralle"] {
   --color-primary: #028090;
@@ -201,10 +205,11 @@
   --color-border-subtle: #E0EEEE;
   --color-dot-learning: #C00000;
   --color-skeleton: #D4EEEE;
-  --color-success: #2F855A;
-  --color-warning: #B7791F;
+  --color-success: #2E8258;
+  --color-warning: #9D681B;
   --color-destructive: #C0392B;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #FFFFFF;
 }
 [data-theme="meer"] {
   --color-primary: #004A54;
@@ -223,10 +228,11 @@
   --color-border-subtle: #D5EEF0;
   --color-dot-learning: #00BAD3;
   --color-skeleton: #C8EEF5;
-  --color-success: #2F855A;
-  --color-warning: #B7791F;
+  --color-success: #2E8258;
+  --color-warning: #9D681B;
   --color-destructive: #C0392B;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #FFFFFF;
 }
 
 /* ── Dark mode ─────────────────────────────────────────── */
@@ -251,6 +257,7 @@
   --color-warning: #ECC94B;
   --color-destructive: #FC8181;
   --color-on-primary: #2C2020;
+  --color-on-status: #2C2020;
 }
 [data-theme="forst"].dark, [data-theme="forst"][data-color-mode="dark"] {
   --color-primary: #4A7C59;
@@ -273,6 +280,7 @@
   --color-warning: #ECC94B;
   --color-destructive: #FC8181;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #2C2020;
 }
 [data-theme="lila"].dark, [data-theme="lila"][data-color-mode="dark"] {
   --color-primary: #7B6EA8;
@@ -295,6 +303,7 @@
   --color-warning: #ECC94B;
   --color-destructive: #FC8181;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #2C2020;
 }
 [data-theme="ozean"].dark, [data-theme="ozean"][data-color-mode="dark"] {
   --color-primary: #6A66A3;
@@ -317,6 +326,7 @@
   --color-warning: #ECC94B;
   --color-destructive: #FC8181;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #2C2020;
 }
 [data-theme="koralle"].dark, [data-theme="koralle"][data-color-mode="dark"] {
   --color-primary: #028090;
@@ -339,6 +349,7 @@
   --color-warning: #ECC94B;
   --color-destructive: #FC8181;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #2C2020;
 }
 [data-theme="meer"].dark, [data-theme="meer"][data-color-mode="dark"] {
   --color-primary: #0A6E7C;
@@ -361,4 +372,5 @@
   --color-warning: #ECC94B;
   --color-destructive: #FC8181;
   --color-on-primary: #FFFFFF;
+  --color-on-status: #2C2020;
 }
