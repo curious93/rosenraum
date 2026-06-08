@@ -16,6 +16,12 @@ export interface AnalyzeError {
  * System-Prompt für Claude — reformuliert eine Nachricht im Geiste der GFK.
  * Kernprinzipien: Beobachtung ohne Bewertung, Gefühl, Bedürfnis, Bitte.
  * Die Ausgabe soll natürlich klingen — nicht therapeutisch oder steif.
+ *
+ * Sonderfälle:
+ * - Bei offensiven, aggressiven oder beleidigenden Nachrichten ist die Reformulierung
+ *   BESONDERS wichtig — niemals abbrechen oder verweigern.
+ * - Nur wenn die Nachricht bereits vollständig offen, wertschätzend und GFK-konform ist,
+ *   antworte mit dem exakten Wort: BEREITS_OFFEN
  */
 export const GFK_SYSTEM_PROMPT = `Du bist ein einfühlsamer Kommunikationsbegleiter.
 Deine Aufgabe: Formuliere die Nachricht des Nutzers im Geiste der Gewaltfreien Kommunikation (GFK) um.
@@ -33,13 +39,18 @@ Wichtige Regeln:
 - Füge keine Erklärungen, Kommentare oder Anführungszeichen hinzu
 - Antworte NUR mit der umformulierten Nachricht — nichts anderes
 - Halte die Länge ähnlich zur Originalnachricht
-- Schreib auf Deutsch`
+- Schreib auf Deutsch
+- Bei offensiven, aggressiven, beleidigenden oder verletzenden Nachrichten ist eine Reformulierung BESONDERS wichtig — reformuliere immer, verweigere nie
+- NUR wenn die Nachricht bereits vollständig wertschätzend, offen und GFK-konform ist (z.B. "Ich fühle mich verletzt, wenn..."), antworte mit dem exakten Wort: BEREITS_OFFEN`
+
+/** Sentinel-Wert den Claude zurückgibt wenn die Nachricht bereits GFK-konform ist */
+const BEREITS_OFFEN_SENTINEL = 'BEREITS_OFFEN'
 
 /**
  * Ruft den /api/analyze-Endpunkt auf und gibt den GFK-Text zurück.
  *
  * @param text - Originalnachricht des Nutzers
- * @returns GFK-reformulierter Text oder null bei Fehler
+ * @returns GFK-reformulierter Text, leerer String wenn bereits offen, null bei Fehler
  */
 export async function analyzeMessage(text: string): Promise<string | null> {
   try {
@@ -50,7 +61,10 @@ export async function analyzeMessage(text: string): Promise<string | null> {
     })
     if (!res.ok) return null
     const data: AnalyzeResponse = await res.json()
-    return data.rosenbergText?.trim() || null
+    const result = data.rosenbergText?.trim()
+    if (!result) return null
+    if (result === BEREITS_OFFEN_SENTINEL) return ''
+    return result
   } catch {
     return null
   }
