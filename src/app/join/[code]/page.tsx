@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import { Heart, Leaf } from 'lucide-react'
 import { getRoomByCode, joinRoom, getRoom } from '@/lib/firestore'
 
 /**
