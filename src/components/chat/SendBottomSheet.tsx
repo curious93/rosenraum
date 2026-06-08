@@ -158,7 +158,7 @@ function VersionCard({ label, text, selected, onSelect, loading, variant }: Vers
       style={{
         background: bgColor,
         border: `2px solid ${borderColor}`,
-        opacity: !text && !loading ? 0.5 : 1,
+        opacity: !text && !loading ? 0.75 : 1,
         transition: 'border-color 200ms',
       }}
     >
