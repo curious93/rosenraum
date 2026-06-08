@@ -132,7 +132,7 @@ export default function JoinByCodePage() {
         }}
       >
         <div className="space-y-1">
-          <div className="text-3xl mb-2">🌹</div>
+          <Heart className="w-8 h-8 mb-2 mx-auto" style={{ color: 'var(--color-primary)' }} fill="var(--color-primary-light)" aria-hidden="true" />
           <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Du wurdest eingeladen
           </h1>
