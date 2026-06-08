@@ -39,7 +39,9 @@ const config = [
     rules: {
       'jsdoc/require-jsdoc': 'off',
       'jsdoc/require-param': 'off',
+      'jsdoc/require-param-description': 'off',
       'jsdoc/require-returns': 'off',
+      'jsdoc/check-param-names': 'off',
     },
   },
 ]
