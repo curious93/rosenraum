@@ -18,6 +18,7 @@ interface LernModalProps {
  * @param props.message - Nachricht mit Original und GFK-Version
  * @param props.open - Ob das Modal sichtbar ist
  * @param props.onClose - Callback zum Schließen
+ * @returns Bottom Sheet JSX oder null wenn kein GFK-Text vorhanden
  */
 export function LernModal({ message, open, onClose }: LernModalProps) {
   const originalText = message.originalText
