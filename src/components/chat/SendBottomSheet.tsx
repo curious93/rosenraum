@@ -48,7 +48,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     if (selected === 'rosenberg' && rosenbergText) {
       onSend(rosenbergText, 'rosenberg', rosenbergText)
     } else {
-      onSend(originalText, 'original', rosenbergText ?? undefined)
+      onSend(originalText, 'original', rosenbergText || undefined)
     }
   }
 
