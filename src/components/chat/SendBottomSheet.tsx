@@ -39,21 +39,27 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   const [sendFlash, setSendFlash] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  useEffect(() => {
+    let cancelled = false
+    analyzeMessage(originalText).then(result => {
+      if (cancelled) return
+      setRosenbergText(result)
+      setSelected(result !== null && result !== '' ? 'rosenberg' : 'original')
+      setAnalyzing(false)
+    })
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function runAnalysis(text: string) {
     setRosenbergText(null)
     setAnalyzing(true)
     analyzeMessage(text).then(result => {
       setRosenbergText(result)
-      if (result !== null && result !== '') setSelected('rosenberg')
-      else setSelected('original')
+      setSelected(result !== null && result !== '' ? 'rosenberg' : 'original')
       setAnalyzing(false)
     })
   }
-
-  useEffect(() => {
-    runAnalysis(originalText)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   useEffect(() => {
     if (editMode && textareaRef.current) {
