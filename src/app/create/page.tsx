@@ -139,7 +139,7 @@ export default function CreatePage() {
                 if (showPin) setPin('')
               }}
               className="text-sm flex items-center gap-1.5 transition-opacity hover:opacity-70"
-              style={{ color: 'var(--color-primary)' }}
+              style={{ color: 'var(--color-primary-dark)' }}
             >
               <span>{showPin ? '✕' : '+'}</span>
               <span>{showPin ? 'PIN entfernen' : 'PIN hinzufügen (optional)'}</span>
