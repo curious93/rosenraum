@@ -500,6 +500,18 @@ export default function RoomPage() {
         )}
       </AnimatePresence>
 
+      {/* ── Statistik Sheet ────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showStatistik && (
+          <StatistikSheet
+            messages={messages}
+            currentUserId={participantId}
+            open={showStatistik}
+            onClose={() => setShowStatistik(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── Send Bottom Sheet ──────────────────────────────────────────────────── */}
       <AnimatePresence>
         {pendingText && (
