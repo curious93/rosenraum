@@ -22,6 +22,8 @@ export const THEMES: ThemeMeta[] = [
 /**
  * Returns the stored theme from localStorage, or 'rose' as default.
  * Safe to call during SSR — returns 'rose' when window is unavailable.
+ *
+ * @returns The currently stored theme identifier
  */
 export function getStoredTheme(): Theme {
   if (typeof window === 'undefined') return 'rose'
