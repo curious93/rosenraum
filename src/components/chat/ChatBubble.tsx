@@ -101,7 +101,7 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
                 className="text-xs px-2 py-0.5 rounded-full"
                 style={{
                   background: 'var(--color-bg-elevated)',
-                  color: 'var(--color-text-muted)',
+                  color: 'var(--color-text-secondary)',
                 }}
               >
                 {altLabel}
