@@ -29,7 +29,7 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
     ? message.rosenbergText
     : message.originalText
 
-  const canLearn = isOwn && message.hasLearningDots && !!message.rosenbergText
+  const canLearn = isOwn && !!message.rosenbergText
 
   // Farbe kommuniziert welche Version sichtbar ist: grün = GFK, beige = Original
   const showingGfk = message.sentVersion === 'rosenberg'
