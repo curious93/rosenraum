@@ -36,6 +36,7 @@ export default function RoomPage() {
   const [inviteCode, setInviteCode] = useState('')
   const [showInvite, setShowInvite] = useState(false)
   const [showTheme, setShowTheme] = useState(false)
+  const [showLernverlauf, setShowLernverlauf] = useState(false)
   const [pendingText, setPendingText] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
