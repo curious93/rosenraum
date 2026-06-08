@@ -36,10 +36,16 @@ export interface ThemeSheetProps {
  */
 export function ThemeSheet({ onClose }: ThemeSheetProps) {
   const [active, setActive] = useState<Theme>(getStoredTheme)
+  const [mode, setMode] = useState<ColorMode>(getStoredMode)
 
   function handleSelect(theme: Theme) {
     setActive(theme)
     applyTheme(theme)
+  }
+
+  function handleMode(next: ColorMode) {
+    setMode(next)
+    applyMode(next)
   }
 
   return (
