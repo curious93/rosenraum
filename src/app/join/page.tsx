@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { getRoomByCode } from '@/lib/firestore'
 
 /**
@@ -29,12 +30,43 @@ export default function JoinPage() {
     router.push(`/join/${code.toUpperCase()}`)
   }
 
+  // Auto-submit when code is complete
+  useEffect(() => {
+    if (code.length === 6) handleJoin()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code])
+
   return (
     <main
-      className="flex flex-col items-center justify-center min-h-screen px-6"
+      className="relative flex flex-col items-center justify-center min-h-screen px-6 pt-14"
       style={{ background: 'var(--color-bg-page)' }}
     >
-      <div className="w-full max-w-sm space-y-6">
+      {/* Top nav */}
+      <div
+        className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 h-14"
+        style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
+      >
+        <Link
+          href="/"
+          className="text-sm flex items-center gap-1 transition-opacity hover:opacity-60"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          ← Zurück
+        </Link>
+        <span className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
+          🌹 Rosenraum
+        </span>
+        <div style={{ width: '4rem' }} />
+      </div>
+
+      {/* Card */}
+      <div
+        className="w-full max-w-sm rounded-2xl p-6 space-y-6"
+        style={{
+          background: 'var(--color-bg-surface)',
+          boxShadow: '0 2px 20px rgba(0,0,0,0.06)',
+        }}
+      >
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Raum betreten
@@ -48,26 +80,37 @@ export default function JoinPage() {
           <input
             type="text"
             value={code}
-            onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+            onChange={e => {
+              setError('')
+              setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))
+            }}
             placeholder="z.B. K3XM7R"
             autoCapitalize="characters"
             autoComplete="off"
+            autoFocus
             spellCheck={false}
-            className="w-full px-4 py-3 rounded-xl text-base outline-none border text-center tracking-widest font-mono"
+            className="w-full px-4 py-4 rounded-xl outline-none border text-center font-mono"
             style={{
-              background: 'var(--color-bg-surface)',
-              borderColor: 'var(--color-border)',
+              background: 'var(--color-bg-page)',
+              borderColor: code.length === 6 ? 'var(--color-primary)' : 'var(--color-border)',
               color: 'var(--color-text-primary)',
-              fontSize: '1.25rem',
-              letterSpacing: '0.2em',
+              fontSize: '1.5rem',
+              letterSpacing: '0.25em',
+              transition: 'border-color 200ms',
             }}
             onKeyDown={e => e.key === 'Enter' && handleJoin()}
           />
-          {error && (
-            <p className="text-sm mt-2" style={{ color: 'var(--color-primary-dark)' }}>
-              {error}
-            </p>
-          )}
+          <div className="flex justify-between mt-1.5 px-1">
+            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              {error || ' '}
+            </span>
+            <span
+              className="text-xs font-mono"
+              style={{ color: code.length === 6 ? 'var(--color-primary)' : 'var(--color-text-muted)' }}
+            >
+              {code.length}/6
+            </span>
+          </div>
         </div>
 
         <button
