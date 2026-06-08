@@ -101,18 +101,21 @@ export default function CreatePage() {
 
           {/* PIN-Toggle */}
           <div>
-            <button
-              type="button"
-              onClick={() => {
-                setShowPin(v => !v)
-                if (showPin) setPin('')
-              }}
-              className="text-sm flex items-center gap-1.5 transition-opacity hover:opacity-70"
-              style={{ color: 'var(--color-primary-text)' }}
-            >
-              <span>{showPin ? '✕' : '+'}</span>
-              <span>{showPin ? 'PIN entfernen' : 'PIN hinzufügen (optional)'}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPin(v => !v)
+                  if (showPin) setPin('')
+                }}
+                className="text-sm flex items-center gap-1.5 transition-opacity hover:opacity-70"
+                style={{ color: 'var(--color-primary-text)' }}
+              >
+                <span>{showPin ? '✕' : '+'}</span>
+                <span>{showPin ? 'PIN entfernen' : 'PIN hinzufügen (optional)'}</span>
+              </button>
+              <InfoTooltip text="Ein PIN schützt deinen Raum. Nur Personen mit dem richtigen PIN können beitreten. 4–6 Ziffern." label="Was bewirkt der PIN?" />
+            </div>
 
             {showPin && (
               <div className="mt-2">
