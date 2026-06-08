@@ -341,7 +341,7 @@ export default function HomePage() {
                 <motion.div key={step.num} variants={fadeUp} className="flex gap-4 items-start">
                   <div
                     className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
-                    style={{ background: 'var(--color-primary)', color: 'white' }}
+                    style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
                   >
                     {step.num}
                   </div>
