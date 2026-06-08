@@ -88,37 +88,6 @@ export default function HomePage() {
     },
   ]
 
-  const gfkSteps = [
-    {
-      num: '①',
-      Icon: Eye,
-      title: 'Beobachtung',
-      desc: 'Was passiert konkret — ohne Bewertung, ohne Interpretation?',
-      example: '"Du bist dreimal zu spät gekommen" statt "Du bist immer unzuverlässig."',
-    },
-    {
-      num: '②',
-      Icon: Heart,
-      title: 'Gefühl',
-      desc: 'Wie fühle ich mich dabei?',
-      example: '"Ich bin besorgt" statt "Du machst mich wahnsinnig."',
-    },
-    {
-      num: '③',
-      Icon: Leaf,
-      title: 'Bedürfnis',
-      desc: 'Welches Bedürfnis steckt dahinter?',
-      example: '"Mir ist Verlässlichkeit wichtig" — ein Bedürfnis, das jeder Mensch kennt.',
-    },
-    {
-      num: '④',
-      Icon: Star,
-      title: 'Bitte',
-      desc: 'Was wünsche ich mir konkret?',
-      example: '"Kannst du mir Bescheid geben, wenn du später kommst?"',
-    },
-  ]
-
   return (
     <div style={{ background: 'var(--color-bg-page)', color: 'var(--color-text-primary)' }}>
 
