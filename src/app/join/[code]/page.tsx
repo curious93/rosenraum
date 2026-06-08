@@ -80,7 +80,7 @@ export default function JoinByCodePage() {
         style={{ background: 'var(--color-bg-page)' }}
       >
         <div className="space-y-4">
-          <div className="text-4xl">🌱</div>
+          <Leaf className="w-10 h-10 mx-auto" style={{ color: 'var(--color-text-muted)' }} aria-hidden="true" />
           <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Dieser Raum existiert nicht
           </h1>
