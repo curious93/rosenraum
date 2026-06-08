@@ -1,7 +1,7 @@
 # Rosenraum — Designsystem
 
-Verbindliche Designquelle. Vor jeder UI-Entscheidung lesen.
-**Kein hardcodierter Farbwert im Code** — nur CSS-Custom-Properties von hier.
+Verbindliche Designquelle für Rosenraums **Voice & projekt-spezifische Muster**.
+Das **kanonische, projektübergreifende** Designsystem (Tokens, Komponenten-Standards, Themes, A11y) liegt in [`docs/`](docs/) — Einstieg über [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md). Farbwerte kommen aus [`design/tokens.json`](design/tokens.json) (`npm run tokens`), **nie hardcodiert**.
 
 ---
 
