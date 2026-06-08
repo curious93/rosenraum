@@ -229,23 +229,20 @@ export default function RoomPage() {
           <Palette size={16} aria-hidden="true" />
         </motion.button>
 
-        {/* Einladen-Button — nur sichtbar wenn allein */}
-        <AnimatePresence>
-          {partnerCount < 2 && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              onClick={() => setShowInvite(true)}
-              className="text-xs px-3 py-1.5 rounded-xl font-medium transition-opacity hover:opacity-80 flex-shrink-0"
-              style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
-              aria-label="Einladen"
-            >
-              + Einladen
-            </motion.button>
-          )}
-        </AnimatePresence>
+        {/* Einladen-Button — immer sichtbar */}
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          onClick={() => setShowInvite(true)}
+          className="flex-shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl font-medium transition-opacity hover:opacity-80"
+          style={partnerCount < 2
+            ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' }
+            : { background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }
+          }
+          aria-label="Einladen"
+        >
+          <Link2 size={13} aria-hidden="true" />
+          {partnerCount < 2 ? 'Einladen' : 'Link'}
+        </motion.button>
       </div>
 
       {/* ── Messages ───────────────────────────────────────────────────────────── */}
