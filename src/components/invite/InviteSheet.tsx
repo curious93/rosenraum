@@ -78,7 +78,12 @@ export function InviteSheet({ inviteCode, inviteUrl, onClose }: InviteSheetProps
           className="w-full flex items-center gap-3 p-4 rounded-2xl text-left transition-opacity hover:opacity-80"
           style={{ background: 'var(--color-bg-elevated)' }}
         >
-          <span className="text-xl">{copied ? '✅' : '🔗'}</span>
+          <span className="flex-shrink-0">
+            {copied
+              ? <Check className="w-5 h-5" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
+              : <Link2 className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} aria-hidden="true" />
+            }
+          </span>
           <div>
             <div className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
               {copied ? 'Link kopiert!' : 'Link kopieren'}
