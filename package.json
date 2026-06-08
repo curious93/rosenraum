@@ -11,7 +11,12 @@
     "tokens": "node scripts/build-tokens.mjs",
     "prebuild": "node scripts/build-tokens.mjs",
     "check:tokens": "node scripts/check-tokens-in-sync.mjs",
-    "check:colors": "node scripts/check-no-hardcoded-colors.mjs"
+    "check:colors": "node scripts/check-no-hardcoded-colors.mjs",
+    "check:token-doc": "node scripts/check-token-doc.mjs",
+    "check:registry": "node scripts/check-registry.mjs",
+    "test:visual": "playwright test tests/visual",
+    "test:visual:update": "playwright test tests/visual --update-snapshots",
+    "test:a11y": "playwright test tests/a11y"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.16",
