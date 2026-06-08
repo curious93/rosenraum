@@ -41,7 +41,7 @@ export default function CreatePage() {
 
   return (
     <main
-      className="relative flex flex-col items-center justify-center min-h-screen px-6 pt-14"
+      className="relative flex flex-col items-center justify-center min-h-dvh px-6 pt-14"
       style={{ background: 'var(--color-bg-page)' }}
     >
       {/* Top nav */}
