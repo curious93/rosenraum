@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getRoomByCode } from '@/lib/firestore'
@@ -16,25 +16,31 @@ export default function JoinPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleJoin() {
-    if (code.length < 6 || loading) return
+  async function handleJoinWithCode(codeValue: string) {
+    if (loading) return
     setLoading(true)
     setError('')
 
-    const roomId = await getRoomByCode(code)
+    const roomId = await getRoomByCode(codeValue)
     if (!roomId) {
       setError('Diesen Code kennen wir leider nicht.')
       setLoading(false)
       return
     }
-    router.push(`/join/${code.toUpperCase()}`)
+    router.push(`/join/${codeValue}`)
   }
 
-  // Auto-submit when code is complete
-  useEffect(() => {
-    if (code.length === 6) handleJoin()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code])
+  function handleJoin() {
+    if (code.length < 6 || loading) return
+    handleJoinWithCode(code)
+  }
+
+  function handleCodeChange(value: string) {
+    const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
+    setError('')
+    setCode(cleaned)
+    if (cleaned.length === 6) handleJoinWithCode(cleaned)
+  }
 
   return (
     <main
