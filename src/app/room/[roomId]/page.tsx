@@ -18,6 +18,7 @@ import { ChatInput } from '@/components/chat/ChatInput'
 import { InviteSheet } from '@/components/invite/InviteSheet'
 import { SendBottomSheet, type SendVersion } from '@/components/chat/SendBottomSheet'
 import { ThemeSheet } from '@/components/ThemeSheet'
+import { LernverlaufSheet } from '@/components/chat/LernverlaufSheet'
 
 /**
  * Haupt-Chat-Seite für einen Rosenraum.
