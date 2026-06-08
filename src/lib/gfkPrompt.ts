@@ -50,7 +50,7 @@ export async function analyzeMessage(text: string): Promise<string | null> {
     })
     if (!res.ok) return null
     const data: AnalyzeResponse = await res.json()
-    return data.rosenbergText ?? null
+    return data.rosenbergText?.trim() || null
   } catch {
     return null
   }
