@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Leaf, Sparkles, Check, Link2, Settings, BookOpen } from 'lucide-react'
+import { Heart, Leaf, Sparkles, Check, Link2, Settings, BookOpen, TrendingUp } from 'lucide-react'
 import {
   getRoom,
   getOrCreateParticipantId,
