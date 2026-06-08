@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Pencil } from 'lucide-react'
 import { analyzeMessage } from '@/lib/gfkPrompt'
+import { InfoTooltip } from '@/components/ui/info-tooltip'
 
 /** Welche Version der Nutzer abschicken möchte */
 export type SendVersion = 'original' | 'rosenberg'
