@@ -27,14 +27,8 @@ body {
 
 /* Dezentes Dot-Grid Hintergrundmuster — theme-aware via CSS-Variable */
 body {
-  background-image: radial-gradient(circle, var(--color-border-subtle) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--color-border-subtle) 1.5px, transparent 1.5px);
   background-size: 22px 22px;
-}
-
-/* Im Dark-Mode etwas subtiler */
-html.dark body {
-  background-image: radial-gradient(circle, var(--color-border) 1px, transparent 1px);
-  opacity-override: 0.4;
 }
 
 /* Scrollbar in der Message-Area verstecken */
