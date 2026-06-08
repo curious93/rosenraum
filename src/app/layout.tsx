@@ -15,7 +15,7 @@ export const metadata: Metadata = {
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" className="h-full">
+    <html lang="de" className="h-full" suppressHydrationWarning>
       <head>
         {/* Restores stored theme + colour mode before first paint to avoid a flash */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('rosenraum_theme');if(t&&t!=='rose')d.setAttribute('data-theme',t);var m=localStorage.getItem('rosenraum_mode')||'system';var dark=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);if(dark)d.classList.add('dark')}catch(e){}})()` }} />
