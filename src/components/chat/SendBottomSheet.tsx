@@ -22,6 +22,9 @@ export interface SendBottomSheetProps {
  * Taucht nach dem Tippen auf, bevor die Nachricht gesendet wird.
  *
  * @param props - Sheet-Props
+ * @param props.originalText - Originalnachricht des Nutzers
+ * @param props.onSend - Callback wenn der Nutzer eine Version wählt
+ * @param props.onClose - Callback zum Schließen ohne Senden
  * @returns SendBottomSheet JSX
  */
 export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomSheetProps) {
