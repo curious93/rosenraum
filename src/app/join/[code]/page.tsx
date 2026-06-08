@@ -116,8 +116,9 @@ export default function JoinByCodePage() {
         >
           ← Zurück
         </Link>
-        <span className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-          🌹 Rosenraum
+        <span className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--color-text-muted)' }}>
+          <Heart className="w-3.5 h-3.5" style={{ color: 'var(--color-primary)' }} fill="var(--color-primary)" aria-hidden="true" />
+          Rosenraum
         </span>
         <div style={{ width: '4rem' }} />
       </div>
