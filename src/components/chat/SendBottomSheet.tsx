@@ -201,9 +201,12 @@ function VersionCard({ label, text, selected, onSelect, loading, variant }: Vers
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-sm leading-relaxed"
-            style={{ color: 'var(--color-text-primary)' }}
+            style={{
+              color: text ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+              fontStyle: text ? 'normal' : 'italic',
+            }}
           >
-            {text}
+            {text || 'Diese Nachricht klingt bereits offen.'}
           </motion.p>
         )}
       </AnimatePresence>
