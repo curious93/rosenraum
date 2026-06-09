@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json() as { content?: Array<{ text?: string }> }
-    const raw = data.content?.[0]?.text?.trim() ?? ''
+    const raw = (data.content?.[0]?.text ?? '').trim().replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
 
     const result: GfkScoreResult = JSON.parse(raw)
     return NextResponse.json(result)
