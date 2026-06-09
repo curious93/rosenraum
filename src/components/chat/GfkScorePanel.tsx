@@ -1,12 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import type { GfkScoreResult, DimensionResult } from '@/lib/gfkScore'
+import type { GfkScoreResult } from '@/lib/gfkScore'
 
 /** Props für das GFK-Score-Panel */
 export interface GfkScorePanelProps {
-  /** Der zu bewertende Text */
-  text: string
   /** Scoring-Ergebnis, null solange nicht geladen */
   score: GfkScoreResult | null
   /** Ob die Analyse noch läuft */
@@ -16,82 +14,14 @@ export interface GfkScorePanelProps {
 }
 
 const DIMENSIONS = [
-  { key: 'beobachtung' as const, label: 'Beobachtung', color: 'var(--color-gfk-beobachtung)', bg: 'var(--color-gfk-beobachtung-bg)' },
-  { key: 'gefuehl'     as const, label: 'Gefühl',      color: 'var(--color-gfk-gefuehl)',     bg: 'var(--color-gfk-gefuehl-bg)' },
-  { key: 'beduerfnis'  as const, label: 'Bedürfnis',   color: 'var(--color-gfk-beduerfnis)',  bg: 'var(--color-gfk-beduerfnis-bg)' },
-  { key: 'bitte'       as const, label: 'Bitte',       color: 'var(--color-gfk-bitte)',       bg: 'var(--color-gfk-bitte-bg)' },
+  { key: 'beobachtung' as const, label: 'Beobachtung', color: 'var(--color-gfk-beobachtung)' },
+  { key: 'gefuehl'     as const, label: 'Gefühl',      color: 'var(--color-gfk-gefuehl)'     },
+  { key: 'beduerfnis'  as const, label: 'Bedürfnis',   color: 'var(--color-gfk-beduerfnis)'  },
+  { key: 'bitte'       as const, label: 'Bitte',       color: 'var(--color-gfk-bitte)'       },
 ] as const
 
 /**
- * Teilt den Text in annotierte Segmente auf und rendert farbige Highlights
- * für jede GFK-Dimension.
- *
- * @param text - Vollständiger Nachrichtentext
- * @param dims - Dimension-Ergebnisse mit Spans
- * @returns Array aus React-Nodes (Spans + Marks)
- */
-function renderHighlightedText(
-  text: string,
-  dims: GfkScoreResult['dimensions']
-): React.ReactNode[] {
-  type Segment = { start: number; end: number; dimKey: string; color: string; bg: string }
-  const segments: Segment[] = []
-
-  for (const dim of DIMENSIONS) {
-    const result: DimensionResult = dims[dim.key]
-    for (const [s, e] of result.spans) {
-      if (s >= 0 && e > s && e <= text.length) {
-        segments.push({ start: s, end: e, dimKey: dim.key, color: dim.color, bg: dim.bg })
-      }
-    }
-  }
-
-  if (segments.length === 0) return [text]
-
-  segments.sort((a, b) => a.start - b.start || a.end - b.end)
-
-  const merged: Segment[] = []
-  for (const seg of segments) {
-    if (merged.length === 0 || seg.start >= merged[merged.length - 1].end) {
-      merged.push({ ...seg })
-    } else {
-      const prev = merged[merged.length - 1]
-      const prevDimScore = dims[prev.dimKey as keyof typeof dims].score
-      const segScore = dims[seg.dimKey as keyof typeof dims].score
-      if (segScore < prevDimScore) {
-        merged[merged.length - 1] = { ...seg, start: prev.start, end: Math.max(prev.end, seg.end) }
-      } else {
-        merged[merged.length - 1].end = Math.max(prev.end, seg.end)
-      }
-    }
-  }
-
-  const nodes: React.ReactNode[] = []
-  let cursor = 0
-  for (const seg of merged) {
-    if (seg.start > cursor) nodes.push(text.slice(cursor, seg.start))
-    nodes.push(
-      <mark
-        key={`${seg.dimKey}-${seg.start}`}
-        style={{
-          background: `${seg.color}28`,
-          borderRadius: '3px',
-          paddingInline: '1px',
-          color: 'inherit',
-          boxShadow: `inset 0 -2px 0 ${seg.color}`,
-        }}
-      >
-        {text.slice(seg.start, seg.end)}
-      </mark>
-    )
-    cursor = seg.end
-  }
-  if (cursor < text.length) nodes.push(text.slice(cursor))
-  return nodes
-}
-
-/**
- * GFK-Score-Panel: zeigt farbige Text-Highlights, animierte Balken pro Dimension,
+ * GFK-Score-Panel: zeigt animierte Balken pro Dimension,
  * Delta-Badges bei Score-Änderungen und einen motivierenden Abschlusstext.
  *
  * @param props - Panel-Props
@@ -101,7 +31,7 @@ function renderHighlightedText(
  * @param props.prevScore - Vorheriges Scoring für Delta-Animation
  * @returns GfkScorePanel JSX
  */
-export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanelProps) {
+export function GfkScorePanel({ score, loading, prevScore }: GfkScorePanelProps) {
   const alreadyOpen = !loading && score !== null &&
     DIMENSIONS.every(d => (score.dimensions[d.key]?.score ?? 0) >= 7)
 
@@ -128,13 +58,6 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
       <p className="text-xs font-medium mb-2.5 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
         Dein GFK-Lernfeedback
       </p>
-
-      {/* Highlighted text — only when loaded, has score, and NOT already fully open */}
-      {!loading && hasScore && !alreadyOpen && (
-        <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--color-text-primary)' }}>
-          {renderHighlightedText(text, score!.dimensions)}
-        </p>
-      )}
 
       {alreadyOpen ? (
         <p className="text-sm font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
