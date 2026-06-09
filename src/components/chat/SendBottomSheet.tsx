@@ -157,12 +157,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
         />
 
         {/* GFK Live-Score Panel */}
-        <GfkScorePanel
-          text={editedText}
-          score={score}
-          loading={scoreLoading}
-          prevScore={prevScore}
-        />
+        <GfkScorePanel score={score} loading={scoreLoading} prevScore={prevScore} />
 
         <p
           className="text-xs font-medium mb-3 uppercase tracking-wide"
@@ -179,6 +174,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
             onSend={handleSend}
             isGreen={isGreenScore}
             textareaRef={textareaRef}
+            score={score}
           />
 
           {/* Rosenraum-Beispiel — nur auf Anfrage */}
@@ -255,16 +251,63 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
 
 // ── Internal ──────────────────────────────────────────────────────────────────
 
+const HIGHLIGHT_DIMS = [
+  { key: 'beobachtung' as const, color: '#3B82F6' },
+  { key: 'gefuehl' as const, color: '#F97316' },
+  { key: 'beduerfnis' as const, color: '#22C55E' },
+  { key: 'bitte' as const, color: '#A855F7' },
+] as const
+
+function buildHighlightNodes(text: string, dims: GfkScoreResult['dimensions']): React.ReactNode[] {
+  type Seg = { start: number; end: number; color: string }
+  const segs: Seg[] = []
+  for (const dim of HIGHLIGHT_DIMS) {
+    for (const [s, e] of dims[dim.key].spans) {
+      if (s >= 0 && e > s && e <= text.length) segs.push({ start: s, end: e, color: dim.color })
+    }
+  }
+  if (segs.length === 0) return [text]
+  segs.sort((a, b) => a.start - b.start)
+  const merged: Seg[] = []
+  for (const seg of segs) {
+    if (!merged.length || seg.start >= merged[merged.length - 1].end) merged.push({ ...seg })
+    else merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, seg.end)
+  }
+  const nodes: React.ReactNode[] = []
+  let cur = 0
+  for (const seg of merged) {
+    if (seg.start > cur) nodes.push(text.slice(cur, seg.start))
+    nodes.push(
+      <mark
+        key={seg.start}
+        style={{
+          background: `${seg.color}38`,
+          borderRadius: '3px',
+          color: 'transparent',
+          boxShadow: `inset 0 -2px 0 ${seg.color}`,
+        }}
+      >
+        {text.slice(seg.start, seg.end)}
+      </mark>
+    )
+    cur = seg.end
+  }
+  if (cur < text.length) nodes.push(text.slice(cur))
+  return nodes
+}
+
 interface VersionCardProps {
   text: string
   onTextChange: (v: string) => void
   onSend: () => void
   isGreen?: boolean
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
+  score: GfkScoreResult | null
 }
 
 /**
  * Editierbare Karte für die eigene Nachricht. Textarea sofort aktiv, Enter sendet.
+ * Highlights werden via Overlay-Technik direkt im Eingabefeld angezeigt.
  *
  * @param props - Karten-Props
  * @param props.text - Aktueller Nachrichtentext
@@ -272,10 +315,31 @@ interface VersionCardProps {
  * @param props.onSend - Callback zum Senden (Enter-Taste)
  * @param props.isGreen - Grüner Rand wenn Score >= 7
  * @param props.textareaRef - Ref für Fokus-Management
+ * @param props.score - GFK-Score für Highlight-Overlay
  * @returns VersionCard JSX
  */
-function VersionCard({ text, onTextChange, onSend, isGreen, textareaRef }: VersionCardProps) {
+function VersionCard({
+  text,
+  onTextChange,
+  onSend,
+  isGreen,
+  textareaRef,
+  score,
+}: VersionCardProps) {
   const borderColor = isGreen ? 'var(--color-gfk-beduerfnis)' : 'var(--color-primary)'
+  const hasHighlights = score !== null
+  const textStyle: React.CSSProperties = {
+    fontFamily: 'inherit',
+    fontSize: '16px',
+    lineHeight: '1.5',
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    minHeight: '4.5rem',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+  }
 
   return (
     <div
@@ -296,22 +360,54 @@ function VersionCard({ text, onTextChange, onSend, isGreen, textareaRef }: Versi
           </span>
         )}
       </div>
-      <textarea
-        ref={textareaRef}
-        value={text}
-        onChange={(e) => onTextChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            onSend()
-          }
-        }}
-        rows={3}
-        className="w-full text-sm leading-relaxed bg-transparent outline-none resize-none"
-        style={{ color: 'var(--color-text-primary)', fontSize: '16px' }}
-        placeholder="Schreib deine Nachricht..."
-        aria-label="Nachricht bearbeiten"
-      />
+
+      <div style={{ position: 'relative' }}>
+        {/* Highlight overlay — behind textarea */}
+        {hasHighlights && (
+          <div
+            aria-hidden
+            style={{
+              ...textStyle,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              pointerEvents: 'none',
+              userSelect: 'none',
+              color: 'transparent',
+            }}
+          >
+            {buildHighlightNodes(text, score!.dimensions)}
+          </div>
+        )}
+
+        {/* Editable textarea — on top */}
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => onTextChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              onSend()
+            }
+          }}
+          rows={3}
+          style={{
+            ...textStyle,
+            position: 'relative',
+            display: 'block',
+            background: 'transparent',
+            color: 'var(--color-text-primary)',
+            caretColor: 'var(--color-text-primary)',
+            outline: 'none',
+            resize: 'none',
+            border: 'none',
+          }}
+          placeholder="Schreib deine Nachricht..."
+          aria-label="Nachricht bearbeiten"
+        />
+      </div>
     </div>
   )
 }
