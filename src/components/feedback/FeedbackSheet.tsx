@@ -46,13 +46,12 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
       body: JSON.stringify({ text: text || undefined, rating: rating ?? undefined, email: email || undefined, source, roomId }),
     })
 
-    confetti({
-      particleCount: 90,
-      spread: 70,
-      origin: { y: 0.7 },
-      colors: ['#C97B84', '#D4E8D4', '#EDE0D4', '#E8A8B0', '#9E8E88'],
-      scalar: 0.9,
-    })
+    const style = getComputedStyle(document.documentElement)
+    const colors = [
+      '--color-primary', '--color-bubble-gfk', '--color-bubble-own',
+      '--color-primary-light', '--color-text-secondary',
+    ].map(v => style.getPropertyValue(v).trim()).filter(Boolean)
+    confetti({ particleCount: 90, spread: 70, origin: { y: 0.7 }, colors, scalar: 0.9 })
 
     setLoading(false)
     setDone(true)
