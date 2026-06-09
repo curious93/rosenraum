@@ -29,17 +29,18 @@ jobs:
           BASE="https://firebaseapphosting.googleapis.com/v1beta/projects/$PROJECT/locations/$LOCATION/backends/$BACKEND"
 
           echo "Creating build $BUILD_ID for commit $COMMIT_SHA..."
-          BUILD_OP=$(curl -sf -X POST \
+          BUILD_OP=$(curl -s -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"source\":{\"codebase\":{\"commit\":\"$COMMIT_SHA\"}}}" \
             "$BASE/builds?buildId=$BUILD_ID")
-          echo "$BUILD_OP" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Operation:', d.get('name','?'))"
+          echo "Build API response: $BUILD_OP"
+          echo "$BUILD_OP" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Operation:', d.get('name','?'))" || { echo "Build creation failed"; exit 1; }
 
           # Wait for build to complete (max 10 min)
           echo "Waiting for build..."
           for i in $(seq 1 60); do
-            BUILD=$(curl -sf -H "Authorization: Bearer $TOKEN" "$BASE/builds/$BUILD_ID")
+            BUILD=$(curl -s -H "Authorization: Bearer $TOKEN" "$BASE/builds/$BUILD_ID")
             STATE=$(echo "$BUILD" | python3 -c "import sys,json; print(json.load(sys.stdin).get('state','UNKNOWN'))")
             echo "  Attempt $i/60: $STATE"
             if [ "$STATE" = "READY" ]; then
@@ -60,7 +61,7 @@ jobs:
           # Create rollout
           echo "Creating rollout..."
           ROLLOUT_ID="rollout-$(date +%Y%m%d-%H%M%S)"
-          ROLLOUT=$(curl -sf -X POST \
+          ROLLOUT=$(curl -s -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"build\":\"projects/$PROJECT/locations/$LOCATION/backends/$BACKEND/builds/$BUILD_ID\"}" \
