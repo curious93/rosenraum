@@ -11,6 +11,8 @@ export interface GfkScorePanelProps {
   score: GfkScoreResult | null
   /** Ob die Analyse noch läuft */
   loading: boolean
+  /** Vorheriges Scoring für Delta-Animation */
+  prevScore?: GfkScoreResult | null
 }
 
 const DIMENSIONS = [
@@ -46,23 +48,17 @@ function renderHighlightedText(
 
   if (segments.length === 0) return [text]
 
-  // Sort by start, resolve overlaps by keeping the one with lowest score (most improvement potential)
   segments.sort((a, b) => a.start - b.start || a.end - b.end)
 
-  const nodes: React.ReactNode[] = []
-  let cursor = 0
-
-  // Merge overlapping spans, prefer the dimension with lowest score
   const merged: Segment[] = []
   for (const seg of segments) {
     if (merged.length === 0 || seg.start >= merged[merged.length - 1].end) {
       merged.push({ ...seg })
     } else {
       const prev = merged[merged.length - 1]
-      const prevScore = dims[prev.dimKey as keyof typeof dims].score
+      const prevDimScore = dims[prev.dimKey as keyof typeof dims].score
       const segScore = dims[seg.dimKey as keyof typeof dims].score
-      if (segScore < prevScore) {
-        // Prefer the lower-score dimension
+      if (segScore < prevDimScore) {
         merged[merged.length - 1] = { ...seg, start: prev.start, end: Math.max(prev.end, seg.end) }
       } else {
         merged[merged.length - 1].end = Math.max(prev.end, seg.end)
@@ -70,10 +66,10 @@ function renderHighlightedText(
     }
   }
 
+  const nodes: React.ReactNode[] = []
+  let cursor = 0
   for (const seg of merged) {
-    if (seg.start > cursor) {
-      nodes.push(text.slice(cursor, seg.start))
-    }
+    if (seg.start > cursor) nodes.push(text.slice(cursor, seg.start))
     nodes.push(
       <mark
         key={`${seg.dimKey}-${seg.start}`}
@@ -90,25 +86,54 @@ function renderHighlightedText(
     )
     cursor = seg.end
   }
-
-  if (cursor < text.length) {
-    nodes.push(text.slice(cursor))
-  }
-
+  if (cursor < text.length) nodes.push(text.slice(cursor))
   return nodes
 }
 
 /**
- * GFK-Score-Panel: zeigt farbige Text-Highlights und animierte Balken
- * pro GFK-Dimension. Erscheint im SendBottomSheet über den VersionCards.
+ * GFK-Score-Panel: zeigt farbige Text-Highlights, animierte Balken pro Dimension,
+ * Delta-Badges bei Score-Änderungen und einen motivierenden Abschlusstext.
  *
  * @param props - Panel-Props
  * @param props.text - Der zu bewertende Nachrichtentext
  * @param props.score - Scoring-Ergebnis, null solange nicht geladen
  * @param props.loading - Ob die Analyse noch läuft
+ * @param props.prevScore - Vorheriges Scoring für Delta-Animation
  * @returns GfkScorePanel JSX
  */
-export function GfkScorePanel({ text, score, loading }: GfkScorePanelProps) {
+export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanelProps) {
+  const alreadyOpen = !loading && score !== null &&
+    DIMENSIONS.every(d => (score.dimensions[d.key]?.score ?? 0) >= 7)
+
+  const total = score?.total ?? 0
+
+  // Dimensions mit Score >= 3 oder Spans → prominente Anzeige
+  const presentDims = loading
+    ? [...DIMENSIONS]
+    : DIMENSIONS.filter(d => {
+        const dim = score?.dimensions[d.key]
+        return dim && (dim.score >= 3 || dim.spans.length > 0)
+      })
+
+  // Dimensionen ohne Relevanz → kollabiert
+  const collapsedDims = loading
+    ? []
+    : DIMENSIONS.filter(d => {
+        const dim = score?.dimensions[d.key]
+        return !dim || (dim.score < 3 && dim.spans.length === 0)
+      })
+
+  const motivationalText = loading ? null
+    : alreadyOpen ? null
+    : total >= 7 ? 'Gut formuliert ✓'
+    : total >= 4 ? 'Fast da — noch ein Schritt'
+    : 'Kleine Anpassungen können viel bewirken'
+
+  const motivationalColor = total >= 7
+    ? 'var(--color-gfk-beduerfnis)'
+    : total >= 4 ? 'var(--color-text-secondary)'
+    : 'var(--color-text-muted)'
+
   return (
     <div
       className="rounded-2xl p-3.5 mb-3"
@@ -118,64 +143,116 @@ export function GfkScorePanel({ text, score, loading }: GfkScorePanelProps) {
         Dein GFK-Lernfeedback
       </p>
 
-      {/* Highlighted text */}
-      <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--color-text-primary)' }}>
-        {!loading && score
-          ? renderHighlightedText(text, score.dimensions)
-          : text}
-      </p>
+      {/* Highlighted text — nur nach dem Laden */}
+      {!loading && score && (
+        <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--color-text-primary)' }}>
+          {renderHighlightedText(text, score.dimensions)}
+        </p>
+      )}
 
-      {/* Dimension bars */}
-      <div className="space-y-2">
-        {DIMENSIONS.map((dim) => {
-          const dimScore = score?.dimensions[dim.key]?.score ?? 0
+      {alreadyOpen ? (
+        <p className="text-sm font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
+          ✓ Diese Nachricht klingt bereits offen.
+        </p>
+      ) : (
+        <>
+          <div className="space-y-2">
+            {(loading ? [...DIMENSIONS] : presentDims).map((dim, idx) => {
+              const dimScore = score?.dimensions[dim.key]?.score ?? 0
+              const prevDimScore = prevScore?.dimensions[dim.key]?.score ?? null
+              const delta = prevDimScore !== null && !loading ? dimScore - prevDimScore : 0
 
-          return (
-            <div key={dim.key} className="flex items-center gap-2">
-              <span
-                className="text-xs w-20 flex-shrink-0"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                {dim.label}
-              </span>
-              <div
-                className="flex-1 h-2 rounded-full overflow-hidden"
-                style={{ background: 'var(--color-border)' }}
-              >
-                {loading ? (
+              return (
+                <div key={dim.key} className="flex items-center gap-2">
+                  <span className="text-xs w-20 flex-shrink-0" style={{ color: 'var(--color-text-secondary)' }}>
+                    {dim.label}
+                  </span>
+
                   <div
-                    className="h-full rounded-full relative overflow-hidden"
-                    style={{ width: '60%', background: 'var(--color-skeleton)' }}
+                    className="flex-1 h-2 rounded-full overflow-hidden relative"
+                    style={{ background: 'var(--color-border)' }}
                   >
-                    <motion.div
-                      className="absolute inset-0 rounded-full"
-                      style={{
-                        background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)',
-                      }}
-                      animate={{ x: ['-100%', '200%'] }}
-                      transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-                    />
+                    {loading ? (
+                      <div
+                        className="h-full rounded-full relative overflow-hidden"
+                        style={{ width: '60%', background: 'var(--color-skeleton)' }}
+                      >
+                        <motion.div
+                          className="absolute inset-0 rounded-full"
+                          style={{ background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)' }}
+                          animate={{ x: ['-100%', '200%'] }}
+                          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        {/* Ghost-Linie: zeigt wo der Score vorher war */}
+                        {prevDimScore !== null && prevDimScore !== dimScore && (
+                          <motion.div
+                            key={`ghost-${dim.key}-${prevDimScore}-${dimScore}`}
+                            className="absolute top-0 bottom-0 rounded-full z-10"
+                            style={{
+                              left: `${prevDimScore * 10}%`,
+                              width: '2px',
+                              background: dim.color,
+                            }}
+                            initial={{ opacity: 0.5 }}
+                            animate={{ opacity: 0 }}
+                            transition={{ duration: 1.5, delay: 0.4 }}
+                          />
+                        )}
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ background: dim.color }}
+                          initial={{ width: '0%' }}
+                          animate={{ width: `${dimScore * 10}%` }}
+                          transition={{ type: 'spring', stiffness: 180, damping: 22, delay: 0.05 * idx }}
+                        />
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: dim.color }}
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${dimScore * 10}%` }}
-                    transition={{ type: 'spring', stiffness: 120, damping: 18, delay: 0.05 * DIMENSIONS.findIndex(d => d.key === dim.key) }}
-                  />
-                )}
-              </div>
-              <span
-                className="text-xs w-4 text-right flex-shrink-0 tabular-nums"
-                style={{ color: loading ? 'var(--color-text-muted)' : dim.color }}
-              >
-                {loading ? '–' : dimScore}
-              </span>
-            </div>
-          )
-        })}
-      </div>
+
+                  <div className="flex items-center justify-end gap-1" style={{ minWidth: '2.5rem' }}>
+                    <span
+                      className="text-xs tabular-nums"
+                      style={{ color: loading ? 'var(--color-text-muted)' : dim.color }}
+                    >
+                      {loading ? '–' : dimScore}
+                    </span>
+                    {/* Delta-Badge: erscheint kurz und faded aus */}
+                    {!loading && delta !== 0 && (
+                      <motion.span
+                        key={`delta-${dim.key}-${prevDimScore}-${dimScore}`}
+                        className="text-xs tabular-nums font-semibold"
+                        style={{ color: delta > 0 ? 'var(--color-gfk-beduerfnis)' : 'var(--color-gfk-gefuehl)' }}
+                        initial={{ opacity: 1, y: delta > 0 ? 4 : -4 }}
+                        animate={{ opacity: 0, y: 0 }}
+                        transition={{ duration: 1.5, delay: 0.3 }}
+                      >
+                        {delta > 0 ? `+${delta}` : `${delta}`}
+                      </motion.span>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Kollabierte Dimensionen */}
+          {!loading && collapsedDims.length > 0 && (
+            <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
+              Nicht adressiert: {collapsedDims.map(d => d.label).join(' · ')}
+            </p>
+          )}
+
+          {/* Motivationstext */}
+          {motivationalText && (
+            <p className="text-xs mt-2 font-medium" style={{ color: motivationalColor }}>
+              {motivationalText}
+            </p>
+          )}
+        </>
+      )}
     </div>
   )
 }

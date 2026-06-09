@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Pencil } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { analyzeMessage } from '@/lib/gfkPrompt'
 import { scoreMessage } from '@/lib/gfkScore'
 import type { GfkScoreResult } from '@/lib/gfkScore'
@@ -23,9 +23,8 @@ export interface SendBottomSheetProps {
 }
 
 /**
- * Bottom Sheet das die Originalnachricht und eine KI-GFK-Version gegenüberstellt.
- * Taucht nach dem Tippen auf, bevor die Nachricht gesendet wird.
- * Der User kann seinen Text inline editieren und die GFK-Prüfung neu starten.
+ * Bottom Sheet das die Originalnachricht nach GFK bewertet und optional ein
+ * Rosenraum-Beispiel auf Anfrage zeigt. Textarea sofort editierbar, Enter sendet.
  *
  * @param props - Sheet-Props
  * @param props.originalText - Originalnachricht des Nutzers
@@ -36,40 +35,22 @@ export interface SendBottomSheetProps {
 export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomSheetProps) {
   const [editedText, setEditedText] = useState(originalText)
   const [rosenbergText, setRosenbergText] = useState<string | null>(null)
-  const [analyzing, setAnalyzing] = useState(true)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [showExample, setShowExample] = useState(false)
   const [selected, setSelected] = useState<SendVersion>('original')
-  const [editMode, setEditMode] = useState(false)
   const [sendFlash, setSendFlash] = useState(false)
   const [score, setScore] = useState<GfkScoreResult | null>(null)
+  const [prevScore, setPrevScore] = useState<GfkScoreResult | null>(null)
   const [scoreLoading, setScoreLoading] = useState(true)
+  const scoreRef = useRef<GfkScoreResult | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  useEffect(() => {
-    let cancelled = false
-    analyzeMessage(originalText).then(result => {
-      if (cancelled) return
-      setRosenbergText(result)
-      // Don't auto-select rosenberg — user should choose deliberately
-      setAnalyzing(false)
-    })
-    return () => { cancelled = true }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  function runAnalysis(text: string) {
-    setRosenbergText(null)
-    setAnalyzing(true)
-    analyzeMessage(text).then(result => {
-      setRosenbergText(result)
-      setAnalyzing(false)
-    })
-  }
-
-  // Score initial text on mount
+  // Initial score on mount
   useEffect(() => {
     let cancelled = false
     scoreMessage(originalText).then(result => {
       if (cancelled) return
+      scoreRef.current = result
       setScore(result)
       setScoreLoading(false)
     })
@@ -77,30 +58,43 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Focus textarea on mount
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus()
+        const len = textareaRef.current.value.length
+        textareaRef.current.setSelectionRange(len, len)
+      }
+    }, 300)
+    return () => clearTimeout(t)
+  }, [])
+
   // Re-score when user edits text (debounced 800ms)
   useEffect(() => {
-    if (!editMode) return
-    // Use setTimeout to avoid synchronous setState in effect body
+    if (editedText === originalText) return
     const loadTimer = setTimeout(() => setScoreLoading(true), 0)
     const scoreTimer = setTimeout(() => {
       scoreMessage(editedText).then(result => {
+        setPrevScore(scoreRef.current)
+        scoreRef.current = result
         setScore(result)
         setScoreLoading(false)
       })
     }, 800)
     return () => { clearTimeout(loadTimer); clearTimeout(scoreTimer) }
-  }, [editedText, editMode])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editedText])
 
-  useEffect(() => {
-    if (editMode && textareaRef.current) {
-      textareaRef.current.focus()
-      textareaRef.current.setSelectionRange(editedText.length, editedText.length)
+  function handleInspire() {
+    setShowExample(true)
+    if (rosenbergText === null || editedText !== originalText) {
+      setAnalyzing(true)
+      analyzeMessage(editedText).then(result => {
+        setRosenbergText(result)
+        setAnalyzing(false)
+      })
     }
-  }, [editMode, editedText.length])
-
-  function handleRecheck() {
-    setEditMode(false)
-    runAnalysis(editedText)
   }
 
   function handleSend() {
@@ -114,7 +108,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     }, 320)
   }
 
-  const canRecheck = editMode && editedText.trim().length > 0 && editedText !== originalText
+  const isGreenScore = !scoreLoading && score !== null && score.total >= 7
 
   return (
     <>
@@ -149,34 +143,48 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
         />
 
         {/* GFK Live-Score Panel */}
-        <GfkScorePanel text={editedText} score={score} loading={scoreLoading} />
+        <GfkScorePanel
+          text={editedText}
+          score={score}
+          loading={scoreLoading}
+          prevScore={prevScore}
+        />
 
         <p className="text-xs font-medium mb-3 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
-          Welche Version senden?
+          Deine Nachricht
         </p>
 
         <div className="space-y-2.5 mb-5">
-          {/* Eigene Version — editierbar */}
+          {/* Eigene Version — sofort editierbar */}
           <VersionCard
-            label="Deine Version"
             text={editedText}
-            selected={selected === 'original'}
-            onSelect={() => setSelected('original')}
-            variant="original"
-            editMode={editMode}
-            onEditToggle={() => setEditMode(v => !v)}
             onTextChange={setEditedText}
-            onRecheck={canRecheck ? handleRecheck : undefined}
+            onSend={handleSend}
+            isGreen={isGreenScore}
             textareaRef={textareaRef}
           />
 
-          {/* GFK-Version */}
-          <GfkVersionCard
-            text={rosenbergText}
-            selected={selected === 'rosenberg'}
-            onSelect={() => rosenbergText !== null && rosenbergText !== '' && setSelected('rosenberg')}
-            loading={analyzing}
-          />
+          {/* Rosenraum-Beispiel — nur auf Anfrage */}
+          {!showExample ? (
+            <button
+              onClick={handleInspire}
+              className="w-full text-left px-3.5 py-2.5 rounded-2xl text-sm transition-opacity hover:opacity-70"
+              style={{
+                background: 'var(--color-bubble-gfk)',
+                color: 'var(--color-primary-dark)',
+                border: '2px solid var(--color-border)',
+              }}
+            >
+              Inspiriere mich →
+            </button>
+          ) : (
+            <GfkVersionCard
+              text={rosenbergText}
+              selected={selected === 'rosenberg'}
+              onSelect={() => rosenbergText !== null && rosenbergText !== '' && setSelected('rosenberg')}
+              loading={analyzing}
+            />
+          )}
         </div>
 
         <div className="flex gap-2.5">
@@ -189,9 +197,12 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           </button>
           <motion.button
             onClick={handleSend}
-            disabled={(analyzing && selected === 'rosenberg') || sendFlash}
-            className="flex-[2] py-3 rounded-2xl text-sm font-medium text-primary-foreground transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
-            style={{ background: 'var(--color-primary)' }}
+            disabled={sendFlash}
+            className="flex-[2] py-3 rounded-2xl text-sm font-medium text-primary-foreground transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+            style={{
+              background: isGreenScore ? 'var(--color-gfk-beduerfnis)' : 'var(--color-primary)',
+              transition: 'background 400ms',
+            }}
             whileTap={{ scale: 0.97 }}
           >
             <AnimatePresence mode="wait">
@@ -206,12 +217,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                   <Check className="w-4 h-4" aria-hidden="true" />
                 </motion.span>
               ) : (
-                <motion.span
-                  key="label"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
+                <motion.span key="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   Senden →
                 </motion.span>
               )}
@@ -226,102 +232,62 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
 // ── Internal ──────────────────────────────────────────────────────────────────
 
 interface VersionCardProps {
-  label: string
   text: string
-  selected: boolean
-  onSelect: () => void
-  variant: 'original'
-  editMode: boolean
-  onEditToggle: () => void
   onTextChange: (v: string) => void
-  onRecheck?: () => void
+  onSend: () => void
+  isGreen?: boolean
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
 }
 
-function VersionCard({
-  label, text, selected, onSelect, editMode,
-  onEditToggle, onTextChange, onRecheck, textareaRef,
-}: VersionCardProps) {
-  const borderColor = selected ? 'var(--color-primary)' : 'var(--color-border)'
+/**
+ * Editierbare Karte für die eigene Nachricht. Textarea sofort aktiv, Enter sendet.
+ *
+ * @param props - Karten-Props
+ * @param props.text - Aktueller Nachrichtentext
+ * @param props.onTextChange - Callback bei Textänderung
+ * @param props.onSend - Callback zum Senden (Enter-Taste)
+ * @param props.isGreen - Grüner Rand wenn Score >= 7
+ * @param props.textareaRef - Ref für Fokus-Management
+ * @returns VersionCard JSX
+ */
+function VersionCard({ text, onTextChange, onSend, isGreen, textareaRef }: VersionCardProps) {
+  const borderColor = isGreen ? 'var(--color-gfk-beduerfnis)' : 'var(--color-primary)'
 
   return (
     <div
-      className="w-full text-left rounded-2xl p-3.5 cursor-pointer"
+      className="w-full rounded-2xl p-3.5"
       style={{
         background: 'var(--color-bubble-own)',
         border: `2px solid ${borderColor}`,
-        transition: 'border-color 200ms',
+        transition: 'border-color 400ms',
       }}
-      onClick={() => { if (!editMode) onSelect() }}
     >
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-          {label}
+          Deine Version
         </span>
-        <div className="flex items-center gap-2">
-          {selected && !editMode && (
-            <span className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>
-              ✓ ausgewählt
-            </span>
-          )}
-          <button
-            onClick={e => { e.stopPropagation(); onEditToggle() }}
-            className="flex items-center gap-1 text-xs transition-opacity hover:opacity-70 px-1.5 py-0.5 rounded-lg"
-            style={{
-              color: editMode ? 'var(--color-primary)' : 'var(--color-text-muted)',
-              background: editMode ? 'var(--color-primary-light)' : 'transparent',
-            }}
-            aria-label="Nachricht bearbeiten"
-          >
-            <Pencil className="w-3 h-3" aria-hidden="true" />
-            <span>{editMode ? 'Fertig' : 'Anpassen'}</span>
-          </button>
-        </div>
-      </div>
-
-      <AnimatePresence mode="wait">
-        {editMode ? (
-          <motion.div
-            key="edit"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="space-y-2"
-          >
-            <textarea
-              ref={textareaRef}
-              value={text}
-              onChange={e => onTextChange(e.target.value)}
-              rows={3}
-              className="w-full text-sm leading-relaxed bg-transparent outline-none resize-none"
-              style={{ color: 'var(--color-text-primary)' }}
-              onClick={e => e.stopPropagation()}
-            />
-            {onRecheck && (
-              <button
-                onClick={e => { e.stopPropagation(); onRecheck() }}
-                className="text-xs font-medium px-3 py-1.5 rounded-xl transition-opacity hover:opacity-80"
-                style={{
-                  background: 'var(--color-primary)',
-                  color: 'var(--color-on-primary)',
-                }}
-              >
-                GFK nochmal prüfen →
-              </button>
-            )}
-          </motion.div>
-        ) : (
-          <motion.p
-            key="text"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-sm leading-relaxed"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            {text}
-          </motion.p>
+        {isGreen && (
+          <span className="text-xs font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
+            ✓ Gut formuliert
+          </span>
         )}
-      </AnimatePresence>
+      </div>
+      <textarea
+        ref={textareaRef}
+        value={text}
+        onChange={e => onTextChange(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            onSend()
+          }
+        }}
+        rows={3}
+        className="w-full text-sm leading-relaxed bg-transparent outline-none resize-none"
+        style={{ color: 'var(--color-text-primary)', fontSize: '16px' }}
+        placeholder="Schreib deine Nachricht..."
+        aria-label="Nachricht bearbeiten"
+      />
     </div>
   )
 }
@@ -381,9 +347,7 @@ function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardPro
               >
                 <motion.div
                   className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)',
-                  }}
+                  style={{ background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)' }}
                   animate={{ x: ['-100%', '200%'] }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: 'linear', delay: i * 0.1 }}
                 />

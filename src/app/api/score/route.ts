@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { GfkScoreResult } from '@/lib/gfkScore'
 
-const SCORE_SYSTEM_PROMPT = `Du bist ein GFK-Analyse-Assistent. Analysiere den Text nach den vier Dimensionen der Gewaltfreien Kommunikation. Antworte NUR mit validem JSON, ohne Markdown-Blöcke.
+const SCORE_SYSTEM_PROMPT = `Du bist ein GFK-Analyse-Assistent. Analysiere den deutschen Text nach den vier Dimensionen der Gewaltfreien Kommunikation.
+Antworte NUR mit validem JSON, ohne Markdown-Blöcke oder Erklärungen.
 
-Für jede Dimension:
-- score: 1-10 (10 = vollständig erfüllt, 1 = fehlt komplett)
-- spans: [[start, end], ...] — Zeichenpositionen im Text die diese Dimension ansprechen (leer wenn keine spans)
+GRUNDREGEL: Positive, harmlose oder neutrale Nachrichten ("du bist toll", "ich liebe dich", "wie geht es dir?") bekommen hohe Scores (7-10) auf allen Dimensionen. Niedrige Scores (1-4) nur wenn eine Dimension aktiv problematisch ist.
 
-Dimensionen:
-- beobachtung: Faktische Beobachtung ohne Urteil oder Generalisierung. Abzüge für "immer"/"nie"/Angriffe/Bewertungen.
-- gefuehl: Ich-Botschaften über Gefühle ("ich fühle", "mich macht das", emotionale Wörter aus Ich-Perspektive).
-- beduerfnis: Dahinterliegendes Bedürfnis ("weil ich brauche", "mir ist wichtig", "ich wünsche mir").
-- bitte: Konkrete, positive Bitte ("könntest du", "ich bitte dich", "würdest du bitte").
+Dimensionen (Score 1-10):
+- beobachtung: Hoch wenn Aussagen faktisch/neutral/positiv sind. Niedrig wenn Generalisierungen ("immer"/"nie"), Angriffe oder Schuldzuweisungen.
+- gefuehl: Hoch wenn Ich-Perspektive genutzt wird oder keine negativen Emotionen gegen andere gerichtet sind. Niedrig wenn Emotionen als Vorwurf eingesetzt werden.
+- beduerfnis: Hoch wenn ein Bedürfnis ausgedrückt wird oder die Nachricht keinen versteckten Forderungscharakter hat. Niedrig wenn bei klarem Konflikt kein Bedürfnis genannt wird.
+- bitte: Hoch wenn eine freundliche Bitte vorhanden ist oder keine Bitte nötig ist. Niedrig wenn Forderungen oder Drohungen enthalten sind.
+
+spans: Exakte Zeichenpositionen (0-basiert, Ende exklusiv) der Textstelle die diese Dimension konkret betrifft.
+Nur spans setzen wenn die Dimension an dieser Stelle ein PROBLEM hat (niedrige Score-Relevanz). Bei hohen Scores: spans leer [].
+
+Beispiele:
+"du bist ein Freund" → {"dimensions":{"beobachtung":{"score":9,"spans":[]},"gefuehl":{"score":9,"spans":[]},"beduerfnis":{"score":8,"spans":[]},"bitte":{"score":9,"spans":[]}},"total":9}
+"Du hörst mir nie zu!" → {"dimensions":{"beobachtung":{"score":2,"spans":[[3,19]]},"gefuehl":{"score":3,"spans":[]},"beduerfnis":{"score":2,"spans":[]},"bitte":{"score":2,"spans":[]}},"total":2}
+"Ich bin traurig wenn du früh gehst" → {"dimensions":{"beobachtung":{"score":6,"spans":[[16,34]]},"gefuehl":{"score":8,"spans":[[0,15]]},"beduerfnis":{"score":4,"spans":[]},"bitte":{"score":3,"spans":[]}},"total":5}
 
 Format exakt: {"dimensions":{"beobachtung":{"score":N,"spans":[[s,e],...]},"gefuehl":{"score":N,"spans":[[s,e],...]},"beduerfnis":{"score":N,"spans":[[s,e],...]},"bitte":{"score":N,"spans":[[s,e],...]}},"total":N}`
 
