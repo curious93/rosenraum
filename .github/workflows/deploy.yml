@@ -24,4 +24,4 @@ jobs:
         run: |
           firebase apphosting:rollouts:create rosenraum-1 \
             --project rosenraum-app \
-            --git-branch main
+            --git-commit ${{ github.event.workflow_run.head_sha }}
