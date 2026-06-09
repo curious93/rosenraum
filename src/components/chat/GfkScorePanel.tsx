@@ -1,10 +1,12 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import type { GfkScoreResult } from '@/lib/gfkScore'
+import type { GfkScoreResult, DimensionResult } from '@/lib/gfkScore'
 
 /** Props für das GFK-Score-Panel */
 export interface GfkScorePanelProps {
+  /** Der zu bewertende Text */
+  text: string
   /** Scoring-Ergebnis, null solange nicht geladen */
   score: GfkScoreResult | null
   /** Ob die Analyse noch läuft */
@@ -20,18 +22,43 @@ const DIMENSIONS = [
   { key: 'bitte'       as const, label: 'Bitte',       color: 'var(--color-gfk-bitte)'       },
 ] as const
 
-/**
- * GFK-Score-Panel: zeigt animierte Balken pro Dimension,
- * Delta-Badges bei Score-Änderungen und einen motivierenden Abschlusstext.
- *
- * @param props - Panel-Props
- * @param props.text - Der zu bewertende Nachrichtentext
- * @param props.score - Scoring-Ergebnis, null solange nicht geladen
- * @param props.loading - Ob die Analyse noch läuft
- * @param props.prevScore - Vorheriges Scoring für Delta-Animation
- * @returns GfkScorePanel JSX
- */
-export function GfkScorePanel({ score, loading, prevScore }: GfkScorePanelProps) {
+function renderHighlightedText(text: string, dims: GfkScoreResult['dimensions']): React.ReactNode[] {
+  type Seg = { start: number; end: number; dimKey: string; color: string }
+  const segments: Seg[] = []
+  for (const dim of DIMENSIONS) {
+    const result: DimensionResult = dims[dim.key]
+    for (const [s, e] of result.spans) {
+      if (s >= 0 && e > s && e <= text.length) {
+        segments.push({ start: s, end: e, dimKey: dim.key, color: dim.color })
+      }
+    }
+  }
+  if (segments.length === 0) return [text]
+  segments.sort((a, b) => a.start - b.start || a.end - b.end)
+  const merged: Seg[] = []
+  for (const seg of segments) {
+    if (merged.length === 0 || seg.start >= merged[merged.length - 1].end) {
+      merged.push({ ...seg })
+    } else {
+      merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, seg.end)
+    }
+  }
+  const nodes: React.ReactNode[] = []
+  let cursor = 0
+  for (const seg of merged) {
+    if (seg.start > cursor) nodes.push(text.slice(cursor, seg.start))
+    nodes.push(
+      <mark key={`${seg.dimKey}-${seg.start}`} style={{ background: `${seg.color}30`, borderRadius: '3px', paddingInline: '1px', color: 'inherit', boxShadow: `inset 0 -2px 0 ${seg.color}` }}>
+        {text.slice(seg.start, seg.end)}
+      </mark>
+    )
+    cursor = seg.end
+  }
+  if (cursor < text.length) nodes.push(text.slice(cursor))
+  return nodes
+}
+
+export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanelProps) {
   const alreadyOpen = !loading && score !== null &&
     DIMENSIONS.every(d => (score.dimensions[d.key]?.score ?? 0) >= 7)
 
@@ -147,6 +174,17 @@ export function GfkScorePanel({ score, loading, prevScore }: GfkScorePanelProps)
               {motivationalText}
             </p>
           )}
+
+          {!loading && hasScore && score!.dimensions && (() => {
+            const nodes = renderHighlightedText(text, score!.dimensions)
+            const hasSpans = nodes.length > 1 || (nodes.length === 1 && typeof nodes[0] !== 'string')
+            if (!hasSpans) return null
+            return (
+              <p className="text-sm leading-relaxed mt-3 pt-3" style={{ color: 'var(--color-text-primary)', borderTop: '1px solid var(--color-border-subtle)' }}>
+                {nodes}
+              </p>
+            )
+          })()}
         </>
       )}
     </div>

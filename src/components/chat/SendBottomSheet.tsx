@@ -156,6 +156,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
 
         {/* GFK Live-Score Panel */}
         <GfkScorePanel
+          text={editedText}
           score={score}
           loading={scoreLoading}
           prevScore={prevScore}
