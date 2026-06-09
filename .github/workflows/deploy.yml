@@ -2,51 +2,60 @@ name: Deploy
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: [CI]
     types: [completed]
     branches: [main]
 
 jobs:
   deploy:
-    name: Firebase App Hosting Rollout
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: Firebase App Hosting
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+
     steps:
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
-      - name: Create build + rollout via REST API
+      - name: Deploy via App Hosting REST API
         env:
           COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
+          set -euo pipefail
+
           TOKEN=$(gcloud auth print-access-token)
           PROJECT="rosenraum-app"
           LOCATION="europe-west4"
           BACKEND="rosenraum-1"
-          BUILD_ID="build-$(date +%Y%m%d-%H%M%S)"
           BASE="https://firebaseapphosting.googleapis.com/v1beta/projects/$PROJECT/locations/$LOCATION/backends/$BACKEND"
+          BUILD_ID="build-$(date +%Y%m%d-%H%M%S)"
+          ROLLOUT_ID="rollout-$(date +%Y%m%d-%H%M%S)"
 
-          echo "Creating build $BUILD_ID for commit $COMMIT_SHA..."
-          BUILD_OP=$(curl -s -X POST \
+          echo "▶ Creating build $BUILD_ID for commit $COMMIT_SHA"
+          RESPONSE=$(curl -sf -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"source\":{\"codebase\":{\"commit\":\"$COMMIT_SHA\"}}}" \
             "$BASE/builds?buildId=$BUILD_ID")
-          echo "Build API response: $BUILD_OP"
-          echo "$BUILD_OP" | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(1) if 'error' in d else print('Operation:', d.get('name','?'))" || { echo "Build creation failed (see response above)"; exit 1; }
+          echo "$RESPONSE" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          if 'error' in d:
+            print('Build error:', d['error'])
+            sys.exit(1)
+          print('Operation:', d.get('name', '?'))
+          "
 
-          # Wait for build to complete (max 10 min)
-          echo "Waiting for build..."
+          echo "▶ Waiting for build (max 10 min)…"
+          STATE="BUILDING"
           for i in $(seq 1 60); do
-            BUILD=$(curl -s -H "Authorization: Bearer $TOKEN" "$BASE/builds/$BUILD_ID")
+            BUILD=$(curl -sf -H "Authorization: Bearer $TOKEN" "$BASE/builds/$BUILD_ID")
             STATE=$(echo "$BUILD" | python3 -c "import sys,json; print(json.load(sys.stdin).get('state','UNKNOWN'))")
-            echo "  Attempt $i/60: $STATE"
-            if [ "$STATE" = "READY" ]; then
-              break
-            elif [ "$STATE" = "FAILED" ]; then
-              echo "Build failed!"
+            echo "  [$i/60] $STATE"
+            [ "$STATE" = "READY" ] && break
+            if [ "$STATE" = "FAILED" ]; then
+              echo "Build failed"
               echo "$BUILD" | python3 -m json.tool
               exit 1
             fi
@@ -54,17 +63,23 @@ jobs:
           done
 
           if [ "$STATE" != "READY" ]; then
-            echo "Build timed out with state: $STATE"
+            echo "Build timed out (state: $STATE)"
             exit 1
           fi
 
-          # Create rollout
-          echo "Creating rollout..."
-          ROLLOUT_ID="rollout-$(date +%Y%m%d-%H%M%S)"
-          ROLLOUT=$(curl -s -X POST \
+          echo "▶ Creating rollout $ROLLOUT_ID"
+          ROLLOUT=$(curl -sf -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"build\":\"projects/$PROJECT/locations/$LOCATION/backends/$BACKEND/builds/$BUILD_ID\"}" \
             "$BASE/rollouts?rolloutId=$ROLLOUT_ID")
-          echo "$ROLLOUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Rollout:', d.get('name','?'))"
-          echo "Deploy triggered successfully"
+          echo "$ROLLOUT" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          if 'error' in d:
+            print('Rollout error:', d['error'])
+            sys.exit(1)
+          print('Rollout:', d.get('name', '?'))
+          "
+
+          echo "✓ Deploy triggered — commit $COMMIT_SHA"

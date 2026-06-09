@@ -8,32 +8,24 @@ on:
 
 jobs:
   quality:
-    name: Lint, Types & Design Gates
+    name: Lint · Types · Design Gates
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Design tokens in sync
-        run: npm run check:tokens
+      - run: npm run check:tokens
+      - run: npm run check:colors
+      - run: npm run check:token-doc
+      - run: npm run lint
 
-      - name: No hardcoded colours
-        run: npm run check:colors
-
-      - name: Token change documented
-        run: npm run check:token-doc
-
-      - name: ESLint (inkl. JSDoc-Pflicht)
-        run: npm run lint
-
-      - name: TypeScript type check
-        run: npx tsc --noEmit
+      - run: npx tsc --noEmit
         env:
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: stub
           NEXT_PUBLIC_FIREBASE_API_KEY: stub
@@ -42,15 +34,16 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
           NEXT_PUBLIC_FIREBASE_APP_ID: "1:000000000000:web:stub"
           CLAUDE_OAUTH_TOKEN: stub
+          FIREBASE_ADMIN_PROJECT_ID: stub
+          FIREBASE_ADMIN_CLIENT_EMAIL: stub@stub.iam.gserviceaccount.com
+          FIREBASE_ADMIN_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nSTUB\n-----END PRIVATE KEY-----\n"
 
   test:
-    name: Accessibility & Visual Regression
+    name: Accessibility & Visual
     runs-on: ubuntu-latest
-    # Pinned Playwright image → stable Linux rendering for visual baselines.
     container:
       image: mcr.microsoft.com/playwright:v1.60.0-jammy
     env:
-      # Stubs so `next dev` (Playwright webServer) boots without real secrets.
       NEXT_PUBLIC_FIREBASE_PROJECT_ID: stub
       NEXT_PUBLIC_FIREBASE_API_KEY: stub
       NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: stub.firebaseapp.com
@@ -58,39 +51,38 @@ jobs:
       NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
       NEXT_PUBLIC_FIREBASE_APP_ID: "1:000000000000:web:stub"
       CLAUDE_OAUTH_TOKEN: stub
+      FIREBASE_ADMIN_PROJECT_ID: stub
+      FIREBASE_ADMIN_CLIENT_EMAIL: stub@stub.iam.gserviceaccount.com
+      FIREBASE_ADMIN_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nSTUB\n-----END PRIVATE KEY-----\n"
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      # a11y (axe) gates hard — always fails on serious/critical violations.
       - name: Accessibility (axe)
         run: npx playwright test tests/a11y
 
-      # Visual regression: strict when all 6 linux baselines present; seed missing ones silently.
       - name: Visual regression
         run: |
           EXPECTED=6
           ACTUAL=$(ls tests/__snapshots__/visual/screens.spec.ts/*-chromium-linux.png 2>/dev/null | wc -l | tr -d ' ')
           if [ "$ACTUAL" -ge "$EXPECTED" ]; then
-            echo "All $ACTUAL linux baselines found — strict comparison"
             npx playwright test tests/visual
           else
-            echo "Only $ACTUAL/$EXPECTED linux baselines — seeding missing, skipping diff gate"
             npx playwright test tests/visual --update-snapshots=missing || true
           fi
 
-      - name: Upload report & snapshots
-        if: ${{ always() }}
+      - name: Upload test report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: |
             playwright-report/
             tests/__snapshots__/
-          retention-days: 14
+          retention-days: 7
