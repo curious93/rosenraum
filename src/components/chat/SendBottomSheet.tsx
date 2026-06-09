@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Pencil } from 'lucide-react'
 import { analyzeMessage } from '@/lib/gfkPrompt'
+import { scoreMessage } from '@/lib/gfkScore'
+import type { GfkScoreResult } from '@/lib/gfkScore'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
+import { GfkScorePanel } from './GfkScorePanel'
 
 /** Welche Version der Nutzer abschicken möchte */
 export type SendVersion = 'original' | 'rosenberg'
@@ -37,6 +40,8 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   const [selected, setSelected] = useState<SendVersion>('original')
   const [editMode, setEditMode] = useState(false)
   const [sendFlash, setSendFlash] = useState(false)
+  const [score, setScore] = useState<GfkScoreResult | null>(null)
+  const [scoreLoading, setScoreLoading] = useState(true)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
@@ -44,7 +49,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     analyzeMessage(originalText).then(result => {
       if (cancelled) return
       setRosenbergText(result)
-      setSelected(result !== null && result !== '' ? 'rosenberg' : 'original')
+      // Don't auto-select rosenberg — user should choose deliberately
       setAnalyzing(false)
     })
     return () => { cancelled = true }
@@ -56,10 +61,35 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     setAnalyzing(true)
     analyzeMessage(text).then(result => {
       setRosenbergText(result)
-      setSelected(result !== null && result !== '' ? 'rosenberg' : 'original')
       setAnalyzing(false)
     })
   }
+
+  // Score initial text on mount
+  useEffect(() => {
+    let cancelled = false
+    scoreMessage(originalText).then(result => {
+      if (cancelled) return
+      setScore(result)
+      setScoreLoading(false)
+    })
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Re-score when user edits text (debounced 800ms)
+  useEffect(() => {
+    if (!editMode) return
+    // Use setTimeout to avoid synchronous setState in effect body
+    const loadTimer = setTimeout(() => setScoreLoading(true), 0)
+    const scoreTimer = setTimeout(() => {
+      scoreMessage(editedText).then(result => {
+        setScore(result)
+        setScoreLoading(false)
+      })
+    }, 800)
+    return () => { clearTimeout(loadTimer); clearTimeout(scoreTimer) }
+  }, [editedText, editMode])
 
   useEffect(() => {
     if (editMode && textareaRef.current) {
@@ -117,6 +147,9 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           className="w-10 h-1 rounded-full mx-auto mb-5"
           style={{ background: 'var(--color-border)' }}
         />
+
+        {/* GFK Live-Score Panel */}
+        <GfkScorePanel text={editedText} score={score} loading={scoreLoading} />
 
         <p className="text-xs font-medium mb-3 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
           Welche Version senden?
@@ -318,8 +351,11 @@ function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardPro
     >
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--color-primary-dark)' }}>
-          GFK-Version
-          <InfoTooltip text="Die GFK-Version formuliert deine Nachricht nach den Prinzipien der Gewaltfreien Kommunikation: Beobachtung, Gefühl, Bedürfnis, Bitte — aus der Ich-Perspektive." label="Was ist die GFK-Version?" />
+          Rosenraum-Beispiel
+          <InfoTooltip text="Nur zur Inspiration — Rosenraum zeigt wie diese Nachricht in der Gewaltfreien Kommunikation klingen könnte. Du entscheidest immer selbst." label="Was ist das Rosenraum-Beispiel?" />
+        </span>
+        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          Nur zur Inspiration
         </span>
         {selected && (
           <span className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>

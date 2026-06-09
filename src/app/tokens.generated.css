@@ -74,6 +74,16 @@
   --duration-base: 300ms;
   --duration-slow: 500ms;
 
+  /* GFK dimension colors (static, not theme-dependent) */
+  --color-gfk-beobachtung: #3B82F6;
+  --color-gfk-gefuehl: #F97316;
+  --color-gfk-beduerfnis: #22C55E;
+  --color-gfk-bitte: #A855F7;
+  --color-gfk-beobachtung-bg: #EFF6FF;
+  --color-gfk-gefuehl-bg: #FFF7ED;
+  --color-gfk-beduerfnis-bg: #F0FDF4;
+  --color-gfk-bitte-bg: #FAF5FF;
+
   /* Semantic colors — default preset (rose) light */
   --color-primary: #D0747F;
   --color-primary-light: #E8A8B3;

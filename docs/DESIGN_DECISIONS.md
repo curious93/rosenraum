@@ -41,6 +41,13 @@ Format: Decision · Alternatives considered · Reason · Affected · Date · Rol
 - **Affected:** `design/tokens.json`, `build-tokens.mjs`, `ui/button.tsx`, `ui/badge.tsx`, `page.tsx`, `create/page.tsx`, `join/*`, `SendBottomSheet.tsx`.
 - **Date:** 2026-06-08 · **Rollback:** revert the token values + the `text-primary-foreground` swap.
 
+### GFK dimension colors (static tokens)
+- **Decision:** Four static GFK dimension colors — Beobachtung (blue `#3B82F6`), Gefühl (orange `#F97316`), Bedürfnis (green `#22C55E`), Bitte (purple `#A855F7`) — plus four light background variants — added as `primitive.gfk` in tokens.json and emitted as `--color-gfk-*` in `:root`. Not theme-dependent; same across all 6 presets.
+- **Alternatives:** Hardcoding in globals.css (bypasses the pipeline and check gates); adding as per-preset semantic tokens (unnecessary complexity — colors don't change with theme).
+- **Reason:** GFK Live-Scoring panel in SendBottomSheet needs consistent, accessible dimension colors (≥4.5:1 contrast on white/light backgrounds). Static primitives are the right layer.
+- **Affected:** `design/tokens.json`, `scripts/build-tokens.mjs`, `src/app/tokens.generated.css`, `GfkScorePanel.tsx`.
+- **Date:** 2026-06-09 · **Rollback:** remove `primitive.gfk` from tokens.json + the `decls(p.gfk, 'color-gfk')` line from build-tokens.mjs.
+
 ### `suppressHydrationWarning` on `<html>`
 - **Decision:** The FOUC script mutates `<html>` (data-theme + `dark`) before hydration; `<html>` carries `suppressHydrationWarning`.
 - **Alternatives:** Render theme server-side (impossible — preference is client-only in localStorage); accept the console error (noisy, masks real issues).
