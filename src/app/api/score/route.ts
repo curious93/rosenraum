@@ -77,6 +77,19 @@ export async function POST(request: NextRequest) {
       .trim()
 
     const result: GfkScoreResult = JSON.parse(raw)
+
+    // Snap span boundaries to word edges so highlights never cut through a word
+    for (const dim of Object.values(result.dimensions)) {
+      if (!dim.spans) continue
+      dim.spans = dim.spans.map(([s, e]) => {
+        // Expand start left to the beginning of the word
+        while (s > 0 && /\S/.test(text[s - 1])) s--
+        // Expand end right to the end of the word
+        while (e < text.length && /\S/.test(text[e])) e++
+        return [s, e] as [number, number]
+      })
+    }
+
     return NextResponse.json(result)
   } catch (err) {
     console.error('score route error:', err)
