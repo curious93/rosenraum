@@ -42,6 +42,12 @@ service cloud.firestore {
       }
     }
 
+    // ── Feedback ─────────────────────────────────────────────────────────────
+    match /feedback/{feedbackId} {
+      // Nur über API-Route schreiben (Admin SDK) — kein direkter Client-Zugriff
+      allow read, write: if false;
+    }
+
     // Alle anderen Dokumente sperren
     match /{document=**} {
       allow read, write: if false;

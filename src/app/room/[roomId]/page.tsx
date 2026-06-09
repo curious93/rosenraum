@@ -20,6 +20,7 @@ import { SendBottomSheet, type SendVersion } from '@/components/chat/SendBottomS
 import { ThemeSheet } from '@/components/ThemeSheet'
 import { LernverlaufSheet } from '@/components/chat/LernverlaufSheet'
 import { StatistikSheet } from '@/components/chat/StatistikSheet'
+import { FeedbackSheet } from '@/components/feedback/FeedbackSheet'
 
 function getDateLabel(date: Date): string {
   const today = new Date()
@@ -48,6 +49,7 @@ export default function RoomPage() {
   const [showTheme, setShowTheme] = useState(false)
   const [showLernverlauf, setShowLernverlauf] = useState(false)
   const [showStatistik, setShowStatistik] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
   const [pendingText, setPendingText] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -414,6 +416,13 @@ export default function RoomPage() {
                 <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                   Ihr seid beide hier. Sag einfach hallo.
                 </p>
+                <button
+                  onClick={() => setShowFeedback(true)}
+                  className="mt-6 text-xs transition-opacity hover:opacity-70"
+                  style={{ color: 'var(--color-text-muted)' }}
+                >
+                  Feedback geben →
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -519,6 +528,17 @@ export default function RoomPage() {
             originalText={pendingText}
             onSend={handleConfirmSend}
             onClose={() => setPendingText(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Feedback Sheet ─────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showFeedback && (
+          <FeedbackSheet
+            source="room"
+            roomId={roomId}
+            onClose={() => setShowFeedback(false)}
           />
         )}
       </AnimatePresence>

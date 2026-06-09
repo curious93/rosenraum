@@ -7,6 +7,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { Heart, Leaf, Sparkles, Check, Link2, MessageCircle, MessageSquare, BookOpen, Eye, Palette, Users, Briefcase, Lightbulb } from 'lucide-react'
 import { createRoom } from '@/lib/firestore'
 import { ThemeSheet } from '@/components/ThemeSheet'
+import { FeedbackSheet } from '@/components/feedback/FeedbackSheet'
 
 type CreateState = 'idle' | 'loading' | 'created'
 
@@ -40,6 +41,7 @@ export default function HomePage() {
   const [createdRoom, setCreatedRoom] = useState<CreatedRoom | null>(null)
   const [copied, setCopied] = useState(false)
   const [showTheme, setShowTheme] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
 
   function scrollToCreate() {
     quickCreateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -727,7 +729,41 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 10. FOOTER ───────────────────────────────────────────────────────── */}
+      {/* ── 10. FEEDBACK ─────────────────────────────────────────────────────── */}
+      <section
+        className="px-6 py-16 text-center"
+        style={{
+          background: 'var(--color-bg-elevated)',
+          borderTop: '1px solid var(--color-border-subtle)',
+        }}
+      >
+        <motion.div
+          style={{ maxWidth: '480px', margin: '0 auto' }}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="space-y-4"
+        >
+          <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            Deine Meinung macht Rosenraum besser.
+          </h2>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+            Rosenraum ist ein kleines Projekt mit großer Idee. Was hat gut funktioniert?
+            Was war schwierig? Jede Rückmeldung hilft uns.
+          </p>
+          <motion.button
+            onClick={() => setShowFeedback(true)}
+            whileTap={{ scale: 0.96 }}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+          >
+            Feedback geben 🌸
+          </motion.button>
+        </motion.div>
+      </section>
+
+      {/* ── 11. FOOTER ───────────────────────────────────────────────────────── */}
       <footer
         className="px-6 py-10 text-center space-y-2"
         style={{ borderTop: '1px solid var(--color-border-subtle)' }}
@@ -751,6 +787,11 @@ export default function HomePage() {
       {/* ── Theme Sheet ──────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {showTheme && <ThemeSheet onClose={() => setShowTheme(false)} />}
+      </AnimatePresence>
+
+      {/* ── Feedback Sheet ───────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showFeedback && <FeedbackSheet source="landing" onClose={() => setShowFeedback(false)} />}
       </AnimatePresence>
 
     </div>
