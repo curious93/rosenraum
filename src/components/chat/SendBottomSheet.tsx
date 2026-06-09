@@ -197,6 +197,10 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
               onSelect={() =>
                 rosenbergText !== null && rosenbergText !== '' && setSelected('rosenberg')
               }
+              onClose={() => {
+                setShowExample(false)
+                setSelected('original')
+              }}
               loading={analyzing}
             />
           )}
@@ -328,12 +332,17 @@ function VersionCard({
 }: VersionCardProps) {
   const borderColor = isGreen ? 'var(--color-gfk-beduerfnis)' : 'var(--color-primary)'
   const hasHighlights = score !== null
+  // Identisches Box-Model für Overlay-Div UND Textarea — sonst driften die
+  // Highlights gegenüber dem Text (unterschiedliche Umbruchpunkte/Versatz).
   const textStyle: React.CSSProperties = {
+    boxSizing: 'border-box',
     fontFamily: 'inherit',
     fontSize: '16px',
     lineHeight: '1.5',
+    letterSpacing: 'normal',
     padding: 0,
     margin: 0,
+    border: 0,
     width: '100%',
     minHeight: '4.5rem',
     whiteSpace: 'pre-wrap',
@@ -371,7 +380,6 @@ function VersionCard({
               position: 'absolute',
               top: 0,
               left: 0,
-              right: 0,
               pointerEvents: 'none',
               userSelect: 'none',
               color: 'transparent',
@@ -402,7 +410,7 @@ function VersionCard({
             caretColor: 'var(--color-text-primary)',
             outline: 'none',
             resize: 'none',
-            border: 'none',
+            overflow: 'hidden',
           }}
           placeholder="Schreib deine Nachricht..."
           aria-label="Nachricht bearbeiten"
@@ -416,89 +424,105 @@ interface GfkVersionCardProps {
   text: string | null
   selected: boolean
   onSelect: () => void
+  onClose: () => void
   loading: boolean
 }
 
-function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardProps) {
+function GfkVersionCard({ text, selected, onSelect, onClose, loading }: GfkVersionCardProps) {
   const borderColor = selected ? 'var(--color-primary)' : 'var(--color-border)'
   const isAlreadyOpen = text === ''
   const isError = text === null && !loading
 
   return (
-    <button
-      onClick={onSelect}
-      disabled={loading || isAlreadyOpen || isError}
-      className="w-full text-left rounded-2xl p-3.5 transition-all"
-      style={{
-        background: 'var(--color-bubble-gfk)',
-        border: `2px solid ${borderColor}`,
-        transition: 'border-color 200ms',
-      }}
-    >
-      <div className="flex items-center justify-between mb-1.5">
-        <span
-          className="text-xs font-medium flex items-center gap-1"
-          style={{ color: 'var(--color-primary-dark)' }}
-        >
-          Rosenraum-Beispiel
-          <InfoTooltip
-            text="Nur zur Inspiration — Rosenraum zeigt wie diese Nachricht in der Gewaltfreien Kommunikation klingen könnte. Du entscheidest immer selbst."
-            label="Was ist das Rosenraum-Beispiel?"
-          />
-        </span>
-        <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-          Nur zur Inspiration
-        </span>
-        {selected && (
-          <span className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>
-            ✓ ausgewählt
+    <div className="relative">
+      <button
+        onClick={onSelect}
+        disabled={loading || isAlreadyOpen || isError}
+        className="w-full text-left rounded-2xl p-3.5 transition-all"
+        style={{
+          background: 'var(--color-bubble-gfk)',
+          border: `2px solid ${borderColor}`,
+          transition: 'border-color 200ms',
+        }}
+      >
+        <div className="flex items-center justify-between mb-1.5 pr-6">
+          <span
+            className="text-xs font-medium flex items-center gap-1"
+            style={{ color: 'var(--color-primary-dark)' }}
+          >
+            Rosenraum-Beispiel
+            <InfoTooltip
+              text="Nur zur Inspiration — Rosenraum zeigt wie diese Nachricht in der Gewaltfreien Kommunikation klingen könnte. Du entscheidest immer selbst."
+              label="Was ist das Rosenraum-Beispiel?"
+            />
           </span>
-        )}
-      </div>
+          <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+            Nur zur Inspiration
+          </span>
+          {selected && (
+            <span className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>
+              ✓ ausgewählt
+            </span>
+          )}
+        </div>
 
-      <AnimatePresence mode="wait">
-        {loading ? (
-          <motion.div
-            key="skeleton"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="space-y-1.5 overflow-hidden"
-          >
-            {[100, 85, 60].map((w, i) => (
-              <div
-                key={i}
-                className="h-3 rounded-full relative overflow-hidden"
-                style={{ width: `${w}%`, background: 'var(--color-skeleton)' }}
-              >
-                <motion.div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background:
-                      'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)',
-                  }}
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: 'linear', delay: i * 0.1 }}
-                />
-              </div>
-            ))}
-          </motion.div>
-        ) : (
-          <motion.p
-            key="text"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-sm leading-relaxed"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            {isAlreadyOpen
-              ? 'Diese Nachricht klingt bereits offen und wertschätzend.'
-              : isError
-                ? 'Rosenraum konnte keinen Vorschlag erstellen. Schreib einfach so wie du bist.'
-                : text}
-          </motion.p>
-        )}
-      </AnimatePresence>
-    </button>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              key="skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-1.5 overflow-hidden"
+            >
+              {[100, 85, 60].map((w, i) => (
+                <div
+                  key={i}
+                  className="h-3 rounded-full relative overflow-hidden"
+                  style={{ width: `${w}%`, background: 'var(--color-skeleton)' }}
+                >
+                  <motion.div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background:
+                        'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)',
+                    }}
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: 'linear', delay: i * 0.1 }}
+                  />
+                </div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.p
+              key="text"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm leading-relaxed"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              {isAlreadyOpen
+                ? 'Diese Nachricht klingt bereits offen und wertschätzend.'
+                : isError
+                  ? 'Rosenraum konnte keinen Vorschlag erstellen. Schreib einfach so wie du bist.'
+                  : text}
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </button>
+
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Rosenraum-Beispiel schließen"
+        className="absolute top-2.5 right-2.5 w-6 h-6 flex items-center justify-center rounded-full text-sm leading-none transition-opacity hover:opacity-70"
+        style={{
+          color: 'var(--color-text-secondary)',
+          background: 'var(--color-bg-surface)',
+        }}
+      >
+        ✕
+      </button>
+    </div>
   )
 }

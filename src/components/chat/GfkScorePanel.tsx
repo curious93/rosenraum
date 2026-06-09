@@ -122,15 +122,21 @@ export function GfkScorePanel({ score, loading, prevScore }: GfkScorePanelProps)
                         {prevDimScore !== null && prevDimScore !== dimScore && hasScore && (
                           <motion.div
                             key={`ghost-${dim.key}-${prevDimScore}-${dimScore}`}
-                            className="absolute top-0 bottom-0 rounded-full z-10"
+                            className="absolute rounded-full z-10"
                             style={{
-                              left: `${prevDimScore * 10}%`,
-                              width: '2px',
-                              background: dim.color,
+                              left: `calc(${prevDimScore * 10}% - 1.5px)`,
+                              top: '15%',
+                              bottom: '15%',
+                              width: '3px',
+                              background: 'var(--color-text-primary)',
                             }}
-                            initial={{ opacity: 0.5 }}
-                            animate={{ opacity: 0 }}
-                            transition={{ duration: 1.5, delay: 0.4 }}
+                            initial={{ opacity: 1 }}
+                            animate={{ opacity: [1, 0.2, 1, 0.2, 1] }}
+                            transition={{
+                              duration: 2,
+                              ease: 'easeInOut',
+                              times: [0, 0.25, 0.5, 0.75, 1],
+                            }}
                           />
                         )}
                         <motion.div
@@ -149,28 +155,37 @@ export function GfkScorePanel({ score, loading, prevScore }: GfkScorePanelProps)
                     )}
                   </div>
 
-                  <div
-                    className="flex items-center justify-end gap-1"
-                    style={{ minWidth: '2.5rem' }}
-                  >
-                    <span className="text-xs tabular-nums" style={{ color: labelColor }}>
+                  <div className="flex items-center justify-end">
+                    {/* Delta-Slot — feste Breite, schiebt die Zahl nie */}
+                    <span
+                      className="text-xs tabular-nums font-semibold text-right"
+                      style={{ width: '1.75rem', display: 'inline-block' }}
+                    >
+                      {!loading && delta !== 0 && (
+                        <motion.span
+                          key={`delta-${dim.key}-${prevDimScore}-${dimScore}`}
+                          style={{
+                            display: 'inline-block',
+                            color:
+                              delta > 0
+                                ? 'var(--color-gfk-beduerfnis)'
+                                : 'var(--color-gfk-gefuehl)',
+                          }}
+                          initial={{ opacity: 1, y: delta > 0 ? 4 : -4 }}
+                          animate={{ opacity: 0, y: 0 }}
+                          transition={{ duration: 1.5, delay: 0.3 }}
+                        >
+                          {delta > 0 ? `+${delta}` : `${delta}`}
+                        </motion.span>
+                      )}
+                    </span>
+                    {/* Score — feste, rechtsbündige Zelle, bewegt sich nie */}
+                    <span
+                      className="text-xs tabular-nums text-right"
+                      style={{ width: '1.25rem', display: 'inline-block', color: labelColor }}
+                    >
                       {!hasScore ? '–' : dimScore}
                     </span>
-                    {!loading && delta !== 0 && (
-                      <motion.span
-                        key={`delta-${dim.key}-${prevDimScore}-${dimScore}`}
-                        className="text-xs tabular-nums font-semibold"
-                        style={{
-                          color:
-                            delta > 0 ? 'var(--color-gfk-beduerfnis)' : 'var(--color-gfk-gefuehl)',
-                        }}
-                        initial={{ opacity: 1, y: delta > 0 ? 4 : -4 }}
-                        animate={{ opacity: 0, y: 0 }}
-                        transition={{ duration: 1.5, delay: 0.3 }}
-                      >
-                        {delta > 0 ? `+${delta}` : `${delta}`}
-                      </motion.span>
-                    )}
                   </div>
                 </div>
               )
