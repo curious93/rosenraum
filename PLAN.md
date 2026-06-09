@@ -1,3 +1,98 @@
+# GFK Scoring — Visueller Testplan
+
+**Einzige Seite:** `https://rosenraum-1--rosenraum-app.europe-west4.hosted.app/room/h4YRjs6JQdvtDe2Jj7VM`
+**Keine andere Seite wird geöffnet.**
+
+---
+
+## Features im Code (was getestet werden muss)
+
+### GfkScorePanel (`GfkScorePanel.tsx`)
+| Feature | Details |
+|---------|---------|
+| Header-Label | `"Dein GFK-Lernfeedback"` — uppercase, tracking-wide, `--color-text-muted` |
+| Text mit Highlights | Originaltext mit farbigen `<mark>`-Spans pro Dimension |
+| 4 Balken | Beobachtung (blau), Gefühl (orange), Bedürfnis (grün), Bitte (lila) |
+| Skeleton-State | Balken bei `loading=true`: grau 60% breit + Shimmer-Animation |
+| Score-Zahlen | Rechts neben jedem Balken: `1–10`, Farbe = Dimensionsfarbe |
+| Score-Zahlen Loading | Zeigt `–` während loading |
+| Balken-Animation | `width: 0% → score*10%` Spring-Animation mit staggered delay |
+| Highlight-Farben | bg = `--color-gfk-*-bg`, border-bottom = `--color-gfk-*` mit 55% opacity |
+
+### SendBottomSheet (`SendBottomSheet.tsx`)
+| Feature | Details |
+|---------|---------|
+| GfkScorePanel Position | Ganz oben im Sheet, über "Welche Version senden?" |
+| Drag Handle | 10×4px, `--color-border`, zentriert |
+| "Welche Version senden?" | Label über den VersionCards |
+| Deine Version Card | Text des Users, selektierbar |
+| Rosenraum-Beispiel Card | GFK-Vorschlag, loading skeleton, NICHT auto-selected |
+| "Nur zur Inspiration" | Subtitle in GfkVersionCard — muss gut lesbar sein (G1) |
+| Debounced Re-Score | Text editieren → nach 800ms neu laden |
+| Senden-Button | Disabled während analyzing |
+
+---
+
+## Screenshots — Reihenfolge
+
+| # | Was | Wann | Datei |
+|---|-----|------|-------|
+| S1 | Room lädt — leerer Zustand | Sofort nach Navigation | `/tmp/gfk_S1_room.jpg` |
+| S2 | SendBottomSheet öffnet — Skeleton-State | Sofort nach Senden-Klick (< 1s) | `/tmp/gfk_S2_skeleton.jpg` |
+| S3 | GfkScorePanel geladen — Balken sichtbar | Nach 5s (KI-Antwort) | `/tmp/gfk_S3_scored.jpg` |
+| S4 | Text-Highlights im Panel | Zoom auf GfkScorePanel | `/tmp/gfk_S4_highlights.jpg` |
+| S5 | "Nur zur Inspiration" Subtitle | Zoom auf GfkVersionCard | `/tmp/gfk_S5_subtitle.jpg` |
+| S6 | Score-Zahlen (1–10) + Farben | Zoom auf Balken-Bereich | `/tmp/gfk_S6_scores.jpg` |
+
+---
+
+## Prüfkriterien pro Screenshot
+
+**S1 Room leerer Zustand:**
+- ✅/❌ Seite lädt korrekt ohne Fehler
+- ✅/❌ Input-Feld unten sichtbar ("Schreib etwas...")
+- ✅/❌ Header sichtbar
+
+**S2 Skeleton-State:**
+- ✅/❌ Sheet slide-up sichtbar
+- ✅/❌ "Dein GFK-Lernfeedback" Header sichtbar
+- ✅/❌ 4 graue Balken mit Shimmer sichtbar
+- ✅/❌ Score-Zahlen zeigen "–"
+- ✅/❌ GFK-Vorschlag-Card lädt (skeleton)
+
+**S3 Scored State:**
+- ✅/❌ 4 farbige Balken (blau/orange/grün/lila)
+- ✅/❌ Balken haben unterschiedliche Längen (nicht alle gleich)
+- ✅/❌ Score-Zahlen 1–10 sichtbar
+- ✅/❌ GFK-Vorschlag-Text erschienen
+
+**S4 Text-Highlights:**
+- ✅/❌ Originaltext hat farbige Unterstreichungen/Hintergründe
+- ✅/❌ Verschiedene Farben für verschiedene Dimensionen
+
+**S5 "Nur zur Inspiration":**
+- ✅/❌ Text gut lesbar — KEIN zu blasser Grauton (G1-Fix)
+- ✅/❌ Kontrast ausreichend
+
+**S6 Score-Zahlen:**
+- ✅/❌ Zahlen in Dimensionsfarbe (blau/orange/grün/lila)
+- ✅/❌ Balkenbreite entspricht Score (z.B. Score 7 = 70% Breite)
+
+---
+
+## Ergebnisse
+
+| Screenshot | Status | Befund |
+|------------|--------|--------|
+| S1 Room | ⏳ | — |
+| S2 Skeleton | ⏳ | — |
+| S3 Scored | ⏳ | — |
+| S4 Highlights | ⏳ | — |
+| S5 Subtitle | ⏳ | — |
+| S6 Scores | ⏳ | — |
+
+---
+
 # Design-System Infrastructure — Plan & Status
 
 Durable, reusable UI/UX governance system, piloted in Rosenraum. **Status: implemented (2026-06-08).** Living docs are in [`docs/`](docs/); this file is the high-level map.
