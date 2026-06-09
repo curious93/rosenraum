@@ -74,11 +74,11 @@ function renderHighlightedText(
       <mark
         key={`${seg.dimKey}-${seg.start}`}
         style={{
-          background: seg.bg,
+          background: `${seg.color}28`,
           borderRadius: '3px',
           paddingInline: '1px',
           color: 'inherit',
-          boxShadow: `inset 0 -2px 0 ${seg.color}55`,
+          boxShadow: `inset 0 -2px 0 ${seg.color}`,
         }}
       >
         {text.slice(seg.start, seg.end)}
@@ -129,8 +129,8 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
         Dein GFK-Lernfeedback
       </p>
 
-      {/* Highlighted text — nur nach dem Laden */}
-      {!loading && hasScore && (
+      {/* Highlighted text — only when loaded, has score, and NOT already fully open */}
+      {!loading && hasScore && !alreadyOpen && (
         <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--color-text-primary)' }}>
           {renderHighlightedText(text, score!.dimensions)}
         </p>
@@ -147,8 +147,10 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
               const dimScore = hasScore ? (score!.dimensions[dim.key]?.score ?? 0) : 0
               const prevDimScore = prevScore?.dimensions[dim.key]?.score ?? null
               const delta = prevDimScore !== null && !loading && hasScore ? dimScore - prevDimScore : 0
-              const barColor = loading || !hasScore ? 'var(--color-skeleton)' : dim.color
-              const labelColor = loading ? 'var(--color-text-muted)' : hasScore ? dim.color : 'var(--color-text-muted)'
+              // Skeleton only on initial load (no score yet) — keep bars stable during re-scoring
+              const initialLoad = loading && !hasScore
+              const barColor = hasScore ? dim.color : 'var(--color-skeleton)'
+              const labelColor = hasScore ? dim.color : 'var(--color-text-muted)'
 
               return (
                 <div key={dim.key} className="flex items-center gap-2">
@@ -160,7 +162,7 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
                     className="flex-1 h-2 rounded-full overflow-hidden relative"
                     style={{ background: 'var(--color-border)' }}
                   >
-                    {loading ? (
+                    {initialLoad ? (
                       <div
                         className="h-full rounded-full relative overflow-hidden"
                         style={{ width: '60%', background: 'var(--color-skeleton)' }}
@@ -197,7 +199,7 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
 
                   <div className="flex items-center justify-end gap-1" style={{ minWidth: '2.5rem' }}>
                     <span className="text-xs tabular-nums" style={{ color: labelColor }}>
-                      {loading || !hasScore ? '–' : dimScore}
+                      {!hasScore ? '–' : dimScore}
                     </span>
                     {!loading && delta !== 0 && (
                       <motion.span
