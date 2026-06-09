@@ -9,11 +9,11 @@
 
 | Commit | Feature | CI | Live |
 |--------|---------|----|----|
-| `43bdf91` | fix: minInstances=1 + freundlicher Fehlertext | ✅ | 🔄 läuft |
+| `43bdf91` | fix: minInstances=1 + freundlicher Fehlertext | ✅ | ✅ |
 | `d5ecf96` | fix: immer 4 Bars, Cold-Start-Retry, Skeleton nur beim Fetch | ✅ | ✅ |
 | `1be017c` | feat: GFK Scoring UI — alle 7 Fixes | ✅ | ✅ |
 
-**Aktuell live:** `d5ecf96`
+**Aktuell live:** `43bdf91`
 **Produktions-URL:** https://rosenraum-1--rosenraum-app.europe-west4.hosted.app
 
 ---
@@ -132,11 +132,11 @@
 
 | Schritt | Aktion | Erwartung | Status |
 |---------|--------|-----------|--------|
-| 1 | `curl -w "%{time_total}" .../api/score` | < 3 Sekunden | ⏳ |
+| 1 | `curl -w "%{time_total}" .../api/score` | < 3 Sekunden | ✅ 1.6s |
 | 2 | Sheet sofort nach Öffnen | Score erscheint ohne langen Skeleton | ⏳ |
 
-**Letzter Test:** —
-**Status:** 🔄 Deploy läuft (`43bdf91`)
+**Letzter Test:** 2026-06-09
+**Status:** ✅
 
 ---
 
@@ -151,6 +151,6 @@
 | F5 — Inspiriere mich | ⏳ | — |
 | F6 — Grüner Rand | ⏳ | — |
 | F7 — Delta-Animation | ⏳ | — |
-| I1 — Cold Start fix | 🔄 | — |
+| I1 — Cold Start fix | ✅ | 2026-06-09 |
 
-**0 / 7 verifiziert** (Test-Durchlauf ausstehend)
+**0 / 7 verifiziert** — UI-Test ausstehend (bitte Sheet öffnen und Screenshots schicken)
