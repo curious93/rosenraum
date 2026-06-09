@@ -375,7 +375,7 @@ function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardPro
             {isAlreadyOpen
               ? 'Diese Nachricht klingt bereits offen und wertschätzend.'
               : isError
-                ? 'Analyse fehlgeschlagen – passe deinen Text an und prüfe nochmal.'
+                ? 'Rosenraum konnte keinen Vorschlag erstellen. Schreib einfach so wie du bist.'
                 : text}
           </motion.p>
         )}
