@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'KI-Dienst nicht verfügbar' }, { status: 502 })
     }
 
-    const data = await response.json() as { content?: Array<{ text?: string }> }
+    const data = (await response.json()) as { content?: Array<{ text?: string }> }
     const rosenbergText = data.content?.[0]?.text ?? ''
 
     return NextResponse.json({ rosenbergText })

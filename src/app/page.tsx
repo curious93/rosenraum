@@ -4,7 +4,21 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import { Heart, Leaf, Sparkles, Check, Link2, MessageCircle, MessageSquare, BookOpen, Eye, Palette, Users, Briefcase, Lightbulb } from 'lucide-react'
+import {
+  Heart,
+  Leaf,
+  Sparkles,
+  Check,
+  Link2,
+  MessageCircle,
+  MessageSquare,
+  BookOpen,
+  Eye,
+  Palette,
+  Users,
+  Briefcase,
+  Lightbulb,
+} from 'lucide-react'
 import { createRoom } from '@/lib/firestore'
 import { ThemeSheet } from '@/components/ThemeSheet'
 import { FeedbackSheet } from '@/components/feedback/FeedbackSheet'
@@ -92,7 +106,6 @@ export default function HomePage() {
 
   return (
     <div style={{ background: 'var(--color-bg-page)', color: 'var(--color-text-primary)' }}>
-
       {/* ── 1. HERO ──────────────────────────────────────────────────────────── */}
       <section
         className="relative flex flex-col items-center justify-center min-h-svh px-6 text-center"
@@ -126,7 +139,10 @@ export default function HomePage() {
             />
             <h1
               className="font-semibold tracking-tight"
-              style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', color: 'var(--color-text-primary)' }}
+              style={{
+                fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
+                color: 'var(--color-text-primary)',
+              }}
             >
               Rosenraum
             </h1>
@@ -134,7 +150,9 @@ export default function HomePage() {
               className="text-xl font-medium leading-snug"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              Für Gespräche, bei denen<br />es wirklich zählt.
+              Für Gespräche, bei denen
+              <br />
+              es wirklich zählt.
             </p>
             <p
               className="text-base leading-relaxed"
@@ -155,7 +173,10 @@ export default function HomePage() {
             <button
               onClick={() => router.push('/join')}
               className="block w-full py-3.5 px-6 rounded-2xl text-base font-medium transition-opacity hover:opacity-80"
-              style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }}
+              style={{
+                background: 'var(--color-bg-elevated)',
+                color: 'var(--color-text-secondary)',
+              }}
             >
               Ich habe einen Code
             </button>
@@ -171,7 +192,13 @@ export default function HomePage() {
           style={{ color: 'var(--color-text-muted)' }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path
+              d="M6 9l6 6 6-6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </motion.div>
       </section>
@@ -193,9 +220,12 @@ export default function HomePage() {
               >
                 Wir reden den ganzen Tag. Aber manchmal kommen unsere Worte gar nicht an.
               </h2>
-              <p className="text-base leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                Nicht weil wir keine Empathie hätten. Sondern weil unsere Sprache voller alter Muster steckt —
-                Muster, die wir nie bewusst gewählt haben.
+              <p
+                className="text-base leading-relaxed"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                Nicht weil wir keine Empathie hätten. Sondern weil unsere Sprache voller alter
+                Muster steckt — Muster, die wir nie bewusst gewählt haben.
               </p>
             </motion.div>
 
@@ -205,11 +235,21 @@ export default function HomePage() {
                   key={card.title}
                   variants={fadeUp}
                   className="p-5 rounded-2xl space-y-2"
-                  style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+                  style={{
+                    background: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border-subtle)',
+                  }}
                 >
                   <div className="flex items-center gap-2">
-                    <card.Icon className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
-                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    <card.Icon
+                      className="w-5 h-5 flex-shrink-0"
+                      style={{ color: 'var(--color-primary)' }}
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
                       {card.title}
                     </span>
                   </div>
@@ -218,7 +258,10 @@ export default function HomePage() {
                       {card.quote}
                     </p>
                   )}
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p
+                    className="text-sm leading-relaxed"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
                     {card.body}
                   </p>
                 </motion.div>
@@ -249,27 +292,34 @@ export default function HomePage() {
               <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                 Was ist Gewaltfreie Kommunikation?
               </h2>
-              <p className="text-base leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                Marshall Rosenberg entwickelte die GFK in den 1960er Jahren. Die Kernidee: Hinter jedem Konflikt
-                stecken unerfüllte Bedürfnisse — keine bösen Absichten. GFK gibt uns eine Sprache,
-                die verbindet statt zu trennen.
+              <p
+                className="text-base leading-relaxed"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                Marshall Rosenberg entwickelte die GFK in den 1960er Jahren. Die Kernidee: Hinter
+                jedem Konflikt stecken unerfüllte Bedürfnisse — keine bösen Absichten. GFK gibt uns
+                eine Sprache, die verbindet statt zu trennen.
               </p>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="space-y-4 text-base leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+            <motion.div
+              variants={fadeUp}
+              className="space-y-4 text-base leading-relaxed"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
               <p>
-                Gewaltfreie Kommunikation basiert auf einer einfachen Idee: Hinter jedem Angriff, jedem
-                Schweigen, jeder Überreaktion steckt ein unerfülltes Bedürfnis. Kein böser Wille —
-                nur eine Sprache, die uns nicht beigebracht wurde.
+                Gewaltfreie Kommunikation basiert auf einer einfachen Idee: Hinter jedem Angriff,
+                jedem Schweigen, jeder Überreaktion steckt ein unerfülltes Bedürfnis. Kein böser
+                Wille — nur eine Sprache, die uns nicht beigebracht wurde.
               </p>
               <p>
-                Marshall Rosenberg entwickelte in den 1960er Jahren einen Weg, diese Bedürfnisse sichtbar
-                zu machen — ohne Vorwurf, ohne Urteil, ohne Schuld. Aus der Ich-Perspektive statt aus der
-                Anklage.
+                Marshall Rosenberg entwickelte in den 1960er Jahren einen Weg, diese Bedürfnisse
+                sichtbar zu machen — ohne Vorwurf, ohne Urteil, ohne Schuld. Aus der Ich-Perspektive
+                statt aus der Anklage.
               </p>
               <p>
-                Rosenraum bringt diese Idee in echte Gespräche. Nicht als Theorie, sondern als sanfte
-                Einladung — Nachricht für Nachricht.
+                Rosenraum bringt diese Idee in echte Gespräche. Nicht als Theorie, sondern als
+                sanfte Einladung — Nachricht für Nachricht.
               </p>
             </motion.div>
           </motion.div>
@@ -325,10 +375,16 @@ export default function HomePage() {
                     {step.num}
                   </div>
                   <div className="space-y-1 pt-1">
-                    <div className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    <div
+                      className="text-base font-semibold"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
                       {step.title}
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                    <p
+                      className="text-sm leading-relaxed"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
                       {step.desc}
                     </p>
                   </div>
@@ -356,13 +412,15 @@ export default function HomePage() {
           transition={{ duration: 0.6 }}
           className="space-y-4"
         >
-          <div style={{ fontSize: '2.5rem', color: 'var(--color-primary-light)', lineHeight: 1 }}>&ldquo;</div>
+          <div style={{ fontSize: '2.5rem', color: 'var(--color-primary-light)', lineHeight: 1 }}>
+            &ldquo;
+          </div>
           <blockquote
             className="text-lg font-medium leading-relaxed italic"
             style={{ color: 'var(--color-text-primary)' }}
           >
-            Hinter jeder Handlung — wie ineffektiv, tragisch oder gewaltsam sie uns auch erscheinen mag —
-            steckt der Versuch, ein Bedürfnis zu erfüllen.
+            Hinter jeder Handlung — wie ineffektiv, tragisch oder gewaltsam sie uns auch erscheinen
+            mag — steckt der Versuch, ein Bedürfnis zu erfüllen.
           </blockquote>
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
             — Marshall Rosenberg, Begründer der Gewaltfreien Kommunikation
@@ -384,7 +442,10 @@ export default function HomePage() {
               <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                 Für wen ist Rosenraum?
               </h2>
-              <p className="text-base leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+              <p
+                className="text-base leading-relaxed"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
                 Immer dann, wenn es um mehr geht als nur Informationen auszutauschen.
               </p>
             </motion.div>
@@ -425,12 +486,22 @@ export default function HomePage() {
                     className="w-9 h-9 rounded-full flex items-center justify-center"
                     style={{ background: 'var(--color-primary-light)' }}
                   >
-                    <card.Icon className="w-4.5 h-4.5" style={{ color: 'var(--color-primary-dark)' }} aria-hidden="true" />
+                    <card.Icon
+                      className="w-4.5 h-4.5"
+                      style={{ color: 'var(--color-primary-dark)' }}
+                      aria-hidden="true"
+                    />
                   </div>
-                  <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  <div
+                    className="text-sm font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     {card.title}
                   </div>
-                  <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p
+                    className="text-xs leading-relaxed"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
                     {card.desc}
                   </p>
                 </motion.div>
@@ -461,7 +532,10 @@ export default function HomePage() {
               <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                 Was passiert mit meiner Nachricht?
               </h2>
-              <p className="text-base leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+              <p
+                className="text-base leading-relaxed"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
                 Die KI liest deinen Text nicht um zu urteilen — sondern um zuzuhören.
               </p>
             </motion.div>
@@ -502,7 +576,10 @@ export default function HomePage() {
                   <div className="flex flex-col items-center flex-shrink-0">
                     <div
                       className="w-10 h-10 rounded-full flex items-center justify-center z-10 relative"
-                      style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+                      style={{
+                        background: 'var(--color-primary)',
+                        color: 'var(--color-on-primary)',
+                      }}
                     >
                       <item.Icon className="w-4.5 h-4.5" aria-hidden="true" />
                     </div>
@@ -514,10 +591,16 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="pb-5 pt-1 space-y-1">
-                    <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    <div
+                      className="text-sm font-semibold"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
                       {item.title}
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                    <p
+                      className="text-sm leading-relaxed"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
                       {item.desc}
                     </p>
                   </div>
@@ -559,11 +642,13 @@ export default function HomePage() {
                 },
                 {
                   tip: 'Bedürfnisse sind keine Vorwürfe.',
-                  detail: 'Wenn du sagst, was du brauchst, gibst du der anderen Person eine Chance — keine Schuld.',
+                  detail:
+                    'Wenn du sagst, was du brauchst, gibst du der anderen Person eine Chance — keine Schuld.',
                 },
                 {
                   tip: 'Stille ist manchmal das Klügste.',
-                  detail: 'Wenn du in Rage bist, ist jetzt vielleicht nicht der Moment für das Gespräch. Rosenraum wartet.',
+                  detail:
+                    'Wenn du in Rage bist, ist jetzt vielleicht nicht der Moment für das Gespräch. Rosenraum wartet.',
                 },
               ].map((item, i) => (
                 <motion.div
@@ -576,13 +661,23 @@ export default function HomePage() {
                   }}
                 >
                   <div className="flex-shrink-0 mt-0.5">
-                    <Lightbulb className="w-4 h-4" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
+                    <Lightbulb
+                      className="w-4 h-4"
+                      style={{ color: 'var(--color-primary)' }}
+                      aria-hidden="true"
+                    />
                   </div>
                   <div className="space-y-0.5">
-                    <div className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                    <div
+                      className="text-sm font-medium"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
                       {item.tip}
                     </div>
-                    <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+                    <p
+                      className="text-xs leading-relaxed"
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
                       {item.detail}
                     </p>
                   </div>
@@ -594,11 +689,7 @@ export default function HomePage() {
       </section>
 
       {/* ── 9. QUICK-CREATE ──────────────────────────────────────────────────── */}
-      <section
-        ref={quickCreateRef}
-        id="quick-create"
-        className="px-6 py-20"
-      >
+      <section ref={quickCreateRef} id="quick-create" className="px-6 py-20">
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <motion.div
             className="space-y-8"
@@ -629,8 +720,8 @@ export default function HomePage() {
                   <input
                     type="text"
                     value={name}
-                    onChange={e => setName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleCreate()}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
                     placeholder="Dein Name (optional)"
                     maxLength={30}
                     className="w-full px-4 py-3 rounded-xl text-base outline-none border"
@@ -665,7 +756,10 @@ export default function HomePage() {
                       fill="var(--color-primary-light)"
                       aria-hidden="true"
                     />
-                    <p className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    <p
+                      className="text-xl font-semibold"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
                       Dein Raum ist bereit.
                     </p>
                     <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
@@ -679,7 +773,10 @@ export default function HomePage() {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 25, delay: 0.1 }}
                   >
-                    <div className="p-4 rounded-2xl" style={{ background: 'var(--color-bg-elevated)' }}>
+                    <div
+                      className="p-4 rounded-2xl"
+                      style={{ background: 'var(--color-bg-elevated)' }}
+                    >
                       <QRCodeSVG
                         value={createdRoom!.inviteUrl}
                         size={160}
@@ -694,7 +791,9 @@ export default function HomePage() {
                     className="text-center py-3 rounded-2xl"
                     style={{ background: 'var(--color-bg-elevated)' }}
                   >
-                    <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Einladungscode</div>
+                    <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>
+                      Einladungscode
+                    </div>
                     <div
                       className="text-2xl font-bold tracking-widest font-mono"
                       style={{ color: 'var(--color-text-primary)', letterSpacing: '0.2em' }}
@@ -706,12 +805,19 @@ export default function HomePage() {
                   <button
                     onClick={copyLink}
                     className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl text-base font-medium transition-opacity hover:opacity-80"
-                    style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
+                    style={{
+                      background: 'var(--color-bg-elevated)',
+                      color: 'var(--color-text-primary)',
+                    }}
                   >
                     {copied ? (
-                      <><Check className="w-4 h-4" aria-hidden="true" /> Link kopiert!</>
+                      <>
+                        <Check className="w-4 h-4" aria-hidden="true" /> Link kopiert!
+                      </>
                     ) : (
-                      <><Link2 className="w-4 h-4" aria-hidden="true" /> Link kopieren</>
+                      <>
+                        <Link2 className="w-4 h-4" aria-hidden="true" /> Link kopieren
+                      </>
                     )}
                   </button>
 
@@ -749,8 +855,8 @@ export default function HomePage() {
             Deine Meinung macht Rosenraum besser.
           </h2>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-            Rosenraum ist ein kleines Projekt mit großer Idee. Was hat gut funktioniert?
-            Was war schwierig? Jede Rückmeldung hilft uns.
+            Rosenraum ist ein kleines Projekt mit großer Idee. Was hat gut funktioniert? Was war
+            schwierig? Jede Rückmeldung hilft uns.
           </p>
           <motion.button
             onClick={() => setShowFeedback(true)}
@@ -768,8 +874,16 @@ export default function HomePage() {
         className="px-6 py-10 text-center space-y-2"
         style={{ borderTop: '1px solid var(--color-border-subtle)' }}
       >
-        <p className="text-sm font-medium flex items-center justify-center gap-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-          <Heart className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-primary)' }} fill="var(--color-primary)" aria-hidden="true" />
+        <p
+          className="text-sm font-medium flex items-center justify-center gap-1.5"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          <Heart
+            className="w-4 h-4 flex-shrink-0"
+            style={{ color: 'var(--color-primary)' }}
+            fill="var(--color-primary)"
+            aria-hidden="true"
+          />
           Rosenraum — Ein Raum für echte Gespräche.
         </p>
         <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
@@ -793,7 +907,6 @@ export default function HomePage() {
       <AnimatePresence>
         {showFeedback && <FeedbackSheet source="landing" onClose={() => setShowFeedback(false)} />}
       </AnimatePresence>
-
     </div>
   )
 }

@@ -59,8 +59,12 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (!roomId) return
-    getRoom(roomId).then(room => {
-      if (!room) { setNotFound(true); setLoading(false); return }
+    getRoom(roomId).then((room) => {
+      if (!room) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
       const pid = getOrCreateParticipantId(roomId)
       setParticipantId(pid)
       setInviteCode(room.inviteCode)
@@ -72,7 +76,10 @@ export default function RoomPage() {
     if (!roomId || loading) return
     const unsubMsgs = subscribeToMessages(roomId, setMessages)
     const unsubParts = subscribeToParticipants(roomId, setParticipants)
-    return () => { unsubMsgs(); unsubParts() }
+    return () => {
+      unsubMsgs()
+      unsubParts()
+    }
   }, [roomId, loading])
 
   useEffect(() => {
@@ -83,21 +90,20 @@ export default function RoomPage() {
     setPendingText(text)
   }, [])
 
-  const handleConfirmSend = useCallback(async (
-    text: string,
-    version: SendVersion,
-    rosenbergText?: string
-  ) => {
-    setPendingText(null)
-    if (!participantId) return
-    await sendMessage(roomId, {
-      senderId: participantId,
-      originalText: pendingText ?? text,
-      rosenbergText: rosenbergText,
-      sentVersion: version,
-      hasLearningDots: !!rosenbergText,
-    })
-  }, [participantId, roomId, pendingText])
+  const handleConfirmSend = useCallback(
+    async (text: string, version: SendVersion, rosenbergText?: string) => {
+      setPendingText(null)
+      if (!participantId) return
+      await sendMessage(roomId, {
+        senderId: participantId,
+        originalText: pendingText ?? text,
+        rosenbergText: rosenbergText,
+        sentVersion: version,
+        hasLearningDots: !!rosenbergText,
+      })
+    },
+    [participantId, roomId, pendingText]
+  )
 
   async function copyInviteLink() {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
@@ -124,11 +130,19 @@ export default function RoomPage() {
         style={{ background: 'var(--color-bg-page)' }}
       >
         <div className="space-y-3">
-          <Leaf className="w-10 h-10 mx-auto" style={{ color: 'var(--color-text-muted)' }} aria-hidden="true" />
+          <Leaf
+            className="w-10 h-10 mx-auto"
+            style={{ color: 'var(--color-text-muted)' }}
+            aria-hidden="true"
+          />
           <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Dieser Raum existiert nicht
           </h1>
-          <button onClick={() => router.push('/')} className="text-sm" style={{ color: 'var(--color-primary)' }}>
+          <button
+            onClick={() => router.push('/')}
+            className="text-sm"
+            style={{ color: 'var(--color-primary)' }}
+          >
             Zurück zur Startseite
           </button>
         </div>
@@ -138,8 +152,13 @@ export default function RoomPage() {
 
   if (loading) {
     return (
-      <main className="flex items-center justify-center min-h-dvh" style={{ background: 'var(--color-bg-page)' }}>
-        <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Lade Raum…</div>
+      <main
+        className="flex items-center justify-center min-h-dvh"
+        style={{ background: 'var(--color-bg-page)' }}
+      >
+        <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+          Lade Raum…
+        </div>
       </main>
     )
   }
@@ -208,8 +227,12 @@ export default function RoomPage() {
 
         {/* Name + Status */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
-            {myName ?? 'Ich'}{partnerName ? ` & ${partnerName}` : ''}
+          <p
+            className="text-sm font-semibold truncate"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
+            {myName ?? 'Ich'}
+            {partnerName ? ` & ${partnerName}` : ''}
           </p>
           <div className="flex items-center gap-1.5 h-4">
             <AnimatePresence mode="wait">
@@ -227,7 +250,9 @@ export default function RoomPage() {
                     animate={{ scale: [1, 1.5, 1] }}
                     transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
                   />
-                  <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Verbunden</span>
+                  <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    Verbunden
+                  </span>
                 </motion.div>
               ) : (
                 <motion.span
@@ -247,7 +272,7 @@ export default function RoomPage() {
 
         {/* Lernverlauf-Button — nur sichtbar wenn eigene Lern-Nachrichten existieren */}
         <AnimatePresence>
-          {messages.some(m => m.senderId === participantId && m.hasLearningDots) && (
+          {messages.some((m) => m.senderId === participantId && m.hasLearningDots) && (
             <motion.button
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -256,7 +281,10 @@ export default function RoomPage() {
               whileTap={{ scale: 0.88 }}
               onClick={() => setShowLernverlauf(true)}
               className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
-              style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-elevated)' }}
+              style={{
+                color: 'var(--color-text-secondary)',
+                background: 'var(--color-bg-elevated)',
+              }}
               aria-label="Lernverlauf anzeigen"
             >
               <BookOpen size={16} strokeWidth={2} aria-hidden="true" />
@@ -280,9 +308,10 @@ export default function RoomPage() {
           whileTap={{ scale: 0.88 }}
           onClick={() => setShowInvite(true)}
           className="flex-shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl font-medium transition-opacity hover:opacity-80"
-          style={partnerCount < 2
-            ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' }
-            : { background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }
+          style={
+            partnerCount < 2
+              ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' }
+              : { background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }
           }
           aria-label="Einladen"
         >
@@ -292,10 +321,7 @@ export default function RoomPage() {
       </div>
 
       {/* ── Messages ───────────────────────────────────────────────────────────── */}
-      <div
-        className="flex-1 overflow-y-auto pt-4 messages-area"
-        style={{ scrollbarWidth: 'none' }}
-      >
+      <div className="flex-1 overflow-y-auto pt-4 messages-area" style={{ scrollbarWidth: 'none' }}>
         {messages.length === 0 ? (
           <AnimatePresence mode="wait">
             {partnerCount < 2 ? (
@@ -319,11 +345,16 @@ export default function RoomPage() {
                     fill="var(--color-primary-light)"
                     aria-hidden="true"
                   />
-                  <p className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  <p
+                    className="text-base font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     Dein Raum ist bereit.
                   </p>
                   <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                    Teile den Code mit einer Person,<br />der du vertraust.
+                    Teile den Code mit einer Person,
+                    <br />
+                    der du vertraust.
                   </p>
                 </motion.div>
 
@@ -363,7 +394,10 @@ export default function RoomPage() {
                       onClick={copyInviteLink}
                       whileTap={{ scale: 0.97 }}
                       className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
-                      style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+                      style={{
+                        background: 'var(--color-primary)',
+                        color: 'var(--color-on-primary)',
+                      }}
                     >
                       <AnimatePresence mode="wait">
                         {copied ? (
@@ -412,7 +446,11 @@ export default function RoomPage() {
                 transition={{ duration: 0.25 }}
                 className="flex flex-col items-center justify-center h-full text-center gap-2 py-20"
               >
-                <Sparkles className="w-8 h-8 mx-auto mb-1" style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
+                <Sparkles
+                  className="w-8 h-8 mx-auto mb-1"
+                  style={{ color: 'var(--color-primary-light)' }}
+                  aria-hidden="true"
+                />
                 <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                   Ihr seid beide hier. Sag einfach hallo.
                 </p>
@@ -434,25 +472,26 @@ export default function RoomPage() {
                 const prevDate = i > 0 ? messages[i - 1].timestamp?.toDate() : null
                 if (!prevDate || prevDate.toDateString() !== msgDate.toDateString()) {
                   acc.push(
-                    <div
-                      key={`sep-${msg.id}`}
-                      className="flex items-center gap-3 px-4 py-2"
-                    >
-                      <div className="flex-1 h-px" style={{ background: 'var(--color-border-subtle)' }} />
-                      <span style={{ fontSize: 'var(--text-micro)', color: 'var(--color-text-muted)' }}>
+                    <div key={`sep-${msg.id}`} className="flex items-center gap-3 px-4 py-2">
+                      <div
+                        className="flex-1 h-px"
+                        style={{ background: 'var(--color-border-subtle)' }}
+                      />
+                      <span
+                        style={{ fontSize: 'var(--text-micro)', color: 'var(--color-text-muted)' }}
+                      >
                         {getDateLabel(msgDate)}
                       </span>
-                      <div className="flex-1 h-px" style={{ background: 'var(--color-border-subtle)' }} />
+                      <div
+                        className="flex-1 h-px"
+                        style={{ background: 'var(--color-border-subtle)' }}
+                      />
                     </div>
                   )
                 }
               }
               acc.push(
-                <ChatBubble
-                  key={msg.id}
-                  message={msg}
-                  isOwn={msg.senderId === participantId}
-                />
+                <ChatBubble key={msg.id} message={msg} isOwn={msg.senderId === participantId} />
               )
               return acc
             }, [])}
@@ -464,7 +503,7 @@ export default function RoomPage() {
       {/* ── Input + Statistik-Icon ─────────────────────────────────────────────── */}
       <div className="flex-shrink-0 relative">
         {/* Statistik-Icon links unten — nur sichtbar wenn eigene Nachrichten mit GFK existieren */}
-        {messages.some(m => m.senderId === participantId && m.hasLearningDots) && (
+        {messages.some((m) => m.senderId === participantId && m.hasLearningDots) && (
           <motion.button
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -493,9 +532,7 @@ export default function RoomPage() {
 
       {/* ── Theme Sheet ────────────────────────────────────────────────────────── */}
       <AnimatePresence>
-        {showTheme && (
-          <ThemeSheet onClose={() => setShowTheme(false)} />
-        )}
+        {showTheme && <ThemeSheet onClose={() => setShowTheme(false)} />}
       </AnimatePresence>
 
       {/* ── Lernverlauf Sheet ──────────────────────────────────────────────────── */}
@@ -535,11 +572,7 @@ export default function RoomPage() {
       {/* ── Feedback Sheet ─────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {showFeedback && (
-          <FeedbackSheet
-            source="room"
-            roomId={roomId}
-            onClose={() => setShowFeedback(false)}
-          />
+          <FeedbackSheet source="room" roomId={roomId} onClose={() => setShowFeedback(false)} />
         )}
       </AnimatePresence>
     </main>

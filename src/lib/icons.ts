@@ -1,14 +1,38 @@
 import {
   // actions
-  Plus, Check, X, Link2, Copy, Send, Trash2, Pencil, Search, Settings, Palette,
+  Plus,
+  Check,
+  X,
+  Link2,
+  Copy,
+  Send,
+  Trash2,
+  Pencil,
+  Search,
+  Settings,
+  Palette,
   // navigation
-  ArrowLeft, ArrowRight, ChevronDown, ChevronRight, Menu,
+  ArrowLeft,
+  ArrowRight,
+  ChevronDown,
+  ChevronRight,
+  Menu,
   // status
-  CircleCheck, CircleAlert, TriangleAlert, Info, Loader,
+  CircleCheck,
+  CircleAlert,
+  TriangleAlert,
+  Info,
+  Loader,
   // alerts / mood
-  Heart, Leaf, Sparkles, Star, Eye,
+  Heart,
+  Leaf,
+  Sparkles,
+  Star,
+  Eye,
   // empty states
-  Inbox, MessageCircle, Hash,
+  Inbox,
+  MessageCircle,
+  Hash,
   type LucideIcon,
 } from 'lucide-react'
 

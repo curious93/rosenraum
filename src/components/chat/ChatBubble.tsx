@@ -25,9 +25,10 @@ export interface ChatBubbleProps {
 export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
   const [showModal, setShowModal] = useState(false)
 
-  const sentText = message.sentVersion === 'rosenberg' && message.rosenbergText
-    ? message.rosenbergText
-    : message.originalText
+  const sentText =
+    message.sentVersion === 'rosenberg' && message.rosenbergText
+      ? message.rosenbergText
+      : message.originalText
 
   const canLearn = isOwn && !!message.rosenbergText
 
@@ -46,9 +47,10 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
         layout
         initial={{ opacity: 0, scale: isOwn ? 0.75 : 0.88, y: isOwn ? 12 : 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={isOwn
-          ? { type: 'spring', stiffness: 500, damping: 22, mass: 0.6 }
-          : { type: 'spring', stiffness: 400, damping: 28, mass: 0.8 }
+        transition={
+          isOwn
+            ? { type: 'spring', stiffness: 500, damping: 22, mass: 0.6 }
+            : { type: 'spring', stiffness: 400, damping: 28, mass: 0.8 }
         }
         className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} px-4 mb-1`}
       >
@@ -91,17 +93,15 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
             className="mt-0.5"
             style={{ fontSize: 'var(--text-micro)', color: 'var(--color-text-muted)' }}
           >
-            {message.timestamp.toDate().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+            {message.timestamp
+              .toDate()
+              .toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
           </div>
         )}
       </motion.div>
 
       {/* Lern-Modal */}
-      <LernModal
-        message={message}
-        open={showModal}
-        onClose={() => setShowModal(false)}
-      />
+      <LernModal message={message} open={showModal} onClose={() => setShowModal(false)} />
     </>
   )
 }

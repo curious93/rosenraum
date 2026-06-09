@@ -37,7 +37,10 @@ export default function JoinPage() {
   }
 
   function handleCodeChange(value: string) {
-    const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
+    const cleaned = value
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 6)
     setError('')
     setCode(cleaned)
     if (cleaned.length === 6) handleJoinWithCode(cleaned)
@@ -60,8 +63,16 @@ export default function JoinPage() {
         >
           ← Zurück
         </Link>
-        <span className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--color-text-muted)' }}>
-          <Heart className="w-3.5 h-3.5" style={{ color: 'var(--color-primary)' }} fill="var(--color-primary)" aria-hidden="true" />
+        <span
+          className="text-sm font-medium flex items-center gap-1.5"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          <Heart
+            className="w-3.5 h-3.5"
+            style={{ color: 'var(--color-primary)' }}
+            fill="var(--color-primary)"
+            aria-hidden="true"
+          />
           Rosenraum
         </span>
         <div style={{ width: '4rem' }} />
@@ -88,7 +99,7 @@ export default function JoinPage() {
           <input
             type="text"
             value={code}
-            onChange={e => handleCodeChange(e.target.value)}
+            onChange={(e) => handleCodeChange(e.target.value)}
             placeholder="z.B. K3XM7R"
             autoCapitalize="characters"
             autoComplete="off"
@@ -103,7 +114,7 @@ export default function JoinPage() {
               letterSpacing: '0.25em',
               transition: 'border-color 200ms',
             }}
-            onKeyDown={e => e.key === 'Enter' && handleJoin()}
+            onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
           />
           <div className="flex justify-between mt-1.5 px-1">
             <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
@@ -111,7 +122,9 @@ export default function JoinPage() {
             </span>
             <span
               className="text-xs font-mono"
-              style={{ color: code.length === 6 ? 'var(--color-primary)' : 'var(--color-text-muted)' }}
+              style={{
+                color: code.length === 6 ? 'var(--color-primary)' : 'var(--color-text-muted)',
+              }}
             >
               {code.length}/6
             </span>

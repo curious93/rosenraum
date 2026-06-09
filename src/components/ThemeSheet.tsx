@@ -41,7 +41,7 @@ export function ThemeSheet({ onClose }: ThemeSheetProps) {
 
   useEffect(() => {
     fetch('/api/credits')
-      .then(r => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((d: { balanceEur?: number } | null) => {
         if (d?.balanceEur !== undefined) setBalance(d.balanceEur)
       })
@@ -110,7 +110,9 @@ export function ThemeSheet({ onClose }: ThemeSheetProps) {
                 role="radio"
                 aria-checked={mode === id}
                 className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium"
-                style={{ color: mode === id ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}
+                style={{
+                  color: mode === id ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                }}
               >
                 {mode === id && (
                   <motion.span
@@ -134,7 +136,7 @@ export function ThemeSheet({ onClose }: ThemeSheetProps) {
           </p>
 
           <div className="grid grid-cols-3 gap-3">
-            {THEMES.map(theme => (
+            {THEMES.map((theme) => (
               <motion.button
                 key={theme.id}
                 onClick={() => handleSelect(theme.id)}
@@ -185,10 +187,7 @@ export function ThemeSheet({ onClose }: ThemeSheetProps) {
 
           {/* Guthaben */}
           {balance !== null && (
-            <p
-              className="mt-4 text-xs text-right"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
+            <p className="mt-4 text-xs text-right" style={{ color: 'var(--color-text-muted)' }}>
               KI-Guthaben: {balance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
             </p>
           )}

@@ -77,7 +77,7 @@ async function sha256(text: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(text)
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
   return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
+    .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 }
 
@@ -282,12 +282,9 @@ export function subscribeToMessages(
   roomId: string,
   onMessages: (messages: Message[]) => void
 ): Unsubscribe {
-  const q = query(
-    collection(db, 'rooms', roomId, 'messages'),
-    orderBy('timestamp', 'asc')
-  )
-  return onSnapshot(q, snapshot => {
-    const messages: Message[] = snapshot.docs.map(d => ({
+  const q = query(collection(db, 'rooms', roomId, 'messages'), orderBy('timestamp', 'asc'))
+  return onSnapshot(q, (snapshot) => {
+    const messages: Message[] = snapshot.docs.map((d) => ({
       id: d.id,
       ...(d.data() as Omit<Message, 'id'>),
     }))
@@ -306,9 +303,9 @@ export function subscribeToParticipants(
   roomId: string,
   onParticipants: (participants: Record<string, Participant>) => void
 ): Unsubscribe {
-  return onSnapshot(collection(db, 'rooms', roomId, 'participants'), snapshot => {
+  return onSnapshot(collection(db, 'rooms', roomId, 'participants'), (snapshot) => {
     const result: Record<string, Participant> = {}
-    snapshot.docs.forEach(d => {
+    snapshot.docs.forEach((d) => {
       result[d.id] = d.data() as Participant
     })
     onParticipants(result)

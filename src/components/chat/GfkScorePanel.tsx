@@ -17,12 +17,15 @@ export interface GfkScorePanelProps {
 
 const DIMENSIONS = [
   { key: 'beobachtung' as const, label: 'Beobachtung', color: 'var(--color-gfk-beobachtung)' },
-  { key: 'gefuehl'     as const, label: 'Gefühl',      color: 'var(--color-gfk-gefuehl)'     },
-  { key: 'beduerfnis'  as const, label: 'Bedürfnis',   color: 'var(--color-gfk-beduerfnis)'  },
-  { key: 'bitte'       as const, label: 'Bitte',       color: 'var(--color-gfk-bitte)'       },
+  { key: 'gefuehl' as const, label: 'Gefühl', color: 'var(--color-gfk-gefuehl)' },
+  { key: 'beduerfnis' as const, label: 'Bedürfnis', color: 'var(--color-gfk-beduerfnis)' },
+  { key: 'bitte' as const, label: 'Bitte', color: 'var(--color-gfk-bitte)' },
 ] as const
 
-function renderHighlightedText(text: string, dims: GfkScoreResult['dimensions']): React.ReactNode[] {
+function renderHighlightedText(
+  text: string,
+  dims: GfkScoreResult['dimensions']
+): React.ReactNode[] {
   type Seg = { start: number; end: number; dimKey: string; color: string }
   const segments: Seg[] = []
   for (const dim of DIMENSIONS) {
@@ -48,7 +51,16 @@ function renderHighlightedText(text: string, dims: GfkScoreResult['dimensions'])
   for (const seg of merged) {
     if (seg.start > cursor) nodes.push(text.slice(cursor, seg.start))
     nodes.push(
-      <mark key={`${seg.dimKey}-${seg.start}`} style={{ background: `${seg.color}30`, borderRadius: '3px', paddingInline: '1px', color: 'inherit', boxShadow: `inset 0 -2px 0 ${seg.color}` }}>
+      <mark
+        key={`${seg.dimKey}-${seg.start}`}
+        style={{
+          background: `${seg.color}30`,
+          borderRadius: '3px',
+          paddingInline: '1px',
+          color: 'inherit',
+          boxShadow: `inset 0 -2px 0 ${seg.color}`,
+        }}
+      >
         {text.slice(seg.start, seg.end)}
       </mark>
     )
@@ -69,30 +81,45 @@ function renderHighlightedText(text: string, dims: GfkScoreResult['dimensions'])
  * @returns GfkScorePanel JSX
  */
 export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanelProps) {
-  const alreadyOpen = !loading && score !== null &&
-    DIMENSIONS.every(d => (score.dimensions[d.key]?.score ?? 0) >= 7)
+  const alreadyOpen =
+    !loading &&
+    score !== null &&
+    DIMENSIONS.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 7)
 
   const total = score?.total ?? 0
   const hasScore = score !== null
 
-  const motivationalText = loading ? null
-    : !hasScore ? null
-    : alreadyOpen ? null
-    : total >= 7 ? 'Gut formuliert ✓'
-    : total >= 4 ? 'Fast da — noch ein Schritt'
-    : 'Kleine Anpassungen können viel bewirken'
+  const motivationalText = loading
+    ? null
+    : !hasScore
+      ? null
+      : alreadyOpen
+        ? null
+        : total >= 7
+          ? 'Gut formuliert ✓'
+          : total >= 4
+            ? 'Fast da — noch ein Schritt'
+            : 'Kleine Anpassungen können viel bewirken'
 
-  const motivationalColor = total >= 7
-    ? 'var(--color-gfk-beduerfnis)'
-    : total >= 4 ? 'var(--color-text-secondary)'
-    : 'var(--color-text-muted)'
+  const motivationalColor =
+    total >= 7
+      ? 'var(--color-gfk-beduerfnis)'
+      : total >= 4
+        ? 'var(--color-text-secondary)'
+        : 'var(--color-text-muted)'
 
   return (
     <div
       className="rounded-2xl p-3.5 mb-3"
-      style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+      style={{
+        background: 'var(--color-bg-elevated)',
+        border: '1px solid var(--color-border-subtle)',
+      }}
     >
-      <p className="text-xs font-medium mb-2.5 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+      <p
+        className="text-xs font-medium mb-2.5 uppercase tracking-wide"
+        style={{ color: 'var(--color-text-muted)' }}
+      >
         Dein GFK-Lernfeedback
       </p>
 
@@ -106,7 +133,8 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
             {DIMENSIONS.map((dim, idx) => {
               const dimScore = hasScore ? (score!.dimensions[dim.key]?.score ?? 0) : 0
               const prevDimScore = prevScore?.dimensions[dim.key]?.score ?? null
-              const delta = prevDimScore !== null && !loading && hasScore ? dimScore - prevDimScore : 0
+              const delta =
+                prevDimScore !== null && !loading && hasScore ? dimScore - prevDimScore : 0
               // Skeleton only on initial load (no score yet) — keep bars stable during re-scoring
               const initialLoad = loading && !hasScore
               const barColor = hasScore ? dim.color : 'var(--color-skeleton)'
@@ -114,7 +142,10 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
 
               return (
                 <div key={dim.key} className="flex items-center gap-2">
-                  <span className="text-xs w-20 flex-shrink-0" style={{ color: 'var(--color-text-secondary)' }}>
+                  <span
+                    className="text-xs w-20 flex-shrink-0"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
                     {dim.label}
                   </span>
 
@@ -129,7 +160,10 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
                       >
                         <motion.div
                           className="absolute inset-0 rounded-full"
-                          style={{ background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)' }}
+                          style={{
+                            background:
+                              'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)',
+                          }}
                           animate={{ x: ['-100%', '200%'] }}
                           transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
                         />
@@ -140,7 +174,11 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
                           <motion.div
                             key={`ghost-${dim.key}-${prevDimScore}-${dimScore}`}
                             className="absolute top-0 bottom-0 rounded-full z-10"
-                            style={{ left: `${prevDimScore * 10}%`, width: '2px', background: dim.color }}
+                            style={{
+                              left: `${prevDimScore * 10}%`,
+                              width: '2px',
+                              background: dim.color,
+                            }}
                             initial={{ opacity: 0.5 }}
                             animate={{ opacity: 0 }}
                             transition={{ duration: 1.5, delay: 0.4 }}
@@ -151,13 +189,21 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
                           style={{ background: barColor }}
                           initial={{ width: '0%' }}
                           animate={{ width: hasScore ? `${dimScore * 10}%` : '0%' }}
-                          transition={{ type: 'spring', stiffness: 180, damping: 22, delay: 0.05 * idx }}
+                          transition={{
+                            type: 'spring',
+                            stiffness: 180,
+                            damping: 22,
+                            delay: 0.05 * idx,
+                          }}
                         />
                       </>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-end gap-1" style={{ minWidth: '2.5rem' }}>
+                  <div
+                    className="flex items-center justify-end gap-1"
+                    style={{ minWidth: '2.5rem' }}
+                  >
                     <span className="text-xs tabular-nums" style={{ color: labelColor }}>
                       {!hasScore ? '–' : dimScore}
                     </span>
@@ -165,7 +211,10 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
                       <motion.span
                         key={`delta-${dim.key}-${prevDimScore}-${dimScore}`}
                         className="text-xs tabular-nums font-semibold"
-                        style={{ color: delta > 0 ? 'var(--color-gfk-beduerfnis)' : 'var(--color-gfk-gefuehl)' }}
+                        style={{
+                          color:
+                            delta > 0 ? 'var(--color-gfk-beduerfnis)' : 'var(--color-gfk-gefuehl)',
+                        }}
                         initial={{ opacity: 1, y: delta > 0 ? 4 : -4 }}
                         animate={{ opacity: 0, y: 0 }}
                         transition={{ duration: 1.5, delay: 0.3 }}
@@ -185,16 +234,26 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
             </p>
           )}
 
-          {!loading && hasScore && score!.dimensions && (() => {
-            const nodes = renderHighlightedText(text, score!.dimensions)
-            const hasSpans = nodes.length > 1 || (nodes.length === 1 && typeof nodes[0] !== 'string')
-            if (!hasSpans) return null
-            return (
-              <p className="text-sm leading-relaxed mt-3 pt-3" style={{ color: 'var(--color-text-primary)', borderTop: '1px solid var(--color-border-subtle)' }}>
-                {nodes}
-              </p>
-            )
-          })()}
+          {!loading &&
+            hasScore &&
+            score!.dimensions &&
+            (() => {
+              const nodes = renderHighlightedText(text, score!.dimensions)
+              const hasSpans =
+                nodes.length > 1 || (nodes.length === 1 && typeof nodes[0] !== 'string')
+              if (!hasSpans) return null
+              return (
+                <p
+                  className="text-sm leading-relaxed mt-3 pt-3"
+                  style={{
+                    color: 'var(--color-text-primary)',
+                    borderTop: '1px solid var(--color-border-subtle)',
+                  }}
+                >
+                  {nodes}
+                </p>
+              )
+            })()}
         </>
       )}
     </div>

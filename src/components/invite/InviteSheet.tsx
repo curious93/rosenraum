@@ -62,10 +62,7 @@ export function InviteSheet({ inviteCode, inviteUrl, onClose }: InviteSheetProps
       >
         {/* Handle */}
         <div className="flex justify-center -mt-1">
-          <div
-            className="w-10 h-1 rounded-full"
-            style={{ background: 'var(--color-border)' }}
-          />
+          <div className="w-10 h-1 rounded-full" style={{ background: 'var(--color-border)' }} />
         </div>
 
         <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
@@ -79,16 +76,28 @@ export function InviteSheet({ inviteCode, inviteUrl, onClose }: InviteSheetProps
           style={{ background: 'var(--color-bg-elevated)' }}
         >
           <span className="flex-shrink-0">
-            {copied
-              ? <Check className="w-5 h-5" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
-              : <Link2 className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} aria-hidden="true" />
-            }
+            {copied ? (
+              <Check
+                className="w-5 h-5"
+                style={{ color: 'var(--color-primary)' }}
+                aria-hidden="true"
+              />
+            ) : (
+              <Link2
+                className="w-5 h-5"
+                style={{ color: 'var(--color-text-secondary)' }}
+                aria-hidden="true"
+              />
+            )}
           </span>
           <div>
             <div className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
               {copied ? 'Link kopiert!' : 'Link kopieren'}
             </div>
-            <div className="text-xs truncate mt-0.5" style={{ color: 'var(--color-text-muted)', maxWidth: '240px' }}>
+            <div
+              className="text-xs truncate mt-0.5"
+              style={{ color: 'var(--color-text-muted)', maxWidth: '240px' }}
+            >
               {inviteUrl}
             </div>
           </div>
@@ -100,7 +109,9 @@ export function InviteSheet({ inviteCode, inviteUrl, onClose }: InviteSheetProps
           style={{ background: 'var(--color-bg-elevated)' }}
         >
           <div>
-            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Einladungscode</div>
+            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              Einladungscode
+            </div>
             <div
               className="text-2xl font-bold tracking-widest mt-0.5 font-mono"
               style={{ color: 'var(--color-text-primary)', letterSpacing: '0.2em' }}
@@ -108,15 +119,16 @@ export function InviteSheet({ inviteCode, inviteUrl, onClose }: InviteSheetProps
               {inviteCode}
             </div>
           </div>
-          <Hash className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-text-muted)' }} aria-hidden="true" />
+          <Hash
+            className="w-5 h-5 flex-shrink-0"
+            style={{ color: 'var(--color-text-muted)' }}
+            aria-hidden="true"
+          />
         </div>
 
         {/* QR-Code */}
         <div className="flex justify-center py-2">
-          <div
-            className="p-4 rounded-2xl"
-            style={{ background: 'var(--color-bg-elevated)' }}
-          >
+          <div className="p-4 rounded-2xl" style={{ background: 'var(--color-bg-elevated)' }}>
             <QRCodeSVG
               value={inviteUrl}
               size={160}

@@ -31,7 +31,7 @@ export function InfoTooltip({ text, label = 'Mehr Informationen' }: InfoTooltipP
         onMouseLeave={() => setVisible(false)}
         onFocus={() => setVisible(true)}
         onBlur={() => setVisible(false)}
-        onClick={() => setVisible(v => !v)}
+        onClick={() => setVisible((v) => !v)}
         className="w-4 h-4 rounded-full inline-flex items-center justify-center text-xs leading-none flex-shrink-0 transition-opacity hover:opacity-80"
         style={{
           background: 'var(--color-bg-elevated)',
@@ -67,7 +67,8 @@ export function InfoTooltip({ text, label = 'Mehr Informationen' }: InfoTooltipP
             <span
               className="absolute top-full left-1/2 -translate-x-1/2 -translate-y-px"
               style={{
-                width: 0, height: 0,
+                width: 0,
+                height: 0,
                 borderLeft: '5px solid transparent',
                 borderRight: '5px solid transparent',
                 borderTop: '5px solid var(--color-text-primary)',

@@ -58,12 +58,18 @@ export function LernModal({ message, open, onClose }: LernModalProps) {
           >
             {/* Drag handle */}
             <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full" style={{ background: 'var(--color-border)' }} />
+              <div
+                className="w-10 h-1 rounded-full"
+                style={{ background: 'var(--color-border)' }}
+              />
             </div>
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-3 pb-4">
-              <h2 className="font-semibold text-base" style={{ color: 'var(--color-text-primary)' }}>
+              <h2
+                className="font-semibold text-base"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
                 Was hat sich verändert?
               </h2>
               <button
@@ -77,7 +83,6 @@ export function LernModal({ message, open, onClose }: LernModalProps) {
             </div>
 
             <div className="px-5 pb-2 flex flex-col gap-4">
-
               {/* Deine Formulierung */}
               <div>
                 <div
@@ -123,7 +128,9 @@ export function LernModal({ message, open, onClose }: LernModalProps) {
               >
                 <div
                   className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ background: sentGfk ? 'var(--color-dot-learning)' : 'var(--color-text-muted)' }}
+                  style={{
+                    background: sentGfk ? 'var(--color-dot-learning)' : 'var(--color-text-muted)',
+                  }}
                 />
                 <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   {sentGfk

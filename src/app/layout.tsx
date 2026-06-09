@@ -19,9 +19,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="de" className="h-full" suppressHydrationWarning>
       <head>
         {/* viewport-fit=cover is required for env(safe-area-inset-*) to work on iOS notch devices */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+        />
         {/* Restores stored theme + colour mode before first paint to avoid a flash */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('rosenraum_theme');if(t&&t!=='rose')d.setAttribute('data-theme',t);var m=localStorage.getItem('rosenraum_mode')||'system';var dark=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);if(dark)d.classList.add('dark')}catch(e){}})()` }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('rosenraum_theme');if(t&&t!=='rose')d.setAttribute('data-theme',t);var m=localStorage.getItem('rosenraum_mode')||'system';var dark=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);if(dark)d.classList.add('dark')}catch(e){}})()`,
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <PageTransition>{children}</PageTransition>

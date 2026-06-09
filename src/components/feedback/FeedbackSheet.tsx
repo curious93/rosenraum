@@ -11,7 +11,6 @@ interface FeedbackSheetProps {
   onClose: () => void
 }
 
-
 const RATINGS: Array<{ id: FeedbackRating; emoji: string; label: string }> = [
   { id: 'sad', emoji: '😕', label: 'Schwierig' },
   { id: 'happy', emoji: '🙂', label: 'Gut' },
@@ -43,14 +42,25 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
     await fetch('/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text || undefined, rating: rating ?? undefined, email: email || undefined, source, roomId }),
+      body: JSON.stringify({
+        text: text || undefined,
+        rating: rating ?? undefined,
+        email: email || undefined,
+        source,
+        roomId,
+      }),
     })
 
     const style = getComputedStyle(document.documentElement)
     const colors = [
-      '--color-primary', '--color-bubble-gfk', '--color-bubble-own',
-      '--color-primary-light', '--color-text-secondary',
-    ].map(v => style.getPropertyValue(v).trim()).filter(Boolean)
+      '--color-primary',
+      '--color-bubble-gfk',
+      '--color-bubble-own',
+      '--color-primary-light',
+      '--color-text-secondary',
+    ]
+      .map((v) => style.getPropertyValue(v).trim())
+      .filter(Boolean)
     confetti({ particleCount: 90, spread: 70, origin: { y: 0.7 }, colors, scalar: 0.9 })
 
     setLoading(false)
@@ -82,7 +92,10 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 28, stiffness: 320 }}
       >
-        <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'var(--color-border)' }} />
+        <div
+          className="w-10 h-1 rounded-full mx-auto mb-5"
+          style={{ background: 'var(--color-border)' }}
+        />
 
         <AnimatePresence mode="wait">
           {done ? (
@@ -103,7 +116,10 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
           ) : (
             <motion.div key="form" className="space-y-4">
               <div className="space-y-1">
-                <h2 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                <h2
+                  className="text-base font-semibold"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
                   Wie war deine Erfahrung?
                 </h2>
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
@@ -113,10 +129,10 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
 
               {/* Emoji-Bewertung */}
               <div className="flex gap-3 justify-center py-1">
-                {RATINGS.map(r => (
+                {RATINGS.map((r) => (
                   <button
                     key={r.id}
-                    onClick={() => setRating(v => v === r.id ? null : r.id)}
+                    onClick={() => setRating((v) => (v === r.id ? null : r.id))}
                     className="flex flex-col items-center gap-1 px-4 py-2.5 rounded-2xl transition-all"
                     style={{
                       background: rating === r.id ? 'var(--color-bg-elevated)' : 'transparent',
@@ -127,7 +143,9 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
                     aria-pressed={rating === r.id}
                   >
                     <span style={{ fontSize: '1.5rem' }}>{r.emoji}</span>
-                    <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{r.label}</span>
+                    <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                      {r.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -135,7 +153,7 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
               {/* Freitext */}
               <textarea
                 value={text}
-                onChange={e => setText(e.target.value)}
+                onChange={(e) => setText(e.target.value)}
                 placeholder="Was hat gut funktioniert? Was war schwierig? (optional)"
                 rows={3}
                 maxLength={2000}
@@ -152,7 +170,7 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
               <input
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="E-Mail (optional — falls wir uns melden dürfen)"
                 className="w-full rounded-2xl px-3 py-2.5 text-sm outline-none"
                 style={{
@@ -167,7 +185,10 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
                 <button
                   onClick={onClose}
                   className="flex-1 py-3 rounded-2xl text-sm font-medium transition-opacity hover:opacity-70"
-                  style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }}
+                  style={{
+                    background: 'var(--color-bg-elevated)',
+                    color: 'var(--color-text-secondary)',
+                  }}
                 >
                   Abbrechen
                 </button>

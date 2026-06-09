@@ -52,7 +52,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
       let result = await scoreMessage(originalText)
       if (cancelled) return
       if (result === null) {
-        await new Promise(r => setTimeout(r, 1000))
+        await new Promise((r) => setTimeout(r, 1000))
         if (cancelled) return
         result = await scoreMessage(originalText)
         if (cancelled) return
@@ -64,8 +64,10 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     run().catch(() => {
       if (!cancelled) setScoreLoading(false)
     })
-    return () => { cancelled = true }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Focus textarea on mount
@@ -85,7 +87,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     if (editedText === originalText) return
     const scoreTimer = setTimeout(() => {
       setScoreLoading(true)
-      scoreMessage(editedText).then(result => {
+      scoreMessage(editedText).then((result) => {
         if (result !== null) {
           setPrevScore(scoreRef.current)
           scoreRef.current = result
@@ -95,14 +97,14 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
       })
     }, 800)
     return () => clearTimeout(scoreTimer)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editedText])
 
   function handleInspire() {
     setShowExample(true)
     if (rosenbergText === null || editedText !== originalText) {
       setAnalyzing(true)
-      analyzeMessage(editedText).then(result => {
+      analyzeMessage(editedText).then((result) => {
         setRosenbergText(result)
         setAnalyzing(false)
       })
@@ -162,7 +164,10 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           prevScore={prevScore}
         />
 
-        <p className="text-xs font-medium mb-3 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+        <p
+          className="text-xs font-medium mb-3 uppercase tracking-wide"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
           Deine Nachricht
         </p>
 
@@ -193,7 +198,9 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
             <GfkVersionCard
               text={rosenbergText}
               selected={selected === 'rosenberg'}
-              onSelect={() => rosenbergText !== null && rosenbergText !== '' && setSelected('rosenberg')}
+              onSelect={() =>
+                rosenbergText !== null && rosenbergText !== '' && setSelected('rosenberg')
+              }
               loading={analyzing}
             />
           )}
@@ -229,7 +236,12 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                   <Check className="w-4 h-4" aria-hidden="true" />
                 </motion.span>
               ) : (
-                <motion.span key="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <motion.span
+                  key="label"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
                   Senden →
                 </motion.span>
               )}
@@ -287,8 +299,8 @@ function VersionCard({ text, onTextChange, onSend, isGreen, textareaRef }: Versi
       <textarea
         ref={textareaRef}
         value={text}
-        onChange={e => onTextChange(e.target.value)}
-        onKeyDown={e => {
+        onChange={(e) => onTextChange(e.target.value)}
+        onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
             onSend()
@@ -328,9 +340,15 @@ function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardPro
       }}
     >
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--color-primary-dark)' }}>
+        <span
+          className="text-xs font-medium flex items-center gap-1"
+          style={{ color: 'var(--color-primary-dark)' }}
+        >
           Rosenraum-Beispiel
-          <InfoTooltip text="Nur zur Inspiration — Rosenraum zeigt wie diese Nachricht in der Gewaltfreien Kommunikation klingen könnte. Du entscheidest immer selbst." label="Was ist das Rosenraum-Beispiel?" />
+          <InfoTooltip
+            text="Nur zur Inspiration — Rosenraum zeigt wie diese Nachricht in der Gewaltfreien Kommunikation klingen könnte. Du entscheidest immer selbst."
+            label="Was ist das Rosenraum-Beispiel?"
+          />
         </span>
         <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
           Nur zur Inspiration
@@ -359,7 +377,10 @@ function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardPro
               >
                 <motion.div
                   className="absolute inset-0 rounded-full"
-                  style={{ background: 'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)' }}
+                  style={{
+                    background:
+                      'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)',
+                  }}
                   animate={{ x: ['-100%', '200%'] }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: 'linear', delay: i * 0.1 }}
                 />

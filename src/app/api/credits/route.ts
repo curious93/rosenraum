@@ -14,5 +14,11 @@ export async function GET() {
 
   // Anthropic stellt keinen öffentlichen Balance-Endpunkt bereit.
   // Guthaben ist nur über die Anthropic Console einsehbar.
-  return NextResponse.json({ error: 'Kein API-Endpunkt verfügbar — bitte in der Anthropic Console prüfen: console.anthropic.com' }, { status: 501 })
+  return NextResponse.json(
+    {
+      error:
+        'Kein API-Endpunkt verfügbar — bitte in der Anthropic Console prüfen: console.anthropic.com',
+    },
+    { status: 501 }
+  )
 }

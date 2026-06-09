@@ -27,13 +27,13 @@ interface StatistikSheetProps {
  * @returns Bottom Sheet JSX
  */
 export function StatistikSheet({ messages, currentUserId, open, onClose }: StatistikSheetProps) {
-  const own = messages.filter(m => m.senderId === currentUserId)
-  const withGfk = own.filter(m => m.hasLearningDots && m.rosenbergText)
-  const sentGfk = withGfk.filter(m => m.sentVersion === 'rosenberg')
-  const sentOriginal = withGfk.filter(m => m.sentVersion === 'original')
+  const own = messages.filter((m) => m.senderId === currentUserId)
+  const withGfk = own.filter((m) => m.hasLearningDots && m.rosenbergText)
+  const sentGfk = withGfk.filter((m) => m.sentVersion === 'rosenberg')
+  const sentOriginal = withGfk.filter((m) => m.sentVersion === 'original')
 
   // Lernkurve: pro Nachricht 1 = GFK gesendet, 0.5 = Original bei vorhandenem Vorschlag, 0 = kein Vorschlag
-  const curvePoints = own.map(m => {
+  const curvePoints = own.map((m) => {
     if (!m.hasLearningDots || !m.rosenbergText) return 0
     return m.sentVersion === 'rosenberg' ? 1 : 0.4
   })
@@ -77,13 +77,19 @@ export function StatistikSheet({ messages, currentUserId, open, onClose }: Stati
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full" style={{ background: 'var(--color-border)' }} />
+              <div
+                className="w-10 h-1 rounded-full"
+                style={{ background: 'var(--color-border)' }}
+              />
             </div>
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-3 pb-5">
               <div>
-                <h2 className="font-semibold text-base" style={{ color: 'var(--color-text-primary)' }}>
+                <h2
+                  className="font-semibold text-base"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
                   Dein Lernweg
                 </h2>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
@@ -101,19 +107,31 @@ export function StatistikSheet({ messages, currentUserId, open, onClose }: Stati
             </div>
 
             <div className="px-5 flex flex-col gap-5 pb-4">
-
               {/* Lernkurve */}
               {withGfk.length >= 2 && (
-                <div
-                  className="rounded-2xl p-4"
-                  style={{ background: 'var(--color-bg-elevated)' }}
-                >
-                  <p className="text-xs font-medium mb-3 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+                <div className="rounded-2xl p-4" style={{ background: 'var(--color-bg-elevated)' }}>
+                  <p
+                    className="text-xs font-medium mb-3 uppercase tracking-wide"
+                    style={{ color: 'var(--color-text-muted)' }}
+                  >
                     Offenheit im Verlauf
                   </p>
-                  <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: '100%', height: 'auto' }}>
+                  <svg
+                    width={svgW}
+                    height={svgH}
+                    viewBox={`0 0 ${svgW} ${svgH}`}
+                    style={{ width: '100%', height: 'auto' }}
+                  >
                     {/* Grid-Linie */}
-                    <line x1="0" y1={svgH / 2} x2={svgW} y2={svgH / 2} stroke="var(--color-border)" strokeWidth="1" strokeDasharray="4 4" />
+                    <line
+                      x1="0"
+                      y1={svgH / 2}
+                      x2={svgW}
+                      y2={svgH / 2}
+                      stroke="var(--color-border)"
+                      strokeWidth="1"
+                      strokeDasharray="4 4"
+                    />
                     {/* Kurve */}
                     <path
                       d={pathD}
@@ -149,7 +167,10 @@ export function StatistikSheet({ messages, currentUserId, open, onClose }: Stati
                     className="rounded-xl p-3 text-center"
                     style={{ background: 'var(--color-bg-elevated)' }}
                   >
-                    <div className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    <div
+                      className="text-xl font-semibold"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
                       {value}
                     </div>
                     <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
@@ -163,16 +184,28 @@ export function StatistikSheet({ messages, currentUserId, open, onClose }: Stati
               {withGfk.length > 0 && (
                 <div className="flex flex-col gap-2">
                   {sentGfk.length > 0 && (
-                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: 'var(--color-bubble-gfk)' }}>
-                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--color-dot-learning)' }} />
+                    <div
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                      style={{ background: 'var(--color-bubble-gfk)' }}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ background: 'var(--color-dot-learning)' }}
+                      />
                       <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
                         {sentGfk.length}× Rosenraum-Vorschlag gesendet
                       </span>
                     </div>
                   )}
                   {sentOriginal.length > 0 && (
-                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: 'var(--color-bg-elevated)' }}>
-                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--color-text-muted)' }} />
+                    <div
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                      style={{ background: 'var(--color-bg-elevated)' }}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ background: 'var(--color-text-muted)' }}
+                      />
                       <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                         {sentOriginal.length}× eigene Version behalten
                       </span>
@@ -182,7 +215,10 @@ export function StatistikSheet({ messages, currentUserId, open, onClose }: Stati
               )}
 
               {/* Warmer Abschluss */}
-              <p className="text-sm text-center pb-1" style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
+              <p
+                className="text-sm text-center pb-1"
+                style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}
+              >
                 {withGfk.length === 0
                   ? 'Noch keine Transformationen in dieser Unterhaltung.'
                   : 'Jede Unterhaltung ist anders. Kein Ergebnis — nur ein Blick.'}

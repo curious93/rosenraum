@@ -40,7 +40,7 @@ export async function scoreMessage(text: string): Promise<GfkScoreResult | null>
     })
     clearTimeout(timeout)
     if (!res.ok) return null
-    return await res.json() as GfkScoreResult
+    return (await res.json()) as GfkScoreResult
   } catch {
     clearTimeout(timeout)
     return null

@@ -18,7 +18,7 @@ const DialogOverlay = React.forwardRef<
     ref={ref}
     className={cn(
       'fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-      className,
+      className
     )}
     {...props}
   />
@@ -36,7 +36,7 @@ const DialogContent = React.forwardRef<
       className={cn(
         'fixed left-1/2 top-1/2 z-50 grid w-full max-w-[var(--max-width-sheet)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-[var(--shadow-md)] focus:outline-none',
         'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-        className,
+        className
       )}
       {...props}
     >
@@ -59,7 +59,12 @@ function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
 
 /** Dialog footer — actions, right-aligned with primary last. */
 function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)} {...props} />
+  return (
+    <div
+      className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}
+      {...props}
+    />
+  )
 }
 
 const DialogTitle = React.forwardRef<
@@ -74,11 +79,23 @@ const DialogDescription = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn('text-sm text-muted-foreground', className)}
+    {...props}
+  />
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
 export {
-  Dialog, DialogTrigger, DialogClose, DialogContent, DialogHeader,
-  DialogFooter, DialogTitle, DialogDescription, DialogOverlay, DialogPortal,
+  Dialog,
+  DialogTrigger,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
 }

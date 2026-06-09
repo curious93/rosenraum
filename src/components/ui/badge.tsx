@@ -16,12 +16,11 @@ const badgeVariants = cva(
       },
     },
     defaultVariants: { variant: 'default' },
-  },
+  }
 )
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLSpanElement>,
-    VariantProps<typeof badgeVariants> {}
+  extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}
 
 /** Small status/label chip. Use icon + text for status, never colour alone. */
 function Badge({ className, variant, ...props }: BadgeProps) {

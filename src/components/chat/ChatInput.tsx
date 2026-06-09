@@ -23,7 +23,11 @@ export interface ChatInputProps {
  * @param props.placeholder - Platzhaltertext
  * @returns ChatInput JSX
  */
-export function ChatInput({ onSend, disabled = false, placeholder = 'Schreib etwas…' }: ChatInputProps) {
+export function ChatInput({
+  onSend,
+  disabled = false,
+  placeholder = 'Schreib etwas…',
+}: ChatInputProps) {
   const [text, setText] = useState('')
   const [focused, setFocused] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -74,7 +78,7 @@ export function ChatInput({ onSend, disabled = false, placeholder = 'Schreib etw
         <textarea
           ref={textareaRef}
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
@@ -102,12 +106,27 @@ export function ChatInput({ onSend, disabled = false, placeholder = 'Schreib etw
           aria-label="Senden"
         >
           <motion.svg
-            width="15" height="15" viewBox="0 0 24 24" fill="none"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
             animate={{ x: canSend ? 0 : -1 }}
             transition={{ duration: 0.15 }}
           >
-            <path d="M22 2L11 13" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path
+              d="M22 2L11 13"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M22 2L15 22L11 13L2 9L22 2Z"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </motion.svg>
         </motion.button>
       </div>

@@ -27,8 +27,12 @@ export default function JoinByCodePage() {
 
   useEffect(() => {
     if (!code) return
-    getRoomByCode(code).then(async id => {
-      if (!id) { setNotFound(true); setLoading(false); return }
+    getRoomByCode(code).then(async (id) => {
+      if (!id) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
       setRoomId(id)
       const room = await getRoom(id)
       setNeedsPin(!!room?.pin)
@@ -80,7 +84,11 @@ export default function JoinByCodePage() {
         style={{ background: 'var(--color-bg-page)' }}
       >
         <div className="space-y-4">
-          <Leaf className="w-10 h-10 mx-auto" style={{ color: 'var(--color-text-muted)' }} aria-hidden="true" />
+          <Leaf
+            className="w-10 h-10 mx-auto"
+            style={{ color: 'var(--color-text-muted)' }}
+            aria-hidden="true"
+          />
           <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Dieser Raum existiert nicht
           </h1>
@@ -116,8 +124,16 @@ export default function JoinByCodePage() {
         >
           ← Zurück
         </Link>
-        <span className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--color-text-muted)' }}>
-          <Heart className="w-3.5 h-3.5" style={{ color: 'var(--color-primary)' }} fill="var(--color-primary)" aria-hidden="true" />
+        <span
+          className="text-sm font-medium flex items-center gap-1.5"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          <Heart
+            className="w-3.5 h-3.5"
+            style={{ color: 'var(--color-primary)' }}
+            fill="var(--color-primary)"
+            aria-hidden="true"
+          />
           Rosenraum
         </span>
         <div style={{ width: '4rem' }} />
@@ -132,7 +148,12 @@ export default function JoinByCodePage() {
         }}
       >
         <div className="space-y-1">
-          <Heart className="w-8 h-8 mb-2 mx-auto" style={{ color: 'var(--color-primary)' }} fill="var(--color-primary-light)" aria-hidden="true" />
+          <Heart
+            className="w-8 h-8 mb-2 mx-auto"
+            style={{ color: 'var(--color-primary)' }}
+            fill="var(--color-primary-light)"
+            aria-hidden="true"
+          />
           <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Du wurdest eingeladen
           </h1>
@@ -145,7 +166,7 @@ export default function JoinByCodePage() {
           <input
             type="text"
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Dein Name (optional)"
             maxLength={30}
             autoFocus
@@ -155,14 +176,14 @@ export default function JoinByCodePage() {
               borderColor: 'var(--color-border)',
               color: 'var(--color-text-primary)',
             }}
-            onKeyDown={e => e.key === 'Enter' && !needsPin && handleJoin()}
+            onKeyDown={(e) => e.key === 'Enter' && !needsPin && handleJoin()}
           />
 
           {needsPin && (
             <input
               type="tel"
               value={pin}
-              onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="PIN eingeben"
               inputMode="numeric"
               className="w-full px-4 py-3 rounded-xl text-base outline-none border tracking-widest transition-colors"

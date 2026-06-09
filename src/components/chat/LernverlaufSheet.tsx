@@ -26,7 +26,7 @@ export interface LernverlaufSheetProps {
  */
 export function LernverlaufSheet({ messages, participantId, onClose }: LernverlaufSheetProps) {
   const learningMessages = messages.filter(
-    m => m.senderId === participantId && m.hasLearningDots && m.rosenbergText
+    (m) => m.senderId === participantId && m.hasLearningDots && m.rosenbergText
   )
 
   return (
@@ -58,7 +58,10 @@ export function LernverlaufSheet({ messages, participantId, onClose }: Lernverla
       >
         {/* Drag Handle */}
         <div className="pt-5 px-4 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'var(--color-border)' }} />
+          <div
+            className="w-10 h-1 rounded-full mx-auto mb-4"
+            style={{ background: 'var(--color-border)' }}
+          />
 
           <div className="flex items-center justify-between mb-1">
             <h2 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
@@ -128,7 +131,10 @@ function LernCard({ message, index }: LernCardProps) {
     >
       {/* Original */}
       <div className="space-y-1">
-        <span className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+        <span
+          className="text-xs font-medium uppercase tracking-wide"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
           Deine Version
         </span>
         <div
@@ -144,12 +150,17 @@ function LernCard({ message, index }: LernCardProps) {
 
       {/* Arrow */}
       <div className="flex justify-center">
-        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>↓</span>
+        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          ↓
+        </span>
       </div>
 
       {/* GFK version */}
       <div className="space-y-1">
-        <span className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+        <span
+          className="text-xs font-medium uppercase tracking-wide"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
           GFK-Version
         </span>
         <div
@@ -187,9 +198,15 @@ function EmptyLernverlauf() {
       animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center py-12 text-center gap-3"
     >
-      <div className="text-3xl" aria-hidden="true">🌱</div>
-      <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)', maxWidth: '240px' }}>
-        Wenn die KI eine alternative Formulierung vorschlägt, siehst du sie hier — als ruhige Einladung zur Reflexion.
+      <div className="text-3xl" aria-hidden="true">
+        🌱
+      </div>
+      <p
+        className="text-sm leading-relaxed"
+        style={{ color: 'var(--color-text-secondary)', maxWidth: '240px' }}
+      >
+        Wenn die KI eine alternative Formulierung vorschlägt, siehst du sie hier — als ruhige
+        Einladung zur Reflexion.
       </p>
     </motion.div>
   )

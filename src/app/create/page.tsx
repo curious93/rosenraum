@@ -55,8 +55,16 @@ export default function CreatePage() {
         >
           ← Zurück
         </Link>
-        <span className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--color-text-muted)' }}>
-          <Heart className="w-3.5 h-3.5" style={{ color: 'var(--color-primary)' }} fill="var(--color-primary)" aria-hidden="true" />
+        <span
+          className="text-sm font-medium flex items-center gap-1.5"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          <Heart
+            className="w-3.5 h-3.5"
+            style={{ color: 'var(--color-primary)' }}
+            fill="var(--color-primary)"
+            aria-hidden="true"
+          />
           Rosenraum
         </span>
         <div style={{ width: '4rem' }} />
@@ -71,10 +79,7 @@ export default function CreatePage() {
         }}
       >
         <div className="space-y-1">
-          <h1
-            className="text-2xl font-semibold"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
+          <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Neuen Raum erstellen
           </h1>
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
@@ -86,7 +91,7 @@ export default function CreatePage() {
           <input
             type="text"
             value={participantName}
-            onChange={e => setParticipantName(e.target.value)}
+            onChange={(e) => setParticipantName(e.target.value)}
             placeholder="Dein Name, z.B. Lena"
             maxLength={30}
             autoFocus
@@ -96,7 +101,7 @@ export default function CreatePage() {
               borderColor: 'var(--color-border)',
               color: 'var(--color-text-primary)',
             }}
-            onKeyDown={e => e.key === 'Enter' && !showPin && handleCreate()}
+            onKeyDown={(e) => e.key === 'Enter' && !showPin && handleCreate()}
           />
 
           {/* PIN-Toggle */}
@@ -105,7 +110,7 @@ export default function CreatePage() {
               <button
                 type="button"
                 onClick={() => {
-                  setShowPin(v => !v)
+                  setShowPin((v) => !v)
                   if (showPin) setPin('')
                 }}
                 className="text-sm flex items-center gap-1.5 transition-opacity hover:opacity-70"
@@ -114,7 +119,10 @@ export default function CreatePage() {
                 <span>{showPin ? '✕' : '+'}</span>
                 <span>{showPin ? 'PIN entfernen' : 'PIN hinzufügen (optional)'}</span>
               </button>
-              <InfoTooltip text="Ein PIN schützt deinen Raum. Nur Personen mit dem richtigen PIN können beitreten. 4–6 Ziffern." label="Was bewirkt der PIN?" />
+              <InfoTooltip
+                text="Ein PIN schützt deinen Raum. Nur Personen mit dem richtigen PIN können beitreten. 4–6 Ziffern."
+                label="Was bewirkt der PIN?"
+              />
             </div>
 
             {showPin && (
@@ -122,7 +130,7 @@ export default function CreatePage() {
                 <input
                   type="tel"
                   value={pin}
-                  onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="4–6 Ziffern"
                   inputMode="numeric"
                   className="w-full px-4 py-3 rounded-xl text-base outline-none border transition-colors tracking-widest"

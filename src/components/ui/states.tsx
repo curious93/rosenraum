@@ -30,7 +30,12 @@ export function EmptyState({
 }: StateProps & { icon?: IconName }) {
   const Icon = icons[icon]
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-3 px-6 py-12 text-center', className)}>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center gap-3 px-6 py-12 text-center',
+        className
+      )}
+    >
       <Icon className="size-10 text-muted-foreground" aria-hidden="true" />
       <div className="space-y-1">
         <p className="font-medium text-foreground">{title}</p>
@@ -54,8 +59,14 @@ export function LoadingState({ rows = 3, className }: { rows?: number; className
     <div className={cn('space-y-3 p-6', className)} role="status" aria-label="Wird geladen">
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="flex flex-col gap-2">
-          <div className="h-4 w-2/3 animate-pulse rounded-md" style={{ background: 'var(--color-skeleton)' }} />
-          <div className="h-4 w-full animate-pulse rounded-md" style={{ background: 'var(--color-skeleton)' }} />
+          <div
+            className="h-4 w-2/3 animate-pulse rounded-md"
+            style={{ background: 'var(--color-skeleton)' }}
+          />
+          <div
+            className="h-4 w-full animate-pulse rounded-md"
+            style={{ background: 'var(--color-skeleton)' }}
+          />
         </div>
       ))}
     </div>
@@ -72,7 +83,13 @@ export function LoadingState({ rows = 3, className }: { rows?: number; className
 export function ErrorState({ title, description, action, className }: StateProps) {
   const Icon = icons.error
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-3 px-6 py-12 text-center', className)} role="alert">
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center gap-3 px-6 py-12 text-center',
+        className
+      )}
+      role="alert"
+    >
       <Icon className="size-10" style={{ color: 'var(--color-destructive)' }} aria-hidden="true" />
       <div className="space-y-1">
         <p className="font-medium text-foreground">{title}</p>
