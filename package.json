@@ -16,7 +16,8 @@
     "check:registry": "node scripts/check-registry.mjs",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
-    "test:a11y": "playwright test tests/a11y"
+    "test:a11y": "playwright test tests/a11y",
+    "prepare": "husky"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.16",
@@ -51,6 +52,7 @@
     "eslint-config-next": "16.2.7",
     "eslint-plugin-jsdoc": "^63.0.2",
     "globals": "^17.6.0",
+    "husky": "^9.1.7",
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8.60.1"
