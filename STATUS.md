@@ -9,6 +9,7 @@
 
 | Commit | Feature | CI | Live |
 |--------|---------|----|----|
+| `a984ad7` | fix: 8s fetch timeout — skeleton hängt nie mehr ewig | ✅ | 🔄 läuft |
 | `43bdf91` | fix: minInstances=1 + freundlicher Fehlertext | ✅ | ✅ |
 | `d5ecf96` | fix: immer 4 Bars, Cold-Start-Retry, Skeleton nur beim Fetch | ✅ | ✅ |
 | `1be017c` | feat: GFK Scoring UI — alle 7 Fixes | ✅ | ✅ |
