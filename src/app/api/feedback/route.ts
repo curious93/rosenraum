@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { FieldValue } from 'firebase-admin/firestore'
-import { adminDb } from '@/lib/firebaseAdmin'
+import { getAdminDb } from '@/lib/firebaseAdmin'
 
 /** Emoji-Bewertung */
 export type FeedbackRating = 'sad' | 'happy' | 'love'
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await adminDb.collection('feedback').add(data)
+    await getAdminDb().collection('feedback').add(data)
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('feedback write error:', err)
