@@ -45,15 +45,23 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   const scoreRef = useRef<GfkScoreResult | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Initial score on mount
+  // Initial score on mount — with one retry for cold starts
   useEffect(() => {
     let cancelled = false
-    scoreMessage(originalText).then(result => {
+    const run = async () => {
+      let result = await scoreMessage(originalText)
       if (cancelled) return
+      if (result === null) {
+        await new Promise(r => setTimeout(r, 2000))
+        if (cancelled) return
+        result = await scoreMessage(originalText)
+        if (cancelled) return
+      }
       scoreRef.current = result
       setScore(result)
       setScoreLoading(false)
-    })
+    }
+    run()
     return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -70,19 +78,21 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     return () => clearTimeout(t)
   }, [])
 
-  // Re-score when user edits text (debounced 800ms)
+  // Re-score when user edits text — skeleton starts only when fetch fires, not while typing
   useEffect(() => {
     if (editedText === originalText) return
-    const loadTimer = setTimeout(() => setScoreLoading(true), 0)
     const scoreTimer = setTimeout(() => {
+      setScoreLoading(true)
       scoreMessage(editedText).then(result => {
-        setPrevScore(scoreRef.current)
-        scoreRef.current = result
-        setScore(result)
+        if (result !== null) {
+          setPrevScore(scoreRef.current)
+          scoreRef.current = result
+          setScore(result)
+        }
         setScoreLoading(false)
       })
     }, 800)
-    return () => { clearTimeout(loadTimer); clearTimeout(scoreTimer) }
+    return () => clearTimeout(scoreTimer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editedText])
 

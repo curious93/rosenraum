@@ -106,24 +106,10 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
     DIMENSIONS.every(d => (score.dimensions[d.key]?.score ?? 0) >= 7)
 
   const total = score?.total ?? 0
-
-  // Dimensions mit Score >= 3 oder Spans → prominente Anzeige
-  const presentDims = loading
-    ? [...DIMENSIONS]
-    : DIMENSIONS.filter(d => {
-        const dim = score?.dimensions[d.key]
-        return dim && (dim.score >= 3 || dim.spans.length > 0)
-      })
-
-  // Dimensionen ohne Relevanz → kollabiert
-  const collapsedDims = loading
-    ? []
-    : DIMENSIONS.filter(d => {
-        const dim = score?.dimensions[d.key]
-        return !dim || (dim.score < 3 && dim.spans.length === 0)
-      })
+  const hasScore = score !== null
 
   const motivationalText = loading ? null
+    : !hasScore ? null
     : alreadyOpen ? null
     : total >= 7 ? 'Gut formuliert ✓'
     : total >= 4 ? 'Fast da — noch ein Schritt'
@@ -144,9 +130,9 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
       </p>
 
       {/* Highlighted text — nur nach dem Laden */}
-      {!loading && score && (
+      {!loading && hasScore && (
         <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--color-text-primary)' }}>
-          {renderHighlightedText(text, score.dimensions)}
+          {renderHighlightedText(text, score!.dimensions)}
         </p>
       )}
 
@@ -157,10 +143,12 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
       ) : (
         <>
           <div className="space-y-2">
-            {(loading ? [...DIMENSIONS] : presentDims).map((dim, idx) => {
-              const dimScore = score?.dimensions[dim.key]?.score ?? 0
+            {DIMENSIONS.map((dim, idx) => {
+              const dimScore = hasScore ? (score!.dimensions[dim.key]?.score ?? 0) : 0
               const prevDimScore = prevScore?.dimensions[dim.key]?.score ?? null
-              const delta = prevDimScore !== null && !loading ? dimScore - prevDimScore : 0
+              const delta = prevDimScore !== null && !loading && hasScore ? dimScore - prevDimScore : 0
+              const barColor = loading || !hasScore ? 'var(--color-skeleton)' : dim.color
+              const labelColor = loading ? 'var(--color-text-muted)' : hasScore ? dim.color : 'var(--color-text-muted)'
 
               return (
                 <div key={dim.key} className="flex items-center gap-2">
@@ -186,16 +174,11 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
                       </div>
                     ) : (
                       <>
-                        {/* Ghost-Linie: zeigt wo der Score vorher war */}
-                        {prevDimScore !== null && prevDimScore !== dimScore && (
+                        {prevDimScore !== null && prevDimScore !== dimScore && hasScore && (
                           <motion.div
                             key={`ghost-${dim.key}-${prevDimScore}-${dimScore}`}
                             className="absolute top-0 bottom-0 rounded-full z-10"
-                            style={{
-                              left: `${prevDimScore * 10}%`,
-                              width: '2px',
-                              background: dim.color,
-                            }}
+                            style={{ left: `${prevDimScore * 10}%`, width: '2px', background: dim.color }}
                             initial={{ opacity: 0.5 }}
                             animate={{ opacity: 0 }}
                             transition={{ duration: 1.5, delay: 0.4 }}
@@ -203,9 +186,9 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
                         )}
                         <motion.div
                           className="h-full rounded-full"
-                          style={{ background: dim.color }}
+                          style={{ background: barColor }}
                           initial={{ width: '0%' }}
-                          animate={{ width: `${dimScore * 10}%` }}
+                          animate={{ width: hasScore ? `${dimScore * 10}%` : '0%' }}
                           transition={{ type: 'spring', stiffness: 180, damping: 22, delay: 0.05 * idx }}
                         />
                       </>
@@ -213,13 +196,9 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
                   </div>
 
                   <div className="flex items-center justify-end gap-1" style={{ minWidth: '2.5rem' }}>
-                    <span
-                      className="text-xs tabular-nums"
-                      style={{ color: loading ? 'var(--color-text-muted)' : dim.color }}
-                    >
-                      {loading ? '–' : dimScore}
+                    <span className="text-xs tabular-nums" style={{ color: labelColor }}>
+                      {loading || !hasScore ? '–' : dimScore}
                     </span>
-                    {/* Delta-Badge: erscheint kurz und faded aus */}
                     {!loading && delta !== 0 && (
                       <motion.span
                         key={`delta-${dim.key}-${prevDimScore}-${dimScore}`}
@@ -238,14 +217,6 @@ export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanel
             })}
           </div>
 
-          {/* Kollabierte Dimensionen */}
-          {!loading && collapsedDims.length > 0 && (
-            <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
-              Nicht adressiert: {collapsedDims.map(d => d.label).join(' · ')}
-            </p>
-          )}
-
-          {/* Motivationstext */}
           {motivationalText && (
             <p className="text-xs mt-2 font-medium" style={{ color: motivationalColor }}>
               {motivationalText}
