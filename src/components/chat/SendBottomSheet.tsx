@@ -252,10 +252,10 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
 // ── Internal ──────────────────────────────────────────────────────────────────
 
 const HIGHLIGHT_DIMS = [
-  { key: 'beobachtung' as const, color: '#3B82F6' },
-  { key: 'gefuehl' as const, color: '#F97316' },
-  { key: 'beduerfnis' as const, color: '#22C55E' },
-  { key: 'bitte' as const, color: '#A855F7' },
+  { key: 'beobachtung' as const, color: 'var(--color-gfk-beobachtung)' },
+  { key: 'gefuehl' as const, color: 'var(--color-gfk-gefuehl)' },
+  { key: 'beduerfnis' as const, color: 'var(--color-gfk-beduerfnis)' },
+  { key: 'bitte' as const, color: 'var(--color-gfk-bitte)' },
 ] as const
 
 function buildHighlightNodes(text: string, dims: GfkScoreResult['dimensions']): React.ReactNode[] {
@@ -281,7 +281,7 @@ function buildHighlightNodes(text: string, dims: GfkScoreResult['dimensions']): 
       <mark
         key={seg.start}
         style={{
-          background: `${seg.color}38`,
+          background: `color-mix(in srgb, ${seg.color} 22%, transparent)`,
           borderRadius: '3px',
           color: 'transparent',
           boxShadow: `inset 0 -2px 0 ${seg.color}`,
