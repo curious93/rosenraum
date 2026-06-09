@@ -45,14 +45,14 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   const scoreRef = useRef<GfkScoreResult | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Initial score on mount — with one retry for cold starts
+  // Initial score on mount — with one retry, always ends loading state
   useEffect(() => {
     let cancelled = false
     const run = async () => {
       let result = await scoreMessage(originalText)
       if (cancelled) return
       if (result === null) {
-        await new Promise(r => setTimeout(r, 2000))
+        await new Promise(r => setTimeout(r, 1000))
         if (cancelled) return
         result = await scoreMessage(originalText)
         if (cancelled) return
@@ -61,7 +61,9 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
       setScore(result)
       setScoreLoading(false)
     }
-    run()
+    run().catch(() => {
+      if (!cancelled) setScoreLoading(false)
+    })
     return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

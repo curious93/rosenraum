@@ -29,16 +29,20 @@ export interface GfkScoreResult {
  * @returns GfkScoreResult oder null bei Fehler
  */
 export async function scoreMessage(text: string): Promise<GfkScoreResult | null> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 8000)
   try {
     const res = await fetch('/api/score', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
+      signal: controller.signal,
     })
+    clearTimeout(timeout)
     if (!res.ok) return null
-    const data: GfkScoreResult = await res.json()
-    return data
+    return await res.json() as GfkScoreResult
   } catch {
+    clearTimeout(timeout)
     return null
   }
 }
