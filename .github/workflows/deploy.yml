@@ -35,7 +35,7 @@ jobs:
             -d "{\"source\":{\"codebase\":{\"commit\":\"$COMMIT_SHA\"}}}" \
             "$BASE/builds?buildId=$BUILD_ID")
           echo "Build API response: $BUILD_OP"
-          echo "$BUILD_OP" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Operation:', d.get('name','?'))" || { echo "Build creation failed"; exit 1; }
+          echo "$BUILD_OP" | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(1) if 'error' in d else print('Operation:', d.get('name','?'))" || { echo "Build creation failed (see response above)"; exit 1; }
 
           # Wait for build to complete (max 10 min)
           echo "Waiting for build..."
