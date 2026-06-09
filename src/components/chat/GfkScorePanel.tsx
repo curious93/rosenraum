@@ -21,7 +21,28 @@ const DIMENSIONS = [
 ] as const
 
 /**
- * GFK-Score-Panel: animierte Balken pro Dimension, Delta-Badges und motivierender Text.
+ * Liefert den motivierenden Leitsatz zum aktuellen Score (oder null).
+ * Wird prominent oberhalb des Panels gerendert, nicht mehr im Panel selbst.
+ *
+ * @param score - Scoring-Ergebnis, null solange nicht geladen
+ * @param loading - Ob die Analyse noch läuft
+ * @returns Text + Farbe, oder null wenn nichts anzuzeigen ist
+ */
+export function gfkMotivation(
+  score: GfkScoreResult | null,
+  loading: boolean
+): { text: string; color: string } | null {
+  if (loading || score === null) return null
+  const allOpen = DIMENSIONS.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 7)
+  if (allOpen) return null
+  const total = score.total ?? 0
+  if (total >= 7) return { text: 'Gut formuliert ✓', color: 'var(--color-gfk-beduerfnis)' }
+  if (total >= 4) return { text: 'Fast da — noch ein Schritt', color: 'var(--color-text-primary)' }
+  return { text: 'Kleine Anpassungen können viel bewirken', color: 'var(--color-text-primary)' }
+}
+
+/**
+ * GFK-Score-Panel: animierte Balken pro Dimension mit Delta-Badges.
  *
  * @param props - Panel-Props
  * @param props.score - Scoring-Ergebnis, null solange nicht geladen
@@ -35,27 +56,7 @@ export function GfkScorePanel({ score, loading, prevScore }: GfkScorePanelProps)
     score !== null &&
     DIMENSIONS.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 7)
 
-  const total = score?.total ?? 0
   const hasScore = score !== null
-
-  const motivationalText = loading
-    ? null
-    : !hasScore
-      ? null
-      : alreadyOpen
-        ? null
-        : total >= 7
-          ? 'Gut formuliert ✓'
-          : total >= 4
-            ? 'Fast da — noch ein Schritt'
-            : 'Kleine Anpassungen können viel bewirken'
-
-  const motivationalColor =
-    total >= 7
-      ? 'var(--color-gfk-beduerfnis)'
-      : total >= 4
-        ? 'var(--color-text-secondary)'
-        : 'var(--color-text-muted)'
 
   return (
     <div
@@ -191,12 +192,6 @@ export function GfkScorePanel({ score, loading, prevScore }: GfkScorePanelProps)
               )
             })}
           </div>
-
-          {motivationalText && (
-            <p className="text-xs mt-2 font-medium" style={{ color: motivationalColor }}>
-              {motivationalText}
-            </p>
-          )}
         </>
       )}
     </div>

@@ -7,7 +7,7 @@ import { analyzeMessage } from '@/lib/gfkPrompt'
 import { scoreMessage } from '@/lib/gfkScore'
 import type { GfkScoreResult } from '@/lib/gfkScore'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
-import { GfkScorePanel } from './GfkScorePanel'
+import { GfkScorePanel, gfkMotivation } from './GfkScorePanel'
 
 /** Welche Version der Nutzer abschicken möchte */
 export type SendVersion = 'original' | 'rosenberg'
@@ -70,17 +70,8 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Focus textarea on mount
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus()
-        const len = textareaRef.current.value.length
-        textareaRef.current.setSelectionRange(len, len)
-      }
-    }, 300)
-    return () => clearTimeout(t)
-  }, [])
+  // Kein Autofokus beim Öffnen: zuerst die Analyse-Ansicht mit Markierungen
+  // zeigen (Fokus-Umschaltung). Tippen auf den Text wechselt in den Edit-Modus.
 
   // Re-score when user edits text — skeleton starts only when fetch fires, not while typing
   useEffect(() => {
@@ -123,6 +114,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   }
 
   const isGreenScore = !scoreLoading && score !== null && score.total >= 7
+  const motivation = gfkMotivation(score, scoreLoading)
 
   return (
     <>
@@ -155,6 +147,13 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           className="w-10 h-1 rounded-full mx-auto mb-5"
           style={{ background: 'var(--color-border)' }}
         />
+
+        {/* Prominenter Leitsatz — über dem Feedback-Panel */}
+        {motivation && (
+          <p className="text-base font-semibold mb-3 px-0.5" style={{ color: motivation.color }}>
+            {motivation.text}
+          </p>
+        )}
 
         {/* GFK Live-Score Panel */}
         <GfkScorePanel score={score} loading={scoreLoading} prevScore={prevScore} />
@@ -287,8 +286,9 @@ function buildHighlightNodes(text: string, dims: GfkScoreResult['dimensions']): 
         style={{
           background: `color-mix(in srgb, ${seg.color} 22%, transparent)`,
           borderRadius: '3px',
-          color: 'transparent',
+          color: 'inherit',
           boxShadow: `inset 0 -2px 0 ${seg.color}`,
+          padding: '1px 0',
         }}
       >
         {text.slice(seg.start, seg.end)}
@@ -309,9 +309,27 @@ interface VersionCardProps {
   score: GfkScoreResult | null
 }
 
+// Gemeinsames Text-Layout für Textarea und Mark-Ansicht — gleiche Umbrüche/Optik.
+const cardTextStyle: React.CSSProperties = {
+  boxSizing: 'border-box',
+  fontFamily: 'inherit',
+  fontSize: '16px',
+  lineHeight: '1.5',
+  letterSpacing: 'normal',
+  padding: 0,
+  margin: 0,
+  border: 0,
+  width: '100%',
+  minHeight: '4.5rem',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
+  overflowWrap: 'break-word',
+}
+
 /**
- * Editierbare Karte für die eigene Nachricht. Textarea sofort aktiv, Enter sendet.
- * Highlights werden via Overlay-Technik direkt im Eingabefeld angezeigt.
+ * Editierbare Karte für die eigene Nachricht mit Fokus-Umschaltung:
+ * Beim Tippen eine schlichte Textarea, im Ruhezustand eine schreibgeschützte
+ * Ansicht mit echten <mark>-Spans auf dem Text — kein Overlay, kein Versatz.
  *
  * @param props - Karten-Props
  * @param props.text - Aktueller Nachrichtentext
@@ -319,7 +337,7 @@ interface VersionCardProps {
  * @param props.onSend - Callback zum Senden (Enter-Taste)
  * @param props.isGreen - Grüner Rand wenn Score >= 7
  * @param props.textareaRef - Ref für Fokus-Management
- * @param props.score - GFK-Score für Highlight-Overlay
+ * @param props.score - GFK-Score für die Markierungen
  * @returns VersionCard JSX
  */
 function VersionCard({
@@ -331,24 +349,27 @@ function VersionCard({
   score,
 }: VersionCardProps) {
   const borderColor = isGreen ? 'var(--color-gfk-beduerfnis)' : 'var(--color-primary)'
-  const hasHighlights = score !== null
-  // Identisches Box-Model für Overlay-Div UND Textarea — sonst driften die
-  // Highlights gegenüber dem Text (unterschiedliche Umbruchpunkte/Versatz).
-  const textStyle: React.CSSProperties = {
-    boxSizing: 'border-box',
-    fontFamily: 'inherit',
-    fontSize: '16px',
-    lineHeight: '1.5',
-    letterSpacing: 'normal',
-    padding: 0,
-    margin: 0,
-    border: 0,
-    width: '100%',
-    minHeight: '4.5rem',
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'break-word',
-    overflowWrap: 'break-word',
-  }
+  // Start im Ruhezustand: erst Marks zeigen, Tap auf den Text → Bearbeiten.
+  const [editing, setEditing] = useState(false)
+
+  const hasHighlights =
+    score !== null &&
+    text.length > 0 &&
+    HIGHLIGHT_DIMS.some((d) => score.dimensions[d.key].spans.length > 0)
+
+  // Marks anzeigen, sobald nicht editiert wird und es welche gibt.
+  const showMarks = !editing && hasHighlights
+
+  // Beim Wechsel in den Edit-Modus die Textarea fokussieren (Cursor ans Ende).
+  useEffect(() => {
+    if (editing && textareaRef.current) {
+      const el = textareaRef.current
+      el.focus()
+      const len = el.value.length
+      el.setSelectionRange(len, len)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing])
 
   return (
     <div
@@ -359,41 +380,37 @@ function VersionCard({
         transition: 'border-color 400ms',
       }}
     >
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-          Deine Version
-        </span>
-        {isGreen && (
+      {isGreen && (
+        <div className="flex justify-end mb-1.5">
           <span className="text-xs font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
             ✓ Gut formuliert
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
-      <div style={{ position: 'relative' }}>
-        {/* Highlight overlay — behind textarea */}
-        {hasHighlights && (
-          <div
-            aria-hidden
-            style={{
-              ...textStyle,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              pointerEvents: 'none',
-              userSelect: 'none',
-              color: 'transparent',
-            }}
-          >
-            {buildHighlightNodes(text, score!.dimensions)}
-          </div>
-        )}
-
-        {/* Editable textarea — on top */}
+      {showMarks ? (
+        // Schreibgeschützte Ansicht — echte Marks auf echtem Text, Tap → Bearbeiten
+        <div
+          role="textbox"
+          tabIndex={0}
+          aria-label="Nachricht — tippen zum Bearbeiten"
+          onClick={() => setEditing(true)}
+          onFocus={() => setEditing(true)}
+          style={{
+            ...cardTextStyle,
+            color: 'var(--color-text-primary)',
+            cursor: 'text',
+            outline: 'none',
+          }}
+        >
+          {buildHighlightNodes(text, score!.dimensions)}
+        </div>
+      ) : (
         <textarea
           ref={textareaRef}
           value={text}
           onChange={(e) => onTextChange(e.target.value)}
+          onBlur={() => setEditing(false)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault()
@@ -402,8 +419,7 @@ function VersionCard({
           }}
           rows={3}
           style={{
-            ...textStyle,
-            position: 'relative',
+            ...cardTextStyle,
             display: 'block',
             background: 'transparent',
             color: 'var(--color-text-primary)',
@@ -415,7 +431,7 @@ function VersionCard({
           placeholder="Schreib deine Nachricht..."
           aria-label="Nachricht bearbeiten"
         />
-      </div>
+      )}
     </div>
   )
 }
