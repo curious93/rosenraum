@@ -354,7 +354,7 @@ function GfkVersionCard({ text, selected, onSelect, loading }: GfkVersionCardPro
           Rosenraum-Beispiel
           <InfoTooltip text="Nur zur Inspiration — Rosenraum zeigt wie diese Nachricht in der Gewaltfreien Kommunikation klingen könnte. Du entscheidest immer selbst." label="Was ist das Rosenraum-Beispiel?" />
         </span>
-        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
           Nur zur Inspiration
         </span>
         {selected && (
