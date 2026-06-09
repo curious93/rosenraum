@@ -58,6 +58,16 @@ function renderHighlightedText(text: string, dims: GfkScoreResult['dimensions'])
   return nodes
 }
 
+/**
+ * GFK-Score-Panel: animierte Balken pro Dimension, Delta-Badges und motivierender Text.
+ *
+ * @param props - Panel-Props
+ * @param props.text - Der zu bewertende Nachrichtentext
+ * @param props.score - Scoring-Ergebnis, null solange nicht geladen
+ * @param props.loading - Ob die Analyse noch läuft
+ * @param props.prevScore - Vorheriges Scoring für Delta-Animation
+ * @returns GfkScorePanel JSX
+ */
 export function GfkScorePanel({ text, score, loading, prevScore }: GfkScorePanelProps) {
   const alreadyOpen = !loading && score !== null &&
     DIMENSIONS.every(d => (score.dimensions[d.key]?.score ?? 0) >= 7)
