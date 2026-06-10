@@ -7,7 +7,7 @@ import { analyzeMessage } from '@/lib/gfkPrompt'
 import { scoreMessage } from '@/lib/gfkScore'
 import type { GfkScoreResult } from '@/lib/gfkScore'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
-import { GfkScorePanel } from './GfkScorePanel'
+import { GfkScorePanel, gfkMotivation } from './GfkScorePanel'
 
 /** Welche Version der Nutzer abschicken möchte */
 export type SendVersion = 'original' | 'rosenberg'
@@ -24,7 +24,7 @@ export interface SendBottomSheetProps {
 
 /**
  * Bottom Sheet das die Originalnachricht nach GFK bewertet und optional ein
- * Rosenraum-Beispiel auf Anfrage zeigt. Textarea sofort editierbar, Enter sendet.
+ * Rosenraum-Beispiel auf Anfrage zeigt.
  *
  * @param props - Sheet-Props
  * @param props.originalText - Originalnachricht des Nutzers
@@ -44,6 +44,10 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   const [scoreLoading, setScoreLoading] = useState(true)
   const scoreRef = useRef<GfkScoreResult | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Interaktions-State für bidirektionales Highlighting
+  const [activeDim, setActiveDim] = useState<string | null>(null)
+  const [activeMatchId, setActiveMatchId] = useState<string | null>(null)
 
   // Initial score on mount — with one retry, always ends loading state
   useEffect(() => {
@@ -82,11 +86,13 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     return () => clearTimeout(t)
   }, [])
 
-  // Re-score when user edits text — skeleton starts only when fetch fires, not while typing
+  // Re-score when user edits text
   useEffect(() => {
     if (editedText === originalText) return
     const scoreTimer = setTimeout(() => {
       setScoreLoading(true)
+      setActiveDim(null)
+      setActiveMatchId(null)
       scoreMessage(editedText).then((result) => {
         if (result !== null) {
           setPrevScore(scoreRef.current)
@@ -122,7 +128,23 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     }, 320)
   }
 
+  function handleDimClick(key: string) {
+    setActiveDim((prev) => (prev === key ? null : key))
+    setActiveMatchId(null)
+  }
+
+  function handleMatchClick(dimKey: string, matchId: string) {
+    setActiveDim(dimKey)
+    setActiveMatchId((prev) => (prev === matchId ? null : matchId))
+  }
+
+  function handleSpanClick(matchId: string, dimKey: string) {
+    setActiveDim(dimKey)
+    setActiveMatchId((prev) => (prev === matchId ? null : matchId))
+  }
+
   const isGreenScore = !scoreLoading && score !== null && score.total >= 7
+  const motivation = gfkMotivation(score, scoreLoading)
 
   return (
     <>
@@ -156,8 +178,23 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           style={{ background: 'var(--color-border)' }}
         />
 
+        {/* Prominenter Leitsatz */}
+        {motivation && (
+          <p className="text-base font-semibold mb-3 px-0.5" style={{ color: motivation.color }}>
+            {motivation.text}
+          </p>
+        )}
+
         {/* GFK Live-Score Panel */}
-        <GfkScorePanel score={score} loading={scoreLoading} prevScore={prevScore} />
+        <GfkScorePanel
+          score={score}
+          loading={scoreLoading}
+          prevScore={prevScore}
+          activeDim={activeDim}
+          activeMatchId={activeMatchId}
+          onDimClick={handleDimClick}
+          onMatchClick={handleMatchClick}
+        />
 
         <p
           className="text-xs font-medium mb-3 uppercase tracking-wide"
@@ -167,7 +204,6 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
         </p>
 
         <div className="space-y-2.5 mb-5">
-          {/* Eigene Version — sofort editierbar */}
           <VersionCard
             text={editedText}
             onTextChange={setEditedText}
@@ -175,9 +211,11 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
             isGreen={isGreenScore}
             textareaRef={textareaRef}
             score={score}
+            activeDim={activeDim}
+            activeMatchId={activeMatchId}
+            onSpanClick={handleSpanClick}
           />
 
-          {/* Rosenraum-Beispiel — nur auf Anfrage */}
           {!showExample ? (
             <button
               onClick={handleInspire}
@@ -262,33 +300,80 @@ const HIGHLIGHT_DIMS = [
   { key: 'bitte' as const, color: 'var(--color-gfk-bitte)' },
 ] as const
 
-function buildHighlightNodes(text: string, dims: GfkScoreResult['dimensions']): React.ReactNode[] {
-  type Seg = { start: number; end: number; color: string }
-  const segs: Seg[] = []
+interface AnnotatedSeg {
+  start: number
+  end: number
+  color: string
+  dimKey: string
+  matchId: string | null
+}
+
+function buildHighlightNodes(
+  text: string,
+  dims: GfkScoreResult['dimensions'],
+  activeDim: string | null,
+  activeMatchId: string | null,
+  onSpanClick: (matchId: string, dimKey: string) => void
+): React.ReactNode[] {
+  const segs: AnnotatedSeg[] = []
+
   for (const dim of HIGHLIGHT_DIMS) {
-    for (const [s, e] of dims[dim.key].spans) {
-      if (s >= 0 && e > s && e <= text.length) segs.push({ start: s, end: e, color: dim.color })
+    const dimData = dims[dim.key]
+    if (dimData.matches && dimData.matches.length > 0) {
+      for (const match of dimData.matches) {
+        if (match.start >= 0 && match.end > match.start && match.end <= text.length) {
+          segs.push({
+            start: match.start,
+            end: match.end,
+            color: dim.color,
+            dimKey: dim.key,
+            matchId: match.id,
+          })
+        }
+      }
+    } else {
+      for (const [s, e] of dimData.spans) {
+        if (s >= 0 && e > s && e <= text.length) {
+          segs.push({ start: s, end: e, color: dim.color, dimKey: dim.key, matchId: null })
+        }
+      }
     }
   }
+
   if (segs.length === 0) return [text]
+
   segs.sort((a, b) => a.start - b.start)
-  const merged: Seg[] = []
+
+  const merged: AnnotatedSeg[] = []
   for (const seg of segs) {
-    if (!merged.length || seg.start >= merged[merged.length - 1].end) merged.push({ ...seg })
-    else merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, seg.end)
+    const last = merged[merged.length - 1]
+    if (!last || seg.start >= last.end) {
+      merged.push({ ...seg })
+    } else {
+      merged[merged.length - 1].end = Math.max(last.end, seg.end)
+    }
   }
+
   const nodes: React.ReactNode[] = []
   let cur = 0
+
   for (const seg of merged) {
     if (seg.start > cur) nodes.push(text.slice(cur, seg.start))
+
+    const isActiveDimMatch = activeDim === seg.dimKey
+    const isActiveMatch = activeMatchId !== null && activeMatchId === seg.matchId
+    const intensity = isActiveMatch ? 45 : isActiveDimMatch ? 30 : 18
+
     nodes.push(
       <mark
-        key={seg.start}
+        key={`${seg.start}-${seg.matchId}`}
+        onClick={() => seg.matchId && onSpanClick(seg.matchId, seg.dimKey)}
         style={{
-          background: `color-mix(in srgb, ${seg.color} 22%, transparent)`,
+          background: `color-mix(in srgb, ${seg.color} ${intensity}%, transparent)`,
           borderRadius: '3px',
           color: 'transparent',
           boxShadow: `inset 0 -2px 0 ${seg.color}`,
+          cursor: seg.matchId ? 'pointer' : 'default',
         }}
       >
         {text.slice(seg.start, seg.end)}
@@ -296,6 +381,7 @@ function buildHighlightNodes(text: string, dims: GfkScoreResult['dimensions']): 
     )
     cur = seg.end
   }
+
   if (cur < text.length) nodes.push(text.slice(cur))
   return nodes
 }
@@ -307,21 +393,11 @@ interface VersionCardProps {
   isGreen?: boolean
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
   score: GfkScoreResult | null
+  activeDim: string | null
+  activeMatchId: string | null
+  onSpanClick: (matchId: string, dimKey: string) => void
 }
 
-/**
- * Editierbare Karte für die eigene Nachricht. Textarea sofort aktiv, Enter sendet.
- * Highlights werden via Overlay-Technik direkt im Eingabefeld angezeigt.
- *
- * @param props - Karten-Props
- * @param props.text - Aktueller Nachrichtentext
- * @param props.onTextChange - Callback bei Textänderung
- * @param props.onSend - Callback zum Senden (Enter-Taste)
- * @param props.isGreen - Grüner Rand wenn Score >= 7
- * @param props.textareaRef - Ref für Fokus-Management
- * @param props.score - GFK-Score für Highlight-Overlay
- * @returns VersionCard JSX
- */
 function VersionCard({
   text,
   onTextChange,
@@ -329,11 +405,13 @@ function VersionCard({
   isGreen,
   textareaRef,
   score,
+  activeDim,
+  activeMatchId,
+  onSpanClick,
 }: VersionCardProps) {
   const borderColor = isGreen ? 'var(--color-gfk-beduerfnis)' : 'var(--color-primary)'
   const hasHighlights = score !== null
-  // Identisches Box-Model für Overlay-Div UND Textarea — sonst driften die
-  // Highlights gegenüber dem Text (unterschiedliche Umbruchpunkte/Versatz).
+
   const textStyle: React.CSSProperties = {
     boxSizing: 'border-box',
     fontFamily: 'inherit',
@@ -359,16 +437,13 @@ function VersionCard({
         transition: 'border-color 400ms',
       }}
     >
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-          Deine Version
-        </span>
-        {isGreen && (
+      {isGreen && (
+        <div className="flex justify-end mb-1.5">
           <span className="text-xs font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
             ✓ Gut formuliert
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       <div style={{ position: 'relative' }}>
         {/* Highlight overlay — behind textarea */}
@@ -385,7 +460,7 @@ function VersionCard({
               color: 'transparent',
             }}
           >
-            {buildHighlightNodes(text, score!.dimensions)}
+            {buildHighlightNodes(text, score!.dimensions, activeDim, activeMatchId, onSpanClick)}
           </div>
         )}
 

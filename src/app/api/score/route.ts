@@ -1,30 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { GfkScoreResult } from '@/lib/gfkScore'
 
-const SCORE_SYSTEM_PROMPT = `Du bist ein GFK-Analyse-Assistent. Analysiere den deutschen Text nach den vier Dimensionen der Gewaltfreien Kommunikation.
+const SCORE_SYSTEM_PROMPT = `Du bist ein GFK-Analyse-Assistent. Analysiere den deutschen Text strikt nach den vier Dimensionen der Gewaltfreien Kommunikation (GFK).
+
 Antworte NUR mit validem JSON, ohne Markdown-Blöcke oder Erklärungen.
 
-GRUNDREGEL: Positive, harmlose oder neutrale Nachrichten ("du bist toll", "ich liebe dich", "wie geht es dir?") bekommen hohe Scores (7-10) auf allen Dimensionen. Niedrige Scores (1-4) nur wenn eine Dimension aktiv problematisch ist.
+GRUNDREGEL: Positive, harmlose oder neutrale Nachrichten bekommen hohe Scores (7-10) auf allen Dimensionen und leere matches []. Niedrige Scores (1-5) und matches NUR wenn eine Dimension aktiv problematisch ist.
 
 Dimensionen (Score 1-10):
-- beobachtung: Hoch wenn Aussagen faktisch/neutral/positiv sind. Niedrig wenn Generalisierungen ("immer"/"nie"), Angriffe oder Schuldzuweisungen.
-- gefuehl: Hoch wenn Ich-Perspektive genutzt wird oder keine negativen Emotionen gegen andere gerichtet sind. Niedrig wenn Emotionen als Vorwurf eingesetzt werden.
-- beduerfnis: Hoch wenn ein Bedürfnis ausgedrückt wird oder die Nachricht keinen versteckten Forderungscharakter hat. Niedrig wenn bei klarem Konflikt kein Bedürfnis genannt wird.
-- bitte: Hoch wenn eine freundliche Bitte vorhanden ist oder keine Bitte nötig ist. Niedrig wenn Forderungen oder Drohungen enthalten sind.
+- beobachtung: Hoch bei faktischen/neutralen/positiven Aussagen. Niedrig bei Generalisierungen ("immer"/"nie"), Bewertungen, Schuldzuweisungen.
+- gefuehl: Hoch bei Ich-Perspektive oder fehlenden Negativemotionen. Niedrig wenn Emotionen als Vorwurf eingesetzt werden.
+- beduerfnis: Hoch wenn Bedürfnis ausgedrückt oder nicht nötig. Niedrig wenn bei klarem Konflikt kein Bedürfnis genannt.
+- bitte: Hoch bei freundlicher Bitte oder keiner nötigen Bitte. Niedrig bei Forderungen oder Drohungen.
 
-spans: Exakte Zeichenpositionen (0-basiert, Ende exklusiv) der Textstelle die diese Dimension konkret betrifft.
-Nur spans setzen wenn die Dimension an dieser Stelle ein PROBLEM hat (niedrige Score-Relevanz). Bei hohen Scores: spans leer [].
+Status-Regeln: score 8-10 → "stark", score 6-7 → "teilweise", score 3-5 → "schwach", score 1-2 → "fehlt"
 
-Beispiele:
-"du bist ein Freund" → {"dimensions":{"beobachtung":{"score":9,"spans":[]},"gefuehl":{"score":9,"spans":[]},"beduerfnis":{"score":8,"spans":[]},"bitte":{"score":9,"spans":[]}},"total":9}
-"Du hörst mir nie zu!" → {"dimensions":{"beobachtung":{"score":2,"spans":[[3,19]]},"gefuehl":{"score":3,"spans":[]},"beduerfnis":{"score":2,"spans":[]},"bitte":{"score":2,"spans":[]}},"total":2}
-"Ich bin traurig wenn du früh gehst" → {"dimensions":{"beobachtung":{"score":6,"spans":[[16,34]]},"gefuehl":{"score":8,"spans":[[0,15]]},"beduerfnis":{"score":4,"spans":[]},"bitte":{"score":3,"spans":[]}},"total":5}
+matches: Nur bei score <= 6 UND konkreten Problemstellen. Maximal 5 Treffer pro Dimension, sortiert nach priority (1 = wichtigster). Jeder Match: id (z.B. "obs_1"), text (exakter Ausschnitt aus dem Originaltext), start (0-basiert), end (exklusiv), diagnosis (1-3 Wörter), explanation (1 Satz), suggestion (konkrete Umformulierung), priority (1-5), isProblematic (true/false).
 
-Format exakt: {"dimensions":{"beobachtung":{"score":N,"spans":[[s,e],...]},"gefuehl":{"score":N,"spans":[[s,e],...]},"beduerfnis":{"score":N,"spans":[[s,e],...]},"bitte":{"score":N,"spans":[[s,e],...]}},"total":N}`
+summary: Immer setzen. Kurze Zeile, z.B. "2 Stellen · Bewertung statt Beobachtung" oder "Klar und faktisch formuliert".
+mainProblem: Nur wenn score <= 5 — ein Satz der das Hauptproblem beschreibt.
+spans: Setze spans = Array aller [start, end] von isProblematic matches. Bei keinen matches: spans = [].
+
+Beispiel "ich finde dich wirklich immer Blöd":
+{"dimensions":{"beobachtung":{"score":2,"spans":[[24,34]],"status":"fehlt","summary":"1 Stelle · Bewertung statt Beobachtung","mainProblem":"Du beschreibst kein konkretes Ereignis, sondern bewertest die Person.","matches":[{"id":"obs_1","text":"immer Blöd","start":24,"end":34,"diagnosis":"Bewertung / Verallgemeinerung","explanation":"Diese Stelle enthält eine pauschale Bewertung statt einer konkreten Beobachtung.","suggestion":"Als du heute Abend meine Bitte ignoriert hast …","priority":1,"isProblematic":true}]},"gefuehl":{"score":4,"spans":[],"status":"schwach","summary":"Gefühl angedeutet, aber nicht klar ausgedrückt","mainProblem":"Ein konkretes Ich-Gefühl fehlt.","matches":[]},"beduerfnis":{"score":2,"spans":[],"status":"fehlt","summary":"Kein Bedürfnis genannt","mainProblem":"Was du dir wünschst wird nicht benannt.","matches":[]},"bitte":{"score":2,"spans":[],"status":"fehlt","summary":"Keine konkrete Bitte","mainProblem":"Es fehlt eine freundliche Bitte.","matches":[]}},"total":3}`
 
 /**
  * POST /api/score
- * Bewertet einen Text nach GFK-Dimensionen (1–10 je Dimension).
+ * Bewertet einen Text nach GFK-Dimensionen mit strukturierten Treffern.
  *
  * @param request - { text: string }
  * @returns GfkScoreResult oder { error: string }
@@ -57,7 +59,8 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
+        max_tokens: 1200,
+        temperature: 0,
         system: SCORE_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: text }],
       }),
@@ -78,16 +81,16 @@ export async function POST(request: NextRequest) {
 
     const result: GfkScoreResult = JSON.parse(raw)
 
-    // Snap span boundaries to word edges so highlights never cut through a word
+    // Sicherstellen dass alle Felder vorhanden sind (Fallback für ältere Antworten)
     for (const dim of Object.values(result.dimensions)) {
-      if (!dim.spans) continue
-      dim.spans = dim.spans.map(([s, e]) => {
-        // Expand start left to the beginning of the word
-        while (s > 0 && /\S/.test(text[s - 1])) s--
-        // Expand end right to the end of the word
-        while (e < text.length && /\S/.test(text[e])) e++
-        return [s, e] as [number, number]
-      })
+      if (!dim.matches) dim.matches = []
+      if (!dim.spans || dim.spans.length === 0) {
+        dim.spans = dim.matches
+          .filter((m) => m.isProblematic)
+          .map((m) => [m.start, m.end] as [number, number])
+      }
+      if (!dim.status) dim.status = 'teilweise'
+      if (!dim.summary) dim.summary = ''
     }
 
     return NextResponse.json(result)
