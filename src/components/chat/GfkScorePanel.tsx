@@ -113,7 +113,6 @@ export function GfkScorePanel({
       className="rounded-2xl p-3.5 mb-3"
       style={{
         background: 'var(--color-bg-elevated)',
-        border: '1px solid var(--color-border-subtle)',
       }}
     >
       <p
