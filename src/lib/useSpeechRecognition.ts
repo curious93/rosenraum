@@ -27,15 +27,31 @@ declare global {
 
 const noopSubscribe = () => () => {}
 
-/** Zustand einer Sprachaufnahme */
-export type SpeechRecState = 'idle' | 'recording' | 'stopped'
+/** Zustand einer Sprachaufnahme (formatting = KI setzt gerade Interpunktion) */
+export type SpeechRecState = 'idle' | 'recording' | 'formatting' | 'stopped'
+
+/**
+ * Großschreibung am Segmentanfang, wenn dort ein neuer Satz beginnt.
+ *
+ * @param base - bereits vorhandener Text vor dem Diktat
+ * @param seg - rohes Diktat-Segment
+ * @returns Segment, ggf. mit großem Anfangsbuchstaben
+ */
+function cosmetics(base: string, seg: string): string {
+  const startsSentence = base.trim() === '' || /[.!?…]\s*$/.test(base)
+  if (startsSentence && seg.length > 0) {
+    return seg.charAt(0).toUpperCase() + seg.slice(1)
+  }
+  return seg
+}
 
 /**
  * Live-Spracherkennung (de-DE) über die Web Speech API.
- * Liefert Zwischenergebnisse in Echtzeit; nach dem Stopp bleibt der Text frei editierbar.
+ * Liefert Zwischenergebnisse in Echtzeit; nach dem Stopp formatiert ein
+ * KI-Mini-Call (`/api/punctuate`) Interpunktion und Großschreibung — bei
+ * Fehlern bleibt der Rohtext. Danach ist der Text frei editierbar.
  *
- * @returns Objekt mit: `supported` (Browser-Support, SSR-sicher false) · `state` ('idle' | 'recording' | 'stopped') ·
- * `start(base, onText)` (startet, `base` vorangestellt, `onText` erhält Gesamttext live) · `stop()` · `reset()`
+ * @returns Objekt mit: `supported` (Browser-Support, SSR-sicher false) · `state` · `start(base, onText)` · `stop()` · `reset()`
  * @example
  * const rec = useSpeechRecognition()
  * rec.start(text ? text + ' ' : '', (full) => setText(full))
@@ -57,6 +73,7 @@ export function useSpeechRecognition() {
     rec.lang = 'de-DE'
     rec.continuous = true
     rec.interimResults = true
+    let lastSegment = ''
     rec.onresult = (e) => {
       let finals = ''
       let interim = ''
@@ -65,16 +82,34 @@ export function useSpeechRecognition() {
         if (r.isFinal) finals += r[0].transcript
         else interim += r[0].transcript
       }
-      onText((base + finals + interim).slice(0, 2000))
+      lastSegment = (finals + interim).trim()
+      onText((base + cosmetics(base, lastSegment)).slice(0, 2000))
     }
-    rec.onend = () => {
+    const finish = async () => {
       recRef.current = null
+      const seg = lastSegment
+      if (!seg) {
+        setState('stopped')
+        return
+      }
+      setState('formatting')
+      try {
+        const res = await fetch('/api/punctuate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: seg }),
+        })
+        if (res.ok) {
+          const data = (await res.json()) as { text?: string }
+          if (data.text) onText((base + data.text).slice(0, 2000))
+        }
+      } catch {
+        // Rohtext bleibt stehen — Formatierung ist optional
+      }
       setState('stopped')
     }
-    rec.onerror = () => {
-      recRef.current = null
-      setState('stopped')
-    }
+    rec.onend = finish
+    rec.onerror = finish
     recRef.current = rec
     setState('recording')
     rec.start()

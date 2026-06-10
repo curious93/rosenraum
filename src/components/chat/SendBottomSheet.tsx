@@ -475,7 +475,9 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                     autoFocus
                     rows={4}
                     maxLength={2000}
-                    readOnly={feedbackRec.state === 'recording'}
+                    readOnly={
+                      feedbackRec.state === 'recording' || feedbackRec.state === 'formatting'
+                    }
                     placeholder="Was passt — was nicht?"
                     className="w-full flex-1 resize-none rounded-2xl p-3 text-sm leading-relaxed outline-none"
                     style={{
@@ -526,6 +528,8 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                           >
                             ● Aufnahme läuft — sprich einfach, tippe zum Stoppen.
                           </motion.span>
+                        ) : feedbackRec.state === 'formatting' ? (
+                          'Formatiere…'
                         ) : feedbackRec.state === 'stopped' ? (
                           'Aufnahme beendet — du kannst den Text oben noch anpassen.'
                         ) : (
@@ -782,7 +786,7 @@ function VersionCard({
             }
           }}
           rows={3}
-          readOnly={editRec.state === 'recording'}
+          readOnly={editRec.state === 'recording' || editRec.state === 'formatting'}
           style={{
             ...textStyle,
             position: 'relative',
@@ -861,6 +865,8 @@ function VersionCard({
                   >
                     ● Aufnahme läuft — sprich einfach, tippe zum Stoppen.
                   </motion.span>
+                ) : editRec.state === 'formatting' ? (
+                  'Formatiere…'
                 ) : editRec.state === 'stopped' ? (
                   'Aufnahme beendet — du kannst den Text anpassen.'
                 ) : (

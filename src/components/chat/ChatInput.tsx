@@ -83,7 +83,9 @@ export function ChatInput({
         <p className="mb-1.5 px-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
           {rec.state === 'recording'
             ? '● Aufnahme läuft — sprich einfach, tippe zum Stoppen.'
-            : 'Aufnahme beendet — du kannst den Text noch anpassen.'}
+            : rec.state === 'formatting'
+              ? 'Formatiere…'
+              : 'Aufnahme beendet — du kannst den Text noch anpassen.'}
         </p>
       )}
       <div className="flex items-end gap-2">
@@ -108,7 +110,7 @@ export function ChatInput({
             onBlur={() => setFocused(false)}
             placeholder={placeholder}
             disabled={disabled}
-            readOnly={rec.state === 'recording'}
+            readOnly={rec.state === 'recording' || rec.state === 'formatting'}
             rows={1}
             className="flex-1 resize-none text-base leading-relaxed outline-none bg-transparent py-1.5 disabled:opacity-50"
             style={{
@@ -121,6 +123,7 @@ export function ChatInput({
           {rec.supported && !disabled && (
             <button
               type="button"
+              disabled={rec.state === 'formatting'}
               onClick={() =>
                 rec.state === 'recording'
                   ? rec.stop()
