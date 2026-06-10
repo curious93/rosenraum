@@ -159,17 +159,17 @@ export function GfkScorePanel({
                     {/* Checkmark circle — grün wenn score >= 8 */}
                     <motion.div
                       className="flex-shrink-0 flex items-center justify-center rounded-full"
-                      style={{ width: 16, height: 16 }}
+                      style={{ width: 18, height: 18, margin: '0 1px' }}
                       animate={
                         hasScore && dimScore >= 8
                           ? {
                               backgroundColor: 'var(--color-gfk-beduerfnis)',
-                              boxShadow: 'none',
+                              outline: 'none',
                               scale: 1,
                             }
                           : {
                               backgroundColor: 'transparent',
-                              boxShadow: '0 0 0 1.5px var(--color-text-muted)',
+                              outline: '1.5px solid var(--color-text-muted)',
                               scale: 1,
                             }
                       }
