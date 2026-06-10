@@ -1,95 +1,56 @@
-# GFK Scoring — Visueller Testplan
+# GFK-Lernfeedback — Verhaltensstudie, Befunde & Maßnahmenplan (2026-06-10)
 
-**Einzige Seite:** `https://rosenraum-1--rosenraum-app.europe-west4.hosted.app/room/h4YRjs6JQdvtDe2Jj7VM`
-**Keine andere Seite wird geöffnet.**
+**Test-Room (einzige Seite):** lokal `http://localhost:3000/room/h4YRjs6JQdvtDe2Jj7VM` · deployed `https://rosenraum-1--rosenraum-app.europe-west4.hosted.app/room/h4YRjs6JQdvtDe2Jj7VM`
 
----
+## 1. Verhaltensstudie (live am Interface)
 
-## Features im Code (was getestet werden muss)
+Test-Mechanik **funktioniert zuverlässig**: Text im SendBottomSheet via CDP setzen → React `onChange` → 800ms Debounce → `/api/score` (~4–6s) → Panel aktualisiert. Screenshot je Schritt nach ~10s.
+Harness: isoliertes Chrome Port 9223 · `/tmp/journey.js '<text>' <out.jpg> 10000` · `/tmp/cdp_send.js` (Sheet öffnen) · `/tmp/cdp_shot.js` (Screenshot).
 
-### GfkScorePanel (`GfkScorePanel.tsx`)
-| Feature | Details |
-|---------|---------|
-| Header-Label | `"Dein GFK-Lernfeedback"` — uppercase, tracking-wide, `--color-text-muted` |
-| Text mit Highlights | Originaltext mit farbigen `<mark>`-Spans pro Dimension |
-| 4 Balken | Beobachtung (blau), Gefühl (orange), Bedürfnis (grün), Bitte (lila) |
-| Skeleton-State | Balken bei `loading=true`: grau 60% breit + Shimmer-Animation |
-| Score-Zahlen | Rechts neben jedem Balken: `1–10`, Farbe = Dimensionsfarbe |
-| Score-Zahlen Loading | Zeigt `–` während loading |
-| Balken-Animation | `width: 0% → score*10%` Spring-Animation mit staggered delay |
-| Highlight-Farben | bg = `--color-gfk-*-bg`, border-bottom = `--color-gfk-*` mit 55% opacity |
+Lernreise von schlecht → GFK-nah:
 
-### SendBottomSheet (`SendBottomSheet.tsx`)
-| Feature | Details |
-|---------|---------|
-| GfkScorePanel Position | Ganz oben im Sheet, über "Welche Version senden?" |
-| Drag Handle | 10×4px, `--color-border`, zentriert |
-| "Welche Version senden?" | Label über den VersionCards |
-| Deine Version Card | Text des Users, selektierbar |
-| Rosenraum-Beispiel Card | GFK-Vorschlag, loading skeleton, NICHT auto-selected |
-| "Nur zur Inspiration" | Subtitle in GfkVersionCard — muss gut lesbar sein (G1) |
-| Debounced Re-Score | Text editieren → nach 800ms neu laden |
-| Senden-Button | Disabled während analyzing |
+| Stufe | Text (gekürzt)                                                    | Beobachtung | Gefühl          | Bedürfnis       | Bitte           | Panel-Kopf                   |
+| ----- | ----------------------------------------------------------------- | ----------- | --------------- | --------------- | --------------- | ---------------------------- |
+| 0     | „Du bist echt total unzuverlässig und kommst immer viel zu spät." | 2·kritisch  | nicht enthalten | nicht enthalten | nicht enthalten | „Kleine Anpassungen…"        |
+| 1     | „Gestern bist du 30 Min nach der verabredeten Zeit … gekommen."   | gut (≥8)    | nicht enthalten | nicht enthalten | nicht enthalten | **„✓ klingt bereits offen"** |
+| 2     | + „Ich war enttäuscht und traurig."                               | gut         | gut             | nicht enthalten | nicht enthalten | **„✓ klingt bereits offen"** |
+| 3     | + „…weil mir Verlässlichkeit … wichtig sind."                     | gut         | gut             | gut             | nicht enthalten | **„✓ klingt bereits offen"** |
 
----
+## 2. Befunde
 
-## Screenshots — Reihenfolge
+**✅ Funktioniert:** Re-Score bei Textänderung robust; Highlights mehrfarbig korrekt (jede present-Dimension im Text markiert); „nicht enthalten" sauber grau; Bänder + Legende stimmen.
 
-| # | Was | Wann | Datei |
-|---|-----|------|-------|
-| S1 | Room lädt — leerer Zustand | Sofort nach Navigation | `/tmp/gfk_S1_room.jpg` |
-| S2 | SendBottomSheet öffnet — Skeleton-State | Sofort nach Senden-Klick (< 1s) | `/tmp/gfk_S2_skeleton.jpg` |
-| S3 | GfkScorePanel geladen — Balken sichtbar | Nach 5s (KI-Antwort) | `/tmp/gfk_S3_scored.jpg` |
-| S4 | Text-Highlights im Panel | Zoom auf GfkScorePanel | `/tmp/gfk_S4_highlights.jpg` |
-| S5 | "Nur zur Inspiration" Subtitle | Zoom auf GfkVersionCard | `/tmp/gfk_S5_subtitle.jpg` |
-| S6 | Score-Zahlen (1–10) + Farben | Zoom auf Balken-Bereich | `/tmp/gfk_S6_scores.jpg` |
+**🔴 Hauptproblem — verfrühtes „klingt bereits offen" + Panel-Kollaps:** `alreadyOpen` feuert, sobald alle _present_ Dimensionen ≥8 sind — unabhängig davon, wie wenige present sind (Stufe 1: 1 von 4 reicht). Das ganze Panel kollabiert zu einer grünen Zeile; Balken verschwinden. Folge: falsches „fertig"-Signal bei GFK-unvollständiger Nachricht, kein sichtbarer Fortschritt, Lernführung weg.
 
----
+**🟡 Keine Führung zur Vollständigkeit:** Dimensionen werden isoliert behandelt; nichts lädt ein, fehlende Komponenten zu ergänzen.
 
-## Prüfkriterien pro Screenshot
+## 3. User-Entscheidungen
 
-**S1 Room leerer Zustand:**
-- ✅/❌ Seite lädt korrekt ohne Fehler
-- ✅/❌ Input-Feld unten sichtbar ("Schreib etwas...")
-- ✅/❌ Header sichtbar
+1. **„Rund/offen" = alle 4 Komponenten present UND ≥8** (echte GFK-Vollständigkeit, nicht 1 von 4).
+2. **Balken bleiben immer sichtbar** (kein Kollaps). „nicht enthalten" wird sanfte Einladung **„+ ergänzen?"**. „Rund" nur als zusätzliches Banner über den Balken.
 
-**S2 Skeleton-State:**
-- ✅/❌ Sheet slide-up sichtbar
-- ✅/❌ "Dein GFK-Lernfeedback" Header sichtbar
-- ✅/❌ 4 graue Balken mit Shimmer sichtbar
-- ✅/❌ Score-Zahlen zeigen "–"
-- ✅/❌ GFK-Vorschlag-Card lädt (skeleton)
+## 4. Maßnahmen (alle in `src/components/chat/GfkScorePanel.tsx`)
 
-**S3 Scored State:**
-- ✅/❌ 4 farbige Balken (blau/orange/grün/lila)
-- ✅/❌ Balken haben unterschiedliche Längen (nicht alle gleich)
-- ✅/❌ Score-Zahlen 1–10 sichtbar
-- ✅/❌ GFK-Vorschlag-Text erschienen
+1. `alreadyOpen` → `isComplete`: alle 4 Dimensionen `present !== false && score >= 8`; kollabierter Branch entfällt komplett.
+2. „Rund"-Banner: `✓ Rund — alle vier GFK-Komponenten sind da.` (grün, über der Legende), Balken bleiben sichtbar.
+3. Nicht-enthalten-Zeile: `nicht enthalten · + ergänzen?` (reiner Text-Hinweis, einladend, keine neuen Buttons).
+4. `gfkMotivation`: Frühabbruch-Logik auf `isComplete` umstellen (Banner übernimmt die Botschaft → Motivation liefert dann null).
 
-**S4 Text-Highlights:**
-- ✅/❌ Originaltext hat farbige Unterstreichungen/Hintergründe
-- ✅/❌ Verschiedene Farben für verschiedene Dimensionen
+Kein API-/Prompt-Change nötig. Verifikation: gleiche Lernreise erneut, Stufe 4 ergänzt Bitte („Wärst du bereit, mir kurz zu schreiben, wenn du später kommst?") → Banner über sichtbaren Balken.
 
-**S5 "Nur zur Inspiration":**
-- ✅/❌ Text gut lesbar — KEIN zu blasser Grauton (G1-Fix)
-- ✅/❌ Kontrast ausreichend
+## 5. Test-Infrastruktur
 
-**S6 Score-Zahlen:**
-- ✅/❌ Zahlen in Dimensionsfarbe (blau/orange/grün/lila)
-- ✅/❌ Balkenbreite entspricht Score (z.B. Score 7 = 70% Breite)
+- **`chrome-devtools-mcp` eingerichtet** (offizieller Chrome-Team MCP-Server): `claude mcp add chrome-devtools -s local -- npx chrome-devtools-mcp@latest --browser-url=http://127.0.0.1:9223`. Ab nächster Session Standard für UI-Tests (navigate/click/fill/screenshot/console). `/tmp`-Skripte bleiben Fallback.
+- **Antigravity Browser Extension: geprüft, nicht nutzen.** Sie ist die Brücke Antigravity-IDE-Agent → Extension-HTTP-Server (Port 3025) → CDP auf **Haupt-Chrome 9222** (bei uns tabu). Von außen nur über undokumentierte API ansteuerbar, laut Foren fragil. Nützlich nur, wenn der User selbst in der Antigravity IDE arbeitet — installiert lassen, für unsere Tests irrelevant.
 
----
+## 6. Erledigt heute (deployed)
 
-## Ergebnisse
-
-| Screenshot | Status | Befund |
-|------------|--------|--------|
-| S1 Room | ⏳ | — |
-| S2 Skeleton | ⏳ | — |
-| S3 Scored | ⏳ | — |
-| S4 Highlights | ⏳ | — |
-| S5 Subtitle | ⏳ | — |
-| S6 Scores | ⏳ | — |
+- GFK „enthalten vs. nicht enthalten" + Bewertungsbänder (`present`, `scoreBand`, Legende, „{score} · {band}")
+- Balken ⟺ Highlight: jede present-Dimension markiert ihre Textstelle — auch „gut" (positiver Match, isProblematic=false)
+- Prompt-Zwei-Schritt-Logik + JSON-Quote-Regel (Parse-Fehler behoben)
+- Kurzdiagnose/Details volle Breite (Mobile); doppeltes „Gut formuliert" im Eingabefeld entfernt
+- Composer: `rounded-3xl` statt Pill (mehrzeilig sauber), Statistik-Icon neben statt über dem Feld
+- Highlight-Positions-Korrektur serverseitig (`indexOf`-Fallback), `spans` immer aus `matches`
 
 ---
 
@@ -98,17 +59,21 @@
 Durable, reusable UI/UX governance system, piloted in Rosenraum. **Status: implemented (2026-06-08).** Living docs are in [`docs/`](docs/); this file is the high-level map.
 
 ## Repo assessment (at start)
-Next.js 16 + React 19 + **Tailwind v4** (zero-config) + TypeScript. shadcn/ui *configured but unpopulated* (`components.json` + `cn()`, no `ui/`). Custom 6-theme engine via `[data-theme]`, **no dark mode**, no tests, no `docs/`. Convention: design docs at root, auto-read via `@file.md`; no hardcoded hex; JSDoc on exports.
+
+Next.js 16 + React 19 + **Tailwind v4** (zero-config) + TypeScript. shadcn/ui _configured but unpopulated_ (`components.json` + `cn()`, no `ui/`). Custom 6-theme engine via `[data-theme]`, **no dark mode**, no tests, no `docs/`. Convention: design docs at root, auto-read via `@file.md`; no hardcoded hex; JSDoc on exports.
 
 ## Decisions (user)
+
 1. **Reuse = update `project-template` only** (no package, no live sync). → [docs/REUSE.md](docs/REUSE.md)
 2. **3 families standard, keep Rosenraum's 6** (Expressive, grandfathered) + dark mode. → [docs/THEME_OPTIONS.md](docs/THEME_OPTIONS.md)
 3. **Full pilot** incl. Playwright visual + axe a11y + CI gates.
 
 ## Architecture
+
 `design/tokens.json` → `scripts/build-tokens.mjs` → `src/app/tokens.generated.css` (Tailwind `@theme` + shadcn bridge + `:root`/`[data-theme]`/`.dark`). Components read **semantic vars only**. → [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)
 
 ## What shipped (by phase)
+
 - **0 — Tokens** ✅ `tokens.json`, generator, generated CSS, shadcn bridge; app pixel-identical after rewire.
 - **1 — Themes** ✅ 6 presets × light/dark, `light/dark/system` mode (`theme.ts`, `ThemeSheet.tsx`), FOUC guard, `suppressHydrationWarning`.
 - **2 — Docs** ✅ 11 `docs/*`, CLAUDE.md router, `styles.md` cross-link, `check:tokens` / `check:colors`.
@@ -117,13 +82,17 @@ Next.js 16 + React 19 + **Tailwind v4** (zero-config) + TypeScript. shadcn/ui *c
 - **5 — Reuse** ✅ [docs/REUSE.md](docs/REUSE.md) + [CHANGELOG.md](CHANGELOG.md).
 
 ## Validation gates (all green locally)
+
 `npm run lint` · `npx tsc --noEmit` · `check:tokens` · `check:colors` · `check:token-doc` · `check:registry` · `test:a11y` (8 pass) · `test:visual` (6 baselines) · `npm run build`.
 
 ## Theme & settings integration
+
 3 families (Default/Expressive/Minimal) × light/dark is the cross-project standard. Rosenraum exposes the 6 presets + light/dark/system in `ThemeSheet`, persisted to `localStorage`, restored pre-paint. Icon system: Lucide via `src/lib/icons.ts` (one family, semantic mapping, labelled icon-only buttons). → [docs/THEME_OPTIONS.md](docs/THEME_OPTIONS.md)
 
 ## Risks & rollback
+
 Token rewire could regress visuals → mitigated by pixel-parity check + visual baselines. Dark palette breadth → AA-verified by axe. Cross-platform snapshots → platform-suffixed baselines, linux seeded in CI. Everything is additive and phase-revertable; `tokens.generated.css` is committed so the app never depends on the build script at runtime. → [docs/DESIGN_DECISIONS.md](docs/DESIGN_DECISIONS.md), [docs/DESIGN_DEBT.md](docs/DESIGN_DEBT.md)
 
 ## Future UI task checklist
+
 → [docs/UI_REVIEW_CHECKLIST.md](docs/UI_REVIEW_CHECKLIST.md) (tokens · registered components · standards · a11y · all states · responsive · light+dark · visual regression).

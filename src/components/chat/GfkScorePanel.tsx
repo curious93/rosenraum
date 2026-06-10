@@ -35,10 +35,12 @@ export function gfkMotivation(
   loading: boolean
 ): { text: string; color: string } | null {
   if (loading || score === null) return null
-  const presentDims = DIMENSIONS.filter((d) => score.dimensions[d.key]?.present !== false)
-  const allOpen =
-    presentDims.length > 0 && presentDims.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 8)
-  if (allOpen) return null
+  // „Rund" = alle 4 Komponenten enthalten UND gut — das Banner im Panel übernimmt dann
+  const isComplete = DIMENSIONS.every((d) => {
+    const dim = score.dimensions[d.key]
+    return dim?.present !== false && (dim?.score ?? 0) >= 8
+  })
+  if (isComplete) return null
   const total = score.total ?? 0
   if (total >= 7) return { text: 'Gut formuliert ✓', color: 'var(--color-gfk-beduerfnis)' }
   if (total >= 4) return { text: 'Fast da — noch ein Schritt', color: 'var(--color-text-primary)' }
@@ -72,14 +74,14 @@ export function GfkScorePanel({
   const [expandedDims, setExpandedDims] = useState<Set<string>>(new Set())
   const [showMoreDims, setShowMoreDims] = useState<Set<string>>(new Set())
 
-  const presentDims = score
-    ? DIMENSIONS.filter((d) => score.dimensions[d.key]?.present !== false)
-    : []
-  const alreadyOpen =
+  // „Rund" = alle 4 Komponenten enthalten UND gut (>= 8) — zeigt Banner, Balken bleiben sichtbar
+  const isComplete =
     !loading &&
     score !== null &&
-    presentDims.length > 0 &&
-    presentDims.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 8)
+    DIMENSIONS.every((d) => {
+      const dim = score.dimensions[d.key]
+      return dim?.present !== false && (dim?.score ?? 0) >= 8
+    })
 
   const hasScore = score !== null
 
@@ -124,11 +126,7 @@ export function GfkScorePanel({
         Dein GFK-Lernfeedback
       </p>
 
-      {alreadyOpen ? (
-        <p className="text-sm font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
-          ✓ Diese Nachricht klingt bereits offen.
-        </p>
-      ) : !hasScore && loading ? (
+      {!hasScore && loading ? (
         <div className="flex items-center gap-2 py-1">
           <motion.div
             style={{
@@ -166,6 +164,16 @@ export function GfkScorePanel({
         </div>
       ) : (
         <div className="space-y-1">
+          {isComplete && (
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-2 text-sm font-medium"
+              style={{ color: 'var(--color-gfk-beduerfnis)' }}
+            >
+              ✓ Rund — alle vier GFK-Komponenten sind da.
+            </motion.p>
+          )}
           {hasScore && (
             <p
               className="mb-1.5 tracking-wide"
@@ -219,6 +227,9 @@ export function GfkScorePanel({
                       </span>
                       <span className="text-xs italic" style={{ color: 'var(--color-text-muted)' }}>
                         nicht enthalten
+                      </span>
+                      <span className="text-xs" style={{ color: dim.color, opacity: 0.75 }}>
+                        · + ergänzen?
                       </span>
                     </div>
                   ) : (
