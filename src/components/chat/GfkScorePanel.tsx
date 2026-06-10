@@ -514,7 +514,12 @@ export function GfkScorePanel({
                                           className="text-sm mb-1.5"
                                           style={{ color: 'var(--color-text-secondary)' }}
                                         >
-                                          {match.diagnosis}
+                                          <span
+                                            className="font-semibold"
+                                            style={{ color: 'var(--color-text-primary)' }}
+                                          >
+                                            {match.diagnosis}
+                                          </span>
                                           {match.explanation ? ` — ${match.explanation}` : ''}
                                         </p>
                                         {/* 3. „Besser:" — schlichte Textzeile */}
