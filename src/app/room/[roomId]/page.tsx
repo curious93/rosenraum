@@ -501,23 +501,28 @@ export default function RoomPage() {
       </div>
 
       {/* ── Input + Statistik-Icon ─────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 relative">
-        {/* Statistik-Icon links unten — nur sichtbar wenn eigene Nachrichten mit GFK existieren */}
-        {messages.some((m) => m.senderId === participantId && m.hasLearningDots) && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileTap={{ scale: 0.88 }}
-            onClick={() => setShowStatistik(true)}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center z-10"
-            style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }}
-            aria-label="Lernstatistik anzeigen"
-          >
-            <TrendingUp size={16} strokeWidth={2} aria-hidden="true" />
-          </motion.button>
-        )}
-        <ChatInput onSend={handleInputSend} disabled={!!pendingText} />
-      </div>
+      <ChatInput
+        onSend={handleInputSend}
+        disabled={!!pendingText}
+        leading={
+          messages.some((m) => m.senderId === participantId && m.hasLearningDots) ? (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileTap={{ scale: 0.88 }}
+              onClick={() => setShowStatistik(true)}
+              className="mb-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
+              style={{
+                background: 'var(--color-bg-elevated)',
+                color: 'var(--color-text-secondary)',
+              }}
+              aria-label="Lernstatistik anzeigen"
+            >
+              <TrendingUp size={16} strokeWidth={2} aria-hidden="true" />
+            </motion.button>
+          ) : null
+        }
+      />
 
       {/* ── Invite Sheet ───────────────────────────────────────────────────────── */}
       <AnimatePresence>
