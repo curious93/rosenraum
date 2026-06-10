@@ -124,7 +124,7 @@ export function GfkScorePanel({
           className="text-xs font-medium mb-2.5 uppercase tracking-wide"
           style={{ color: 'var(--color-text-muted)' }}
         >
-          Dein GFK-Lernfeedback
+          Dein Lernfeedback
         </p>
 
         {!hasScore && loading ? (
@@ -150,7 +150,7 @@ export function GfkScorePanel({
                 className="mb-2 text-sm font-medium"
                 style={{ color: 'var(--color-gfk-beduerfnis)' }}
               >
-                ✓ Rund — alle vier GFK-Komponenten sind da.
+                ✓ Rund — alle vier Komponenten sind da.
               </motion.p>
             )}
             <AnimatePresence initial={false}>
@@ -584,85 +584,77 @@ export function GfkScorePanel({
                       </button>
                     </div>
 
-                    <div className="space-y-4 overflow-y-auto px-5 py-4">
+                    <div className="overflow-y-auto px-5 py-4">
                       <p
-                        className="text-sm leading-relaxed"
+                        className="pb-4 text-sm leading-relaxed"
                         style={{ color: 'var(--color-text-primary)' }}
                       >
                         {info.intro}
                       </p>
 
-                      <div>
-                        <p
-                          className="mb-1 text-xs font-medium uppercase tracking-wide"
-                          style={{ color: 'var(--color-text-muted)' }}
-                        >
-                          Warum es schwer ist
-                        </p>
-                        <p
-                          className="text-sm leading-relaxed"
-                          style={{ color: 'var(--color-text-secondary)' }}
-                        >
-                          {info.challenge}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p
-                          className="mb-1.5 text-xs font-medium uppercase tracking-wide"
-                          style={{ color: 'var(--color-text-muted)' }}
-                        >
-                          Ein Beispiel
-                        </p>
-                        <p
-                          className="mb-1.5 text-sm line-through"
-                          style={{ color: 'var(--color-text-muted)' }}
-                        >
-                          {info.example.vorher}
-                        </p>
+                      {[
+                        { label: 'Warum es schwer ist', body: info.challenge },
+                        { label: 'Ein Beispiel', body: null },
+                        { label: 'Was daran schön ist', body: info.beauty },
+                        { label: 'Deine Lernkurve', body: info.curve },
+                      ].map((section) => (
                         <div
-                          className="rounded-lg px-3 py-2 text-sm leading-relaxed"
-                          style={{
-                            background: 'var(--color-bg-elevated)',
-                            borderLeft: `3px solid ${dimColor}`,
-                            color: 'var(--color-text-primary)',
-                          }}
+                          key={section.label}
+                          className="py-4 last:pb-0"
+                          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
                         >
-                          {info.example.nachher}
+                          <p
+                            className="mb-1.5 flex items-center gap-2 text-sm font-semibold"
+                            style={{ color: 'var(--color-text-primary)' }}
+                          >
+                            <span
+                              className="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                              style={{ background: dimColor }}
+                            />
+                            {section.label}
+                          </p>
+                          {section.body ? (
+                            <p
+                              className="text-sm leading-relaxed"
+                              style={{ color: 'var(--color-text-secondary)' }}
+                            >
+                              {section.body}
+                            </p>
+                          ) : (
+                            <>
+                              <p
+                                className="mb-0.5 text-xs font-medium uppercase tracking-wide"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                              >
+                                Vorher
+                              </p>
+                              <p
+                                className="mb-2 text-sm leading-relaxed line-through"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                              >
+                                {info.example.vorher}
+                              </p>
+                              <p
+                                className="mb-0.5 text-xs font-medium uppercase tracking-wide"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                              >
+                                Besser
+                              </p>
+                              <div
+                                className="rounded-lg px-3 py-2 text-sm leading-relaxed"
+                                style={{
+                                  background: 'var(--color-bg-elevated)',
+                                  borderLeft: `3px solid ${dimColor}`,
+                                  color: 'var(--color-text-primary)',
+                                }}
+                              >
+                                {info.example.nachher}
+                              </div>
+                            </>
+                          )}
                         </div>
-                      </div>
-
-                      <div>
-                        <p
-                          className="mb-1 text-xs font-medium uppercase tracking-wide"
-                          style={{ color: 'var(--color-text-muted)' }}
-                        >
-                          Was daran schön ist
-                        </p>
-                        <p
-                          className="text-sm leading-relaxed"
-                          style={{ color: 'var(--color-text-secondary)' }}
-                        >
-                          {info.beauty}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p
-                          className="mb-1 text-xs font-medium uppercase tracking-wide"
-                          style={{ color: 'var(--color-text-muted)' }}
-                        >
-                          Deine Lernkurve
-                        </p>
-                        <p
-                          className="text-sm leading-relaxed"
-                          style={{ color: 'var(--color-text-secondary)' }}
-                        >
-                          {info.curve}
-                        </p>
-                      </div>
+                      ))}
                     </div>
-
                     <div className="px-5 pb-5 pt-1">
                       <button
                         type="button"
@@ -673,7 +665,7 @@ export function GfkScorePanel({
                           color: 'var(--color-on-primary)',
                         }}
                       >
-                        Alles klar 🌸
+                        Alles klar
                       </button>
                     </div>
                   </>
