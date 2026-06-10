@@ -256,9 +256,9 @@ export function GfkScorePanel({
                     </div>
                   </button>
 
-                  {/* Kurzdiagnose + Details-Toggle */}
+                  {/* Kurzdiagnose + Details-Toggle — inline */}
                   {hasScore && dimData && dimScore <= 6 && (
-                    <div className="pl-[5.5rem] mb-1">
+                    <div className="pl-[5.5rem] mb-1 flex items-center justify-between gap-2">
                       <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                         {dimData.summary}
                       </p>
@@ -266,10 +266,10 @@ export function GfkScorePanel({
                         <button
                           type="button"
                           onClick={() => toggleExpand(dim.key)}
-                          className="text-xs mt-0.5 transition-opacity hover:opacity-70"
+                          className="text-xs flex-shrink-0 transition-opacity hover:opacity-70"
                           style={{ color: dim.color }}
                         >
-                          {isExpanded ? 'Details ausblenden ↑' : 'Details anzeigen ↓'}
+                          {isExpanded ? 'ausblenden ↑' : 'Details ↓'}
                         </button>
                       )}
                     </div>
