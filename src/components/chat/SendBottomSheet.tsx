@@ -299,11 +299,27 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           Feedback
         </button>
 
-        {/* Prominenter Leitsatz */}
-        {motivation && (
-          <p className="text-base font-semibold mb-3 px-0.5" style={{ color: motivation.color }}>
-            {motivation.text}
-          </p>
+        {/* Prominenter Leitsatz — während Re-Analyse: 4 Punkte wie beim Start */}
+        {scoreLoading && score !== null ? (
+          <div className="mb-3 flex items-center gap-2 px-0.5" style={{ minHeight: '1.5rem' }}>
+            {HIGHLIGHT_DIMS.map((d, i) => (
+              <motion.div
+                key={d.key}
+                style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }}
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: i * 0.2 }}
+              />
+            ))}
+            <span className="ml-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              Analysiere…
+            </span>
+          </div>
+        ) : (
+          motivation && (
+            <p className="text-base font-semibold mb-3 px-0.5" style={{ color: motivation.color }}>
+              {motivation.text}
+            </p>
+          )
         )}
 
         {/* GFK Live-Score Panel */}
@@ -801,17 +817,24 @@ function GfkVersionCard({
   const borderColor = selected ? 'var(--color-primary)' : 'var(--color-border)'
   const isAlreadyOpen = text === ''
   const isError = text === null && !loading
+  const selectable = !loading && !isAlreadyOpen && !isError
 
   return (
     <div className="relative">
-      <button
-        onClick={onSelect}
-        disabled={loading || isAlreadyOpen || isError}
-        className="w-full text-left rounded-2xl p-3.5 transition-all"
+      <div
+        role="button"
+        tabIndex={selectable ? 0 : -1}
+        aria-disabled={!selectable}
+        onClick={() => selectable && onSelect()}
+        onKeyDown={(e) => {
+          if (selectable && (e.key === 'Enter' || e.key === ' ')) onSelect()
+        }}
+        className="w-full text-left rounded-2xl p-3.5 transition-all outline-none"
         style={{
           background: 'var(--color-bubble-gfk)',
           border: `2px solid ${borderColor}`,
           transition: 'border-color 200ms',
+          cursor: selectable ? 'pointer' : 'default',
         }}
       >
         <div className="flex items-center justify-between mb-1.5 pr-6">
@@ -884,7 +907,7 @@ function GfkVersionCard({
             </motion.p>
           )}
         </AnimatePresence>
-      </button>
+      </div>
 
       <button
         type="button"
