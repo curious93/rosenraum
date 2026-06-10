@@ -333,7 +333,7 @@ export function GfkScorePanel({
                   </button>
 
                   {/* Kurzdiagnose + Details-Toggle — inline, aligned to bar */}
-                  {hasScore && dimData && dimScore <= 6 && (
+                  {hasScore && dimData && dimScore <= 7 && (
                     <div className="pl-[7rem] pr-[3rem] mb-1 flex items-center justify-between gap-2">
                       <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                         {dimData.summary}
