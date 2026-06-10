@@ -73,13 +73,21 @@ export interface GfkScoreResult {
   total: number
 }
 
+const scoreCache = new Map<string, GfkScoreResult>()
+const SCORE_CACHE_MAX = 20
+
 /**
  * Bewertet eine Nachricht nach GFK-Dimensionen via /api/score.
+ * Identische Texte kommen aus einem kleinen Client-Cache (instant, z.B. nach Undo).
  *
  * @param text - Nachrichtentext des Nutzers
  * @returns GfkScoreResult oder null bei Fehler
  */
 export async function scoreMessage(text: string): Promise<GfkScoreResult | null> {
+  const cacheKey = text.trim()
+  const cached = scoreCache.get(cacheKey)
+  if (cached) return cached
+
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 12000)
   try {
@@ -91,7 +99,13 @@ export async function scoreMessage(text: string): Promise<GfkScoreResult | null>
     })
     clearTimeout(timeout)
     if (!res.ok) return null
-    return (await res.json()) as GfkScoreResult
+    const result = (await res.json()) as GfkScoreResult
+    scoreCache.set(cacheKey, result)
+    if (scoreCache.size > SCORE_CACHE_MAX) {
+      const oldest = scoreCache.keys().next().value
+      if (oldest !== undefined) scoreCache.delete(oldest)
+    }
+    return result
   } catch {
     clearTimeout(timeout)
     return null

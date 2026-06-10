@@ -116,24 +116,26 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     return () => clearTimeout(t)
   }, [])
 
-  // Re-score when user edits text
+  // Re-score when user edits text — Whitespace-only-Änderungen lösen keinen Call aus
+  const lastScoredNormRef = useRef(originalText.replace(/\s+/g, ' ').trim())
   useEffect(() => {
-    if (editedText === originalText) return
+    const normalized = editedText.replace(/\s+/g, ' ').trim()
+    if (normalized === lastScoredNormRef.current) return
     const scoreTimer = setTimeout(() => {
       setScoreLoading(true)
       setActiveDim(null)
       setActiveMatchId(null)
       scoreMessage(editedText).then((result) => {
         if (result !== null) {
+          lastScoredNormRef.current = normalized
           setPrevScore(scoreRef.current)
           scoreRef.current = result
           setScore(result)
         }
         setScoreLoading(false)
       })
-    }, 800)
+    }, 500)
     return () => clearTimeout(scoreTimer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editedText])
 
   // Vorschlagstext zusätzlich scoren → Dimensions-Highlights im Rosenraum-Beispiel (#6).

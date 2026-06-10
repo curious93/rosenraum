@@ -1,37 +1,114 @@
 import { NextRequest, NextResponse } from 'next/server'
-import type { GfkScoreResult } from '@/lib/gfkScore'
+import type { DimensionResult, GfkMatch, GfkScoreResult } from '@/lib/gfkScore'
 
-const SCORE_SYSTEM_PROMPT = `Du bist ein GFK-Analyse-Assistent. Analysiere den deutschen Text strikt nach den vier Dimensionen der Gewaltfreien Kommunikation (GFK).
+/**
+ * Kurz-Schema: Das Modell liefert minimale Keys (p,s,sum,m / t,d,e,v,ip) —
+ * ~30% weniger Output-Tokens. Der Server remappt auf GfkScoreResult und
+ * berechnet status, id, priority, start/end (Textsuche) und spans selbst.
+ */
+const SCORE_SYSTEM_PROMPT = `Du bist ein GFK-Analyse-Assistent. Analysiere den deutschen Text nach den vier GFK-Dimensionen. Antworte NUR mit validem JSON, ohne Markdown.
 
-Antworte NUR mit validem JSON, ohne Markdown-Blöcke oder Erklärungen.
+ZWEI SCHRITTE je Dimension:
+1. p (present): Kommt die Dimension im Text vor oder ist erkennbar berührt? Wenn nein: p:false, s:0, m:[]. Eine Dimension NIE schlecht bewerten, weil sie fehlt — fehlt = p:false.
+2. Nur wenn p:true — s (score 1-10): 1-5 enthalten aber problematisch (Bewertung/Vorwurf/Forderung) · 6-7 enthalten aber unsauber/unhöflich · 8-10 gut. JEDE p:true-Dimension braucht mindestens 1 Match in m: bei s<=7 mit ip:true (markiert den Fehler), bei s>=8 genau 1 Match mit ip:false (markiert die gelungene Stelle, d = kurzes Lob, v = "").
 
-Bewerte jede Dimension in ZWEI SCHRITTEN:
+Dimensionen: b=Beobachtung (niedrig bei Bewertung/Verallgemeinerung wie 'immer','nie') · g=Gefühl (p nur bei echtem Gefühlsausdruck wie 'ich freue mich') · n=Bedürfnis (p nur wenn ein Bedürfnis explizit genannt/klar berührt; meist p:false) · w=Bitte (p bei Aufforderung; niedrig bei Forderung/Drohung).
 
-SCHRITT 1 — present: Ist die Kategorie im Text überhaupt enthalten oder erkennbar berührt?
-  present=false → Kategorie kommt nicht vor. Setze score:0, matches:[], spans:[], summary kurz & neutral (z.B. "Kein Bedürfnis ausdrücklich genannt"). Das ist KEINE schlechte Note und KEIN Fehler.
-  WICHTIG: Eine Kategorie NIE schlecht bewerten nur weil sie fehlt. Fehlt = present:false, nicht score 1-5.
-
-SCHRITT 2 — nur wenn present=true: Qualität bewerten (score 1-10). JEDE present=true Dimension MUSS mindestens 1 match haben (markiert die relevante Textstelle, damit der Balken im Text sichtbar ist):
-  1-5 (kritisch):   enthalten aber problematisch (Bewertung, Vorwurf, Forderung) → matches MIT isProblematic=true.
-  6-7 (verbessern): enthalten aber unsauber/unhöflich formuliert → matches MIT isProblematic=true (sanfter formulierte explanation).
-  8-10 (gut):       enthalten und GFK-nah → 1 match MIT isProblematic=false, der die gelungene Stelle markiert (z.B. das klar benannte Gefühl). diagnosis = kurzes Lob (z.B. "Klares Gefühl"), suggestion = "".
-
-Pro Dimension:
-- beobachtung: present wenn der Text ein Verhalten/Ereignis beschreibt ODER bewertet. Niedrig (1-5) bei Bewertung/Verallgemeinerung ("immer","nie","scheiß spät") statt konkreter Beobachtung.
-- gefuehl: present NUR wenn ein Gefühl ausgedrückt wird ("ich freue mich","ich bin traurig"). Sonst present:false.
-- beduerfnis: present NUR wenn ein Bedürfnis (Verlässlichkeit, Nähe, Respekt, Pünktlichkeit …) ausdrücklich genannt/klar berührt ist. Meist present:false.
-- bitte: present wenn eine Aufforderung/Bitte/Forderung im Text steht. Niedrig (1-5) bei Forderung/Drohung, mittel (6-7) wenn Aufforderung unhöflich klingt.
-
-Status-Regeln: score 8-10 → "stark", score 6-7 → "teilweise", score 3-5 → "schwach", score 1-2 → "fehlt".
-matches: text = exakter Ausschnitt (max 5 Wörter) aus dem Originaltext. start/end = Zeichenpositionen (0-basiert, end exklusiv). Maximal 3 Treffer pro Dimension.
-summary: Immer setzen. Kurze Zeile.
-WICHTIG: Innerhalb von JSON-Stringwerten NIEMALS doppelte Anführungszeichen verwenden. Für Zitate aus dem Text nutze einfache Anführungszeichen 'so'.
-mainProblem: Nur wenn present=true und score <= 5.
-spans: Array aller [start, end] aller matches. Bei keinen matches: spans:[].
-total: Holistische GFK-Qualität 1-10. Eine fehlende (present:false) Kategorie senkt total NICHT.
+Match-Felder: t = exaktes Zitat aus dem Originaltext (max 5 Wörter) · d = Kurzdiagnose (2-4 Wörter) · e = 1 Satz Erklärung · v = bessere Formulierung ("" wenn s>=8) · ip = true/false.
+sum: Kurzzeile NUR wenn s<=7, sonst Feld weglassen. Maximal 3 Matches pro Dimension.
+In Stringwerten NIEMALS doppelte Anführungszeichen — Zitate mit 'einfachen'.
+total: 1-10 holistisch; p:false senkt total nicht.
 
 Beispiel "Hallo mein Freund, ich freue mich, wenn wir uns morgen sehen. Sei allerdings nicht wieder so scheiß spät.":
-{"dimensions":{"beobachtung":{"present":true,"score":5,"spans":[[76,103]],"status":"schwach","summary":"Bewertung statt Beobachtung","mainProblem":"'scheiß spät' bewertet, statt ein konkretes Ereignis zu beschreiben.","matches":[{"id":"obs_1","text":"nicht wieder so scheiß spät","start":76,"end":103,"diagnosis":"Bewertung","explanation":"Pauschale Abwertung statt konkreter Beobachtung.","suggestion":"Als du letztes Mal eine Stunde später kamst …","priority":1,"isProblematic":true}]},"gefuehl":{"present":true,"score":8,"spans":[[18,31]],"status":"stark","summary":"Klares Gefühl benannt","matches":[{"id":"gef_1","text":"ich freue mich","start":18,"end":32,"diagnosis":"Klares Gefühl","explanation":"Du benennst dein Gefühl direkt und klar.","suggestion":"","priority":1,"isProblematic":false}]},"beduerfnis":{"present":false,"score":0,"spans":[],"status":"fehlt","summary":"Kein Bedürfnis ausdrücklich genannt","matches":[]},"bitte":{"present":true,"score":6,"spans":[[62,103]],"status":"teilweise","summary":"Klingt eher wie Forderung","matches":[{"id":"bit_1","text":"Sei allerdings nicht wieder","start":62,"end":89,"diagnosis":"Forderung statt Bitte","explanation":"Die Aufforderung klingt wie eine Forderung, nicht wie eine höfliche Bitte.","suggestion":"Wärst du das nächste Mal pünktlich? Das wäre mir wichtig.","priority":1,"isProblematic":true}]}},"total":6}`
+{"b":{"p":true,"s":5,"sum":"Bewertung statt Beobachtung","m":[{"t":"nicht wieder so scheiß spät","d":"Bewertung","e":"Pauschale Abwertung statt konkreter Beobachtung.","v":"Als du letztes Mal eine Stunde später kamst …","ip":true}]},"g":{"p":true,"s":8,"m":[{"t":"ich freue mich","d":"Klares Gefühl","e":"Du benennst dein Gefühl direkt.","v":"","ip":false}]},"n":{"p":false,"s":0,"m":[]},"w":{"p":true,"s":6,"sum":"Klingt eher wie Forderung","m":[{"t":"Sei allerdings nicht wieder","d":"Forderung statt Bitte","e":"Klingt wie eine Forderung, nicht wie eine höfliche Bitte.","v":"Wärst du bereit, mir kurz zu schreiben, wenn es später wird?","ip":true}]},"total":6}`
+
+interface SlimMatch {
+  t: string
+  d: string
+  e: string
+  v: string
+  ip: boolean
+}
+interface SlimDim {
+  p: boolean
+  s: number
+  sum?: string
+  m: SlimMatch[]
+}
+interface SlimResult {
+  b: SlimDim
+  g: SlimDim
+  n: SlimDim
+  w: SlimDim
+  total: number
+}
+
+const DIM_KEYS = [
+  ['b', 'beobachtung'],
+  ['g', 'gefuehl'],
+  ['n', 'beduerfnis'],
+  ['w', 'bitte'],
+] as const
+
+/**
+ * Leitet den Status aus dem Score ab (ersetzt das frühere Modell-Feld).
+ *
+ * @param score - Dimension-Score 1–10
+ * @returns Statuswert für DimensionResult
+ */
+function statusFromScore(score: number): DimensionResult['status'] {
+  if (score >= 8) return 'stark'
+  if (score >= 6) return 'teilweise'
+  if (score >= 3) return 'schwach'
+  return 'fehlt'
+}
+
+/**
+ * Remappt das Kurz-Schema des Modells auf das volle GfkScoreResult.
+ * Positionen werden per Textsuche bestimmt; nicht auffindbare Matches entfallen.
+ *
+ * @param slim - Modell-Antwort im Kurz-Schema
+ * @param text - Originaltext (für start/end)
+ * @returns Vollständiges GfkScoreResult für den Client
+ */
+function expandSlim(slim: SlimResult, text: string): GfkScoreResult {
+  const dimensions = {} as GfkScoreResult['dimensions']
+  for (const [short, key] of DIM_KEYS) {
+    const sd: SlimDim = slim[short] ?? { p: false, s: 0, m: [] }
+    const present = sd.p !== false
+    let searchFrom = 0
+    const matches: GfkMatch[] = []
+    if (present) {
+      for (const [i, m] of (sd.m ?? []).entries()) {
+        if (!m?.t) continue
+        const idx =
+          text.indexOf(m.t, searchFrom) !== -1 ? text.indexOf(m.t, searchFrom) : text.indexOf(m.t)
+        if (idx === -1) continue
+        searchFrom = idx + m.t.length
+        matches.push({
+          id: `${key}_${i + 1}`,
+          text: m.t,
+          start: idx,
+          end: idx + m.t.length,
+          diagnosis: m.d ?? '',
+          explanation: m.e ?? '',
+          suggestion: m.v ?? '',
+          priority: i + 1,
+          isProblematic: Boolean(m.ip),
+        })
+      }
+    }
+    dimensions[key] = {
+      present,
+      score: present ? (sd.s ?? 0) : 0,
+      spans: matches.map((m) => [m.start, m.end] as [number, number]),
+      status: present ? statusFromScore(sd.s ?? 0) : 'fehlt',
+      summary: sd.sum ?? (present ? '' : 'Nicht enthalten'),
+      matches,
+    }
+  }
+  return { dimensions, total: slim.total ?? 0 }
+}
 
 /**
  * POST /api/score
@@ -68,9 +145,15 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1200,
+        max_tokens: 800,
         temperature: 0,
-        system: SCORE_SYSTEM_PROMPT,
+        system: [
+          {
+            type: 'text',
+            text: SCORE_SYSTEM_PROMPT,
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
         messages: [{ role: 'user', content: text }],
       }),
     })
@@ -88,39 +171,8 @@ export async function POST(request: NextRequest) {
       .replace(/\n?```$/, '')
       .trim()
 
-    const result: GfkScoreResult = JSON.parse(raw)
-
-    // Positionen aus match.text verifizieren und korrigieren, spans ableiten
-    for (const dim of Object.values(result.dimensions)) {
-      if (typeof dim.present !== 'boolean') dim.present = true // Fallback: anzeigen
-      if (!dim.matches) dim.matches = []
-      if (!dim.present) {
-        // „nicht enthalten" → nichts highlighten, kein Score
-        dim.matches = []
-        dim.spans = []
-        if (!dim.status) dim.status = 'fehlt'
-        if (!dim.summary) dim.summary = 'Nicht enthalten'
-        continue
-      }
-      dim.matches = dim.matches
-        .filter((m) => m.text && m.text.length > 0)
-        .map((m) => {
-          // Modell-Positionen gegen den echten Text prüfen
-          const slice = text.slice(m.start, m.end)
-          if (slice === m.text) return m // korrekt
-          // Korrigieren: echte Position suchen
-          const idx = text.indexOf(m.text)
-          if (idx !== -1) return { ...m, start: idx, end: idx + m.text.length }
-          // Fallback: ungültigen Match entfernen
-          return null
-        })
-        .filter(Boolean) as typeof dim.matches
-      dim.spans = dim.matches.map((m) => [m.start, m.end] as [number, number])
-      if (!dim.status) dim.status = 'teilweise'
-      if (!dim.summary) dim.summary = ''
-    }
-
-    return NextResponse.json(result)
+    const slim: SlimResult = JSON.parse(raw)
+    return NextResponse.json(expandSlim(slim, text))
   } catch (err) {
     console.error('score route error:', err)
     return NextResponse.json({ error: 'Interner Fehler' }, { status: 500 })
