@@ -5,27 +5,33 @@ const SCORE_SYSTEM_PROMPT = `Du bist ein GFK-Analyse-Assistent. Analysiere den d
 
 Antworte NUR mit validem JSON, ohne Markdown-Blöcke oder Erklärungen.
 
-GRUNDREGELN:
-1. Wenn score <= 6: matches DARF NICHT leer sein. Zeige die Textstelle wo die Verbesserung möglich wäre.
-2. Wenn score >= 8: matches ist immer []. Dimension ist gut oder nicht relevant.
-3. isProblematic=true bei aktivem Fehler (Bewertung, Vorwurf, Forderung). isProblematic=false wenn Stelle verbesserbar aber kein Fehler (z.B. Gefühl nur angedeutet).
-4. beduerfnis/bitte: score 8 + matches:[] wenn diese Dimension im Text schlicht nicht vorkommt. NUR score<=6 + matches wenn eine Forderung/Drohung im Text steht.
+Bewerte jede Dimension in ZWEI SCHRITTEN:
 
-Dimensionen (Score 1-10):
-- beobachtung: Niedrig bei Bewertungen/Verallgemeinerungen ("immer","nie","du bist..."). Match = das konkrete Wort/die Phrase.
-- gefuehl: Score 6 wenn Gefühl nur implizit/angedeutet. Match = der Satzbereich der ein Gefühl enthält oder wo eines fehlt, isProblematic=false, suggestion = explizite Ich-Formulierung.
-- beduerfnis: Score 8 + matches:[] wenn Dimension fehlt. Nur niedrig wenn Forderung/Drohung vorhanden.
-- bitte: Score 8 + matches:[] wenn Dimension fehlt. Nur niedrig bei Forderung/Drohung.
+SCHRITT 1 — present: Ist die Kategorie im Text überhaupt enthalten oder erkennbar berührt?
+  present=false → Kategorie kommt nicht vor. Setze score:0, matches:[], spans:[], summary kurz & neutral (z.B. "Kein Bedürfnis ausdrücklich genannt"). Das ist KEINE schlechte Note und KEIN Fehler.
+  WICHTIG: Eine Kategorie NIE schlecht bewerten nur weil sie fehlt. Fehlt = present:false, nicht score 1-5.
 
-Status-Regeln: score 8-10 → "stark", score 6-7 → "teilweise", score 3-5 → "schwach", score 1-2 → "fehlt"
+SCHRITT 2 — nur wenn present=true: Qualität bewerten (score 1-10):
+  1-5 (kritisch):   enthalten aber problematisch (Bewertung, Vorwurf, Forderung) → matches MIT isProblematic=true.
+  6-7 (verbessern): enthalten aber unsauber/unhöflich formuliert → matches MIT isProblematic=true (sanfter formulierte explanation).
+  8-10 (gut):       enthalten und GFK-nah formuliert → matches:[], kein Hinweis nötig.
 
+Pro Dimension:
+- beobachtung: present wenn der Text ein Verhalten/Ereignis beschreibt ODER bewertet. Niedrig (1-5) bei Bewertung/Verallgemeinerung ("immer","nie","scheiß spät") statt konkreter Beobachtung.
+- gefuehl: present NUR wenn ein Gefühl ausgedrückt wird ("ich freue mich","ich bin traurig"). Sonst present:false.
+- beduerfnis: present NUR wenn ein Bedürfnis (Verlässlichkeit, Nähe, Respekt, Pünktlichkeit …) ausdrücklich genannt/klar berührt ist. Meist present:false.
+- bitte: present wenn eine Aufforderung/Bitte/Forderung im Text steht. Niedrig (1-5) bei Forderung/Drohung, mittel (6-7) wenn Aufforderung unhöflich klingt.
+
+Status-Regeln: score 8-10 → "stark", score 6-7 → "teilweise", score 3-5 → "schwach", score 1-2 → "fehlt".
 matches: text = exakter Ausschnitt (max 5 Wörter) aus dem Originaltext. start/end = Zeichenpositionen (0-basiert, end exklusiv). Maximal 3 Treffer pro Dimension.
 summary: Immer setzen. Kurze Zeile.
-mainProblem: Nur wenn score <= 5.
-spans: Array aller [start, end] aller matches (inkl. isProblematic=false). Bei keinen matches: spans:[].
+WICHTIG: Innerhalb von JSON-Stringwerten NIEMALS doppelte Anführungszeichen verwenden. Für Zitate aus dem Text nutze einfache Anführungszeichen 'so'.
+mainProblem: Nur wenn present=true und score <= 5.
+spans: Array aller [start, end] aller matches. Bei keinen matches: spans:[].
+total: Holistische GFK-Qualität 1-10. Eine fehlende (present:false) Kategorie senkt total NICHT.
 
-Beispiel "ich finde dich wirklich immer Blöd":
-{"dimensions":{"beobachtung":{"score":2,"spans":[[30,40]],"status":"fehlt","summary":"1 Stelle · Bewertung statt Beobachtung","mainProblem":"Du beschreibst kein konkretes Ereignis, sondern bewertest die Person.","matches":[{"id":"obs_1","text":"immer Blöd","start":30,"end":40,"diagnosis":"Bewertung","explanation":"Pauschale Bewertung statt konkreter Beobachtung.","suggestion":"Als du heute Abend meine Bitte ignoriert hast …","priority":1,"isProblematic":true}]},"gefuehl":{"score":6,"spans":[[0,25]],"status":"teilweise","summary":"Gefühl angedeutet, nicht klar benannt","matches":[{"id":"gef_1","text":"ich finde dich wirklich","start":0,"end":23,"diagnosis":"Gefühl fehlt","explanation":"'Finden' drückt kein klares Ich-Gefühl aus.","suggestion":"Ich fühle mich verletzt wenn …","priority":1,"isProblematic":false}]},"beduerfnis":{"score":8,"spans":[],"status":"stark","summary":"Nicht relevant für diesen Satz","matches":[]},"bitte":{"score":8,"spans":[],"status":"stark","summary":"Nicht relevant für diesen Satz","matches":[]}},"total":5}`
+Beispiel "Hallo mein Freund, ich freue mich, wenn wir uns morgen sehen. Sei allerdings nicht wieder so scheiß spät.":
+{"dimensions":{"beobachtung":{"present":true,"score":5,"spans":[[76,103]],"status":"schwach","summary":"Bewertung statt Beobachtung","mainProblem":"'scheiß spät' bewertet, statt ein konkretes Ereignis zu beschreiben.","matches":[{"id":"obs_1","text":"nicht wieder so scheiß spät","start":76,"end":103,"diagnosis":"Bewertung","explanation":"Pauschale Abwertung statt konkreter Beobachtung.","suggestion":"Als du letztes Mal eine Stunde später kamst …","priority":1,"isProblematic":true}]},"gefuehl":{"present":true,"score":8,"spans":[],"status":"stark","summary":"Klares Gefühl benannt","matches":[]},"beduerfnis":{"present":false,"score":0,"spans":[],"status":"fehlt","summary":"Kein Bedürfnis ausdrücklich genannt","matches":[]},"bitte":{"present":true,"score":6,"spans":[[62,103]],"status":"teilweise","summary":"Klingt eher wie Forderung","matches":[{"id":"bit_1","text":"Sei allerdings nicht wieder","start":62,"end":89,"diagnosis":"Forderung statt Bitte","explanation":"Die Aufforderung klingt wie eine Forderung, nicht wie eine höfliche Bitte.","suggestion":"Wärst du das nächste Mal pünktlich? Das wäre mir wichtig.","priority":1,"isProblematic":true}]}},"total":6}`
 
 /**
  * POST /api/score
@@ -86,7 +92,16 @@ export async function POST(request: NextRequest) {
 
     // Positionen aus match.text verifizieren und korrigieren, spans ableiten
     for (const dim of Object.values(result.dimensions)) {
+      if (typeof dim.present !== 'boolean') dim.present = true // Fallback: anzeigen
       if (!dim.matches) dim.matches = []
+      if (!dim.present) {
+        // „nicht enthalten" → nichts highlighten, kein Score
+        dim.matches = []
+        dim.spans = []
+        if (!dim.status) dim.status = 'fehlt'
+        if (!dim.summary) dim.summary = 'Nicht enthalten'
+        continue
+      }
       dim.matches = dim.matches
         .filter((m) => m.text && m.text.length > 0)
         .map((m) => {

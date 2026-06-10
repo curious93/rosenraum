@@ -26,7 +26,9 @@ export interface GfkMatch {
 
 /** Score und strukturierte Treffer für eine einzelne GFK-Dimension */
 export interface DimensionResult {
-  /** Bewertung 1–10 (10 = vollständig erfüllt) */
+  /** Ist die Kategorie im Text enthalten/erkennbar berührt? Wenn false → „nicht enthalten" (score irrelevant) */
+  present: boolean
+  /** Bewertung 1–10 (10 = vollständig erfüllt) — nur relevant wenn present === true */
   score: number
   /** Zeichenpositionen [start, end] — wird aus matches abgeleitet */
   spans: [number, number][]
@@ -38,6 +40,25 @@ export interface DimensionResult {
   mainProblem?: string
   /** Strukturierte Treffer, sortiert nach priority */
   matches: GfkMatch[]
+}
+
+/** Bewertungsband einer enthaltenen GFK-Dimension */
+export type GfkBand = 'kritisch' | 'verbessern' | 'gut'
+
+/**
+ * Liefert das Bewertungsband zu einem GFK-Score.
+ *
+ * @param score - Dimension-Score 1–10
+ * @returns 'kritisch' (1–5), 'verbessern' (6–7) oder 'gut' (8–10)
+ * @example
+ * scoreBand(5) // 'kritisch'
+ * scoreBand(7) // 'verbessern'
+ * scoreBand(9) // 'gut'
+ */
+export function scoreBand(score: number): GfkBand {
+  if (score <= 5) return 'kritisch'
+  if (score <= 7) return 'verbessern'
+  return 'gut'
 }
 
 /** Gesamtergebnis des GFK-Scorings */

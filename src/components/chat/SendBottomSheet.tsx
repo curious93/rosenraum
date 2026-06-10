@@ -315,6 +315,7 @@ function buildHighlightNodes(
   const segs: AnnotatedSeg[] = []
   for (const dim of HIGHLIGHT_DIMS) {
     const dimData = dims[dim.key]
+    if (dimData.present === false) continue // „nicht enthalten" → kein Highlight
     const allMatches = dimData.matches ?? []
     for (const match of allMatches) {
       if (match.start >= 0 && match.end > match.start && match.end <= text.length) {
@@ -438,14 +439,6 @@ function VersionCard({
         transition: 'border-color 400ms',
       }}
     >
-      {isGreen && (
-        <div className="flex justify-end mb-1.5">
-          <span className="text-xs font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
-            ✓ Gut formuliert
-          </span>
-        </div>
-      )}
-
       <div style={{ position: 'relative' }}>
         {/* Highlight overlay — rendered as visible text behind transparent textarea */}
         <div

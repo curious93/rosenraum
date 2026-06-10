@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { GfkScoreResult } from '@/lib/gfkScore'
+import { scoreBand, type GfkScoreResult } from '@/lib/gfkScore'
 
 /** Props für das GFK-Score-Panel */
 export interface GfkScorePanelProps {
@@ -35,7 +35,9 @@ export function gfkMotivation(
   loading: boolean
 ): { text: string; color: string } | null {
   if (loading || score === null) return null
-  const allOpen = DIMENSIONS.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 8)
+  const presentDims = DIMENSIONS.filter((d) => score.dimensions[d.key]?.present !== false)
+  const allOpen =
+    presentDims.length > 0 && presentDims.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 8)
   if (allOpen) return null
   const total = score.total ?? 0
   if (total >= 7) return { text: 'Gut formuliert ✓', color: 'var(--color-gfk-beduerfnis)' }
@@ -70,10 +72,14 @@ export function GfkScorePanel({
   const [expandedDims, setExpandedDims] = useState<Set<string>>(new Set())
   const [showMoreDims, setShowMoreDims] = useState<Set<string>>(new Set())
 
+  const presentDims = score
+    ? DIMENSIONS.filter((d) => score.dimensions[d.key]?.present !== false)
+    : []
   const alreadyOpen =
     !loading &&
     score !== null &&
-    DIMENSIONS.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 8)
+    presentDims.length > 0 &&
+    presentDims.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 8)
 
   const hasScore = score !== null
 
@@ -160,6 +166,14 @@ export function GfkScorePanel({
         </div>
       ) : (
         <div className="space-y-1">
+          {hasScore && (
+            <p
+              className="mb-1.5 tracking-wide"
+              style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}
+            >
+              1–5 kritisch · 6–7 verbessern · 8–10 gut
+            </p>
+          )}
           <AnimatePresence initial={false}>
             {(hasScore ? activeDims : DIMENSIONS).map((dim, idx) => {
               const dimScore = hasScore ? (score!.dimensions[dim.key]?.score ?? 0) : 0
@@ -170,6 +184,7 @@ export function GfkScorePanel({
               const barColor = hasScore ? dim.color : 'var(--color-skeleton)'
               const labelColor = hasScore ? dim.color : 'var(--color-text-muted)'
               const dimData = hasScore ? score!.dimensions[dim.key] : null
+              const present = dimData ? dimData.present !== false : true
               const matches = dimData?.matches ?? []
               const isExpanded = effectiveExpanded.has(dim.key)
               const isActive = activeDim === dim.key
@@ -185,256 +200,294 @@ export function GfkScorePanel({
                   transition={{ duration: 0.2, ease: 'easeInOut' }}
                   style={{ overflow: 'hidden' }}
                 >
-                  {/* Balken-Zeile — klickbar */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onDimClick(dim.key)
-                      if (hasDetails) toggleExpand(dim.key)
-                    }}
-                    className="w-full flex items-center gap-2 py-1 rounded-lg transition-colors"
-                    style={{
-                      background: isActive
-                        ? `color-mix(in srgb, ${dim.color} 8%, transparent)`
-                        : 'transparent',
-                      cursor: hasScore ? 'pointer' : 'default',
-                    }}
-                  >
-                    {/* Checkmark circle — grün wenn score >= 8 */}
-                    <motion.div
-                      className="flex-shrink-0 flex items-center justify-center rounded-full"
-                      style={{
-                        width: 18,
-                        height: 18,
-                        flexShrink: 0,
-                        border:
-                          hasScore && dimScore >= 8
-                            ? 'none'
-                            : '1.5px solid var(--color-text-muted)',
-                      }}
-                      animate={
-                        hasScore && dimScore >= 8
-                          ? { backgroundColor: 'var(--color-gfk-beduerfnis)' }
-                          : { backgroundColor: 'transparent' }
-                      }
-                      transition={{ duration: 0.4, ease: 'easeOut' }}
-                    >
-                      <AnimatePresence>
-                        {hasScore && dimScore >= 8 && (
-                          <motion.svg
-                            key="check"
-                            width="10"
-                            height="10"
-                            viewBox="0 0 10 10"
-                            initial={{ opacity: 0, scale: 0.5 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.5 }}
-                            transition={{ duration: 0.25, ease: 'easeOut' }}
-                          >
-                            <polyline
-                              points="2,5 4,7.5 8,3"
-                              fill="none"
-                              stroke="white"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </motion.svg>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
+                  {hasScore && !present ? (
+                    /* „nicht enthalten" — dezente Zeile, kein Balken/Score/Haken */
+                    <div className="flex w-full items-center gap-2 py-1">
+                      <div
+                        className="flex-shrink-0 rounded-full"
+                        style={{
+                          width: 18,
+                          height: 18,
+                          border: '1.5px solid var(--color-border)',
+                        }}
+                      />
+                      <span
+                        className="flex-shrink-0 text-left text-xs"
+                        style={{ color: 'var(--color-text-muted)', width: '4.5rem' }}
+                      >
+                        {dim.label}
+                      </span>
+                      <span className="text-xs italic" style={{ color: 'var(--color-text-muted)' }}>
+                        nicht enthalten
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Balken-Zeile — klickbar */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onDimClick(dim.key)
+                          if (hasDetails) toggleExpand(dim.key)
+                        }}
+                        className="w-full flex items-center gap-2 py-1 rounded-lg transition-colors"
+                        style={{
+                          background: isActive
+                            ? `color-mix(in srgb, ${dim.color} 8%, transparent)`
+                            : 'transparent',
+                          cursor: hasScore ? 'pointer' : 'default',
+                        }}
+                      >
+                        {/* Checkmark circle — grün wenn score >= 8 */}
+                        <motion.div
+                          className="flex-shrink-0 flex items-center justify-center rounded-full"
+                          style={{
+                            width: 18,
+                            height: 18,
+                            flexShrink: 0,
+                            border:
+                              hasScore && dimScore >= 8
+                                ? 'none'
+                                : '1.5px solid var(--color-text-muted)',
+                          }}
+                          animate={
+                            hasScore && dimScore >= 8
+                              ? { backgroundColor: 'var(--color-gfk-beduerfnis)' }
+                              : { backgroundColor: 'transparent' }
+                          }
+                          transition={{ duration: 0.4, ease: 'easeOut' }}
+                        >
+                          <AnimatePresence>
+                            {hasScore && dimScore >= 8 && (
+                              <motion.svg
+                                key="check"
+                                width="10"
+                                height="10"
+                                viewBox="0 0 10 10"
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.5 }}
+                                transition={{ duration: 0.25, ease: 'easeOut' }}
+                              >
+                                <polyline
+                                  points="2,5 4,7.5 8,3"
+                                  fill="none"
+                                  stroke="white"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </motion.svg>
+                            )}
+                          </AnimatePresence>
+                        </motion.div>
 
-                    <span
-                      className="text-xs flex-shrink-0 text-left"
-                      style={{ color: 'var(--color-text-secondary)', width: '4.5rem' }}
-                    >
-                      {dim.label}
-                    </span>
+                        <span
+                          className="text-xs flex-shrink-0 text-left"
+                          style={{ color: 'var(--color-text-secondary)', width: '4.5rem' }}
+                        >
+                          {dim.label}
+                        </span>
 
-                    <div
-                      className="flex-1 h-2 rounded-full overflow-hidden relative"
-                      style={{ background: 'var(--color-border)' }}
-                    >
-                      {initialLoad ? (
                         <div
-                          className="h-full rounded-full relative overflow-hidden"
-                          style={{ width: '60%', background: 'var(--color-skeleton)' }}
+                          className="flex-1 h-2 rounded-full overflow-hidden relative"
+                          style={{ background: 'var(--color-border)' }}
                         >
-                          <motion.div
-                            className="absolute inset-0 rounded-full"
-                            style={{
-                              background:
-                                'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)',
-                            }}
-                            animate={{ x: ['-100%', '200%'] }}
-                            transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          {prevDimScore !== null && prevDimScore !== dimScore && hasScore && (
-                            <motion.div
-                              key={`ghost-${dim.key}-${prevDimScore}-${dimScore}`}
-                              className="absolute rounded-full z-10"
-                              style={{
-                                left: `calc(${prevDimScore * 10}% - 1.5px)`,
-                                top: '15%',
-                                bottom: '15%',
-                                width: '3px',
-                                background: 'var(--color-text-primary)',
-                              }}
-                              initial={{ opacity: 1 }}
-                              animate={{ opacity: [1, 0.2, 1, 0.2, 1] }}
-                              transition={{
-                                duration: 2,
-                                ease: 'easeInOut',
-                                times: [0, 0.25, 0.5, 0.75, 1],
-                              }}
-                            />
-                          )}
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ background: barColor }}
-                            initial={{ width: '0%' }}
-                            animate={{ width: hasScore ? `${dimScore * 10}%` : '0%' }}
-                            transition={{
-                              type: 'spring',
-                              stiffness: 180,
-                              damping: 22,
-                              delay: 0.05 * idx,
-                            }}
-                          />
-                        </>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-end">
-                      <span
-                        className="text-xs tabular-nums font-semibold text-right"
-                        style={{ width: '1.75rem', display: 'inline-block' }}
-                      >
-                        {!loading && delta !== 0 && (
-                          <motion.span
-                            key={`delta-${dim.key}-${prevDimScore}-${dimScore}`}
-                            style={{
-                              display: 'inline-block',
-                              color:
-                                delta > 0
-                                  ? 'var(--color-gfk-beduerfnis)'
-                                  : 'var(--color-gfk-gefuehl)',
-                            }}
-                            initial={{ opacity: 1, y: delta > 0 ? 4 : -4 }}
-                            animate={{ opacity: 0, y: 0 }}
-                            transition={{ duration: 1.5, delay: 0.3 }}
-                          >
-                            {delta > 0 ? `+${delta}` : `${delta}`}
-                          </motion.span>
-                        )}
-                      </span>
-                      <span
-                        className="text-xs tabular-nums text-right"
-                        style={{ width: '1.25rem', display: 'inline-block', color: labelColor }}
-                      >
-                        {!hasScore ? '–' : dimScore}
-                      </span>
-                    </div>
-                  </button>
-
-                  {/* Kurzdiagnose + Details-Toggle — inline, aligned to bar */}
-                  {hasScore && dimData && dimScore <= 7 && (
-                    <div className="pl-[7rem] pr-[3rem] mb-1 flex items-center justify-between gap-2">
-                      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                        {dimData.summary}
-                      </p>
-                      {hasDetails && (
-                        <button
-                          type="button"
-                          onClick={() => toggleExpand(dim.key)}
-                          className="text-xs flex-shrink-0 transition-opacity hover:opacity-70"
-                          style={{ color: dim.color }}
-                        >
-                          {isExpanded ? 'ausblenden ↑' : 'Details ↓'}
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Aufgeklappte Detailansicht */}
-                  <AnimatePresence>
-                    {isExpanded && hasDetails && dimData && (
-                      <motion.div
-                        key={`detail-${dim.key}`}
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: 'easeInOut' }}
-                        style={{ overflow: 'hidden' }}
-                      >
-                        <div className="ml-[7rem] mb-2">
-                          {dimData.mainProblem && (
-                            <p
-                              className="text-xs mb-2"
-                              style={{ color: 'var(--color-text-secondary)' }}
+                          {initialLoad ? (
+                            <div
+                              className="h-full rounded-full relative overflow-hidden"
+                              style={{ width: '60%', background: 'var(--color-skeleton)' }}
                             >
-                              {dimData.mainProblem}
-                            </p>
+                              <motion.div
+                                className="absolute inset-0 rounded-full"
+                                style={{
+                                  background:
+                                    'linear-gradient(90deg, transparent 0%, var(--color-bg-elevated) 50%, transparent 100%)',
+                                }}
+                                animate={{ x: ['-100%', '200%'] }}
+                                transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+                              />
+                            </div>
+                          ) : (
+                            <>
+                              {prevDimScore !== null && prevDimScore !== dimScore && hasScore && (
+                                <motion.div
+                                  key={`ghost-${dim.key}-${prevDimScore}-${dimScore}`}
+                                  className="absolute rounded-full z-10"
+                                  style={{
+                                    left: `calc(${prevDimScore * 10}% - 1.5px)`,
+                                    top: '15%',
+                                    bottom: '15%',
+                                    width: '3px',
+                                    background: 'var(--color-text-primary)',
+                                  }}
+                                  initial={{ opacity: 1 }}
+                                  animate={{ opacity: [1, 0.2, 1, 0.2, 1] }}
+                                  transition={{
+                                    duration: 2,
+                                    ease: 'easeInOut',
+                                    times: [0, 0.25, 0.5, 0.75, 1],
+                                  }}
+                                />
+                              )}
+                              <motion.div
+                                className="h-full rounded-full"
+                                style={{ background: barColor }}
+                                initial={{ width: '0%' }}
+                                animate={{ width: hasScore ? `${dimScore * 10}%` : '0%' }}
+                                transition={{
+                                  type: 'spring',
+                                  stiffness: 180,
+                                  damping: 22,
+                                  delay: 0.05 * idx,
+                                }}
+                              />
+                            </>
                           )}
+                        </div>
 
-                          <div className="space-y-3">
-                            {visibleMatches.map((match) => {
-                              const isActiveMatch = activeMatchId === match.id
-                              return (
-                                <motion.button
-                                  key={match.id}
-                                  type="button"
-                                  onClick={() => onMatchClick(dim.key, match.id)}
-                                  className="w-full text-left"
-                                  animate={isActiveMatch ? { opacity: [1, 0.6, 1] } : {}}
-                                  transition={{ duration: 0.8, ease: 'easeInOut' }}
-                                >
-                                  <p
-                                    className="text-xs font-medium mb-0.5"
-                                    style={{
-                                      color: isActiveMatch
-                                        ? dim.color
-                                        : 'var(--color-text-primary)',
-                                    }}
-                                  >
-                                    &bdquo;{match.text}&ldquo;
-                                  </p>
-                                  <p
-                                    className="text-xs mb-0.5"
-                                    style={{ color: dim.color, fontWeight: 500 }}
-                                  >
-                                    {match.diagnosis}
-                                  </p>
-                                  <p
-                                    className="text-xs italic"
-                                    style={{ color: 'var(--color-text-muted)' }}
-                                  >
-                                    → {match.suggestion}
-                                  </p>
-                                </motion.button>
-                              )
-                            })}
-                          </div>
+                        <div className="flex items-center justify-end">
+                          <span
+                            className="text-xs tabular-nums font-semibold text-right"
+                            style={{ width: '1.75rem', display: 'inline-block' }}
+                          >
+                            {!loading && delta !== 0 && (
+                              <motion.span
+                                key={`delta-${dim.key}-${prevDimScore}-${dimScore}`}
+                                style={{
+                                  display: 'inline-block',
+                                  color:
+                                    delta > 0
+                                      ? 'var(--color-gfk-beduerfnis)'
+                                      : 'var(--color-gfk-gefuehl)',
+                                }}
+                                initial={{ opacity: 1, y: delta > 0 ? 4 : -4 }}
+                                animate={{ opacity: 0, y: 0 }}
+                                transition={{ duration: 1.5, delay: 0.3 }}
+                              >
+                                {delta > 0 ? `+${delta}` : `${delta}`}
+                              </motion.span>
+                            )}
+                          </span>
+                          <span
+                            className="text-right text-xs"
+                            style={{ display: 'inline-block', color: labelColor }}
+                          >
+                            {!hasScore ? (
+                              '–'
+                            ) : (
+                              <>
+                                <span className="tabular-nums font-semibold">{dimScore}</span>
+                                <span style={{ color: 'var(--color-text-muted)' }}>
+                                  {' · '}
+                                  {scoreBand(dimScore)}
+                                </span>
+                              </>
+                            )}
+                          </span>
+                        </div>
+                      </button>
 
-                          {matches.length > 3 && (
+                      {/* Kurzdiagnose + Details-Toggle — startet unter dem Dimensionsnamen, volle Breite */}
+                      {hasScore && dimData && dimScore <= 7 && (
+                        <div className="mb-1 flex items-start justify-between gap-2 pl-[1.625rem] pr-0.5">
+                          <p
+                            className="flex-1 text-xs"
+                            style={{ color: 'var(--color-text-muted)' }}
+                          >
+                            {dimData.summary}
+                          </p>
+                          {hasDetails && (
                             <button
                               type="button"
-                              onClick={() => toggleShowMore(dim.key)}
-                              className="mt-1.5 text-xs transition-opacity hover:opacity-70"
-                              style={{ color: 'var(--color-text-muted)' }}
+                              onClick={() => toggleExpand(dim.key)}
+                              className="flex-shrink-0 text-xs transition-opacity hover:opacity-70"
+                              style={{ color: dim.color }}
                             >
-                              {showMoreDims.has(dim.key)
-                                ? 'Weniger anzeigen ↑'
-                                : `Weitere ${matches.length - 3} Stellen anzeigen ↓`}
+                              {isExpanded ? 'ausblenden ↑' : 'Details ↓'}
                             </button>
                           )}
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      )}
+
+                      {/* Aufgeklappte Detailansicht */}
+                      <AnimatePresence>
+                        {isExpanded && hasDetails && dimData && (
+                          <motion.div
+                            key={`detail-${dim.key}`}
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2, ease: 'easeInOut' }}
+                            style={{ overflow: 'hidden' }}
+                          >
+                            <div className="mb-2 pl-[1.625rem]">
+                              {dimData.mainProblem && (
+                                <p
+                                  className="text-xs mb-2"
+                                  style={{ color: 'var(--color-text-secondary)' }}
+                                >
+                                  {dimData.mainProblem}
+                                </p>
+                              )}
+
+                              <div className="space-y-3">
+                                {visibleMatches.map((match) => {
+                                  const isActiveMatch = activeMatchId === match.id
+                                  return (
+                                    <motion.button
+                                      key={match.id}
+                                      type="button"
+                                      onClick={() => onMatchClick(dim.key, match.id)}
+                                      className="w-full text-left"
+                                      animate={isActiveMatch ? { opacity: [1, 0.6, 1] } : {}}
+                                      transition={{ duration: 0.8, ease: 'easeInOut' }}
+                                    >
+                                      <p
+                                        className="text-xs font-medium mb-0.5"
+                                        style={{
+                                          color: isActiveMatch
+                                            ? dim.color
+                                            : 'var(--color-text-primary)',
+                                        }}
+                                      >
+                                        &bdquo;{match.text}&ldquo;
+                                      </p>
+                                      <p
+                                        className="text-xs mb-0.5"
+                                        style={{ color: dim.color, fontWeight: 500 }}
+                                      >
+                                        {match.diagnosis}
+                                      </p>
+                                      <p
+                                        className="text-xs italic"
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                      >
+                                        → {match.suggestion}
+                                      </p>
+                                    </motion.button>
+                                  )
+                                })}
+                              </div>
+
+                              {matches.length > 3 && (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleShowMore(dim.key)}
+                                  className="mt-1.5 text-xs transition-opacity hover:opacity-70"
+                                  style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                  {showMoreDims.has(dim.key)
+                                    ? 'Weniger anzeigen ↑'
+                                    : `Weitere ${matches.length - 3} Stellen anzeigen ↓`}
+                                </button>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  )}
                 </motion.div>
               )
             })}
