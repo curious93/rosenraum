@@ -178,45 +178,96 @@ export function GfkScorePanel({
                     style={{ overflow: 'hidden' }}
                   >
                     {hasScore && !present ? (
-                      /* „nicht enthalten" — dezente Zeile, kein Balken/Score/Haken */
-                      <div className="flex w-full items-center gap-2 py-1">
-                        <div
-                          className="flex-shrink-0 rounded-full"
-                          style={{
-                            width: 18,
-                            height: 18,
-                            border: '1.5px solid var(--color-border)',
-                          }}
-                        />
-                        <span
-                          className="flex flex-shrink-0 items-center gap-1 text-left text-xs"
-                          style={{ color: dim.color, fontWeight: 600, width: '6rem' }}
+                      /* „noch nicht enthalten" — klickbar, klappt Lern-Tipp auf */
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => toggleExpand(dim.key)}
+                          className="flex w-full items-center gap-2 py-1 outline-none"
+                          style={{ cursor: 'pointer' }}
                         >
-                          {dim.label}
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            aria-label={`Was bedeutet ${dim.label}?`}
-                            className="cursor-pointer transition-opacity hover:opacity-70"
-                            style={{ color: 'var(--color-text-muted)' }}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setInfoDim(dim.key)
+                          <div
+                            className="flex-shrink-0 rounded-full"
+                            style={{
+                              width: 18,
+                              height: 18,
+                              border: '1.5px solid var(--color-border)',
                             }}
+                          />
+                          <span
+                            className="flex flex-shrink-0 items-center gap-1 text-left text-xs"
+                            style={{ color: dim.color, fontWeight: 600, width: '6rem' }}
                           >
-                            <Info size={13} aria-hidden="true" />
+                            {dim.label}
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`Was bedeutet ${dim.label}?`}
+                              className="cursor-pointer transition-opacity hover:opacity-70"
+                              style={{ color: 'var(--color-text-muted)' }}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setInfoDim(dim.key)
+                              }}
+                            >
+                              <Info size={13} aria-hidden="true" />
+                            </span>
                           </span>
-                        </span>
-                        <span
-                          className="text-xs italic"
-                          style={{ color: 'var(--color-text-muted)' }}
-                        >
-                          nicht enthalten
-                        </span>
-                        <span className="text-xs" style={{ color: dim.color, opacity: 0.75 }}>
-                          · + ergänzen?
-                        </span>
-                      </div>
+                          <span
+                            className="text-xs italic"
+                            style={{ color: 'var(--color-text-muted)' }}
+                          >
+                            noch nicht enthalten
+                          </span>
+                          <span className="text-xs" style={{ color: dim.color }}>
+                            · ergänzen?
+                          </span>
+                          <span className="flex-1" />
+                          <motion.span
+                            className="flex flex-shrink-0 items-center justify-center"
+                            style={{ width: 16, color: 'var(--color-text-muted)' }}
+                            animate={{ rotate: isExpanded ? 90 : 0 }}
+                            transition={{ duration: 0.2, ease: 'easeOut' }}
+                          >
+                            <ChevronRight size={14} aria-hidden="true" />
+                          </motion.span>
+                        </button>
+
+                        {/* Aufgeklappter Lern-Tipp */}
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              key={`nudge-${dim.key}`}
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: 'easeInOut' }}
+                              style={{ overflow: 'hidden' }}
+                            >
+                              <div className="mb-2 pl-[1.625rem]">
+                                <p
+                                  className="text-sm leading-relaxed"
+                                  style={{ color: 'var(--color-text-secondary)' }}
+                                >
+                                  {GFK_DIMENSION_INFO[dim.key].nudgeTip}
+                                </p>
+                                <p
+                                  className="text-sm leading-relaxed"
+                                  style={{ color: 'var(--color-text-primary)' }}
+                                >
+                                  <span
+                                    className="font-medium"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                  >
+                                    Probier:{' '}
+                                  </span>
+                                  {GFK_DIMENSION_INFO[dim.key].nudgeExample}
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </>
                     ) : (
                       <>
                         {/* Balken-Zeile — klickbar */}

@@ -22,6 +22,10 @@ export interface GfkDimensionInfo {
   beauty: string
   /** Wie sich die Lernkurve anfühlt */
   curve: string
+  /** Kurz-Tipp für die „noch nicht enthalten"-Zeile (1 Satz) */
+  nudgeTip: string
+  /** Beispiel-Satzanfang zum Ausprobieren */
+  nudgeExample: string
 }
 
 /**
@@ -46,6 +50,8 @@ export const GFK_DIMENSION_INFO: Record<GfkDimKey, GfkDimensionInfo> = {
       'Eine saubere Beobachtung kann niemand bestreiten. Sie öffnet das Gespräch, statt es zu schließen — ihr redet über dasselbe Ereignis, nicht über zwei verschiedene Wahrheiten.',
     curve:
       'Anfangs fühlt es sich ungewohnt nüchtern an, wie ein Polizeibericht. Nach ein paar Wochen merkst du: Gespräche kippen viel seltener, weil sich niemand mehr angegriffen fühlt. Das ist der Moment, in dem es Spaß macht.',
+    nudgeTip: 'Eine Beobachtung beschreibt, was konkret passiert ist — ohne Bewertung.',
+    nudgeExample: '„Heute Morgen ist … passiert."',
   },
   gefuehl: {
     title: 'Gefühl',
@@ -62,6 +68,8 @@ export const GFK_DIMENSION_INFO: Record<GfkDimKey, GfkDimensionInfo> = {
       'Wer ein echtes Gefühl zeigt, macht sich einen Moment verletzlich — und genau das lädt den anderen ein, weich zu antworten statt zurückzuschießen.',
     curve:
       'Dein Gefühlswortschatz wächst wie ein Muskel. Aus „gut" und „schlecht" werden mit der Zeit zwanzig Schattierungen — und plötzlich verstehst du dich selbst besser.',
+    nudgeTip: 'Ein Gefühl zeigt, was die Situation mit dir macht.',
+    nudgeExample: '„Ich bin … (enttäuscht, froh, erschöpft)."',
   },
   beduerfnis: {
     title: 'Bedürfnis',
@@ -78,6 +86,8 @@ export const GFK_DIMENSION_INFO: Record<GfkDimKey, GfkDimensionInfo> = {
       'Sobald das Bedürfnis auf dem Tisch liegt, gibt es plötzlich viele Wege — nicht nur den einen, um den gestritten wurde. Aus einem Machtkampf wird ein gemeinsames Rätsel.',
     curve:
       'Am Anfang klingt „weil mir … wichtig ist" ungewohnt feierlich. Bald wird es zur stärksten Brücke in jedem schwierigen Gespräch — und du fragst dich, wie du je ohne ausgekommen bist.',
+    nudgeTip: 'Ein Bedürfnis sagt, was dir wichtig ist.',
+    nudgeExample: '„…weil mir … wichtig ist."',
   },
   bitte: {
     title: 'Bitte',
@@ -94,5 +104,7 @@ export const GFK_DIMENSION_INFO: Record<GfkDimKey, GfkDimensionInfo> = {
       'Eine echte Bitte gibt dem anderen Freiheit — und gerade deshalb sagen Menschen öfter ja. Freiwilligkeit fühlt sich auf beiden Seiten besser an als Nachgeben.',
     curve:
       'Mit etwas Übung merkst du schon beim Tippen, ob in deinem Satz ein verstecktes „musst du" wohnt. Dann formulierst du um — und staunst, wie anders die Antworten ausfallen.',
+    nudgeTip: 'Eine Bitte sagt konkret, was du dir wünschst.',
+    nudgeExample: '„Wärst du bereit, …?"',
   },
 }

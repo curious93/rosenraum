@@ -187,7 +187,8 @@ Balken:           h-2 · fester Verlauf rot→amber→grün (--color-gfk-band-*)
 Score rechts:     text-xs · „N · band" — Zahl semibold in Dimensionsfarbe, Band-Wort muted · Spalte 5.5rem · Delta schwebt absolut links davon (keine eigene Spalte)
 Chevron:          16px-Slot · ChevronRight 14px muted · rotiert 90° wenn ausgeklappt
 Kurzdiagnose:     text-sm muted · unter dem Namen (pl 1.625rem) · nur bei score ≤ 7
-Nicht enthalten:  Ring 18px in --color-border · Name farbig · „nicht enthalten" italic muted · „· + ergänzen?" Dimensionsfarbe 75%
+Nicht enthalten:  Ring 18px in --color-border · Name farbig · „noch nicht enthalten" italic muted · „· ergänzen?" Dimensionsfarbe ·
+                  Zeile klickbar (Chevron rechts, rotiert) → klappt Lern-Tipp auf: 1 Satz secondary + „Probier: ‚Satzanfang'" primary
 Details-Karte:    1) Zitat als mark: Tint 18% + inset-Unterstrich 2px Dimensionsfarbe, text-sm, text-primary
                   2) „Diagnose — Erklärung" in EINER Zeile, text-sm, text-secondary
                   3) „Besser:"-Zeile: schlichter Text — Label „Besser:" secondary/medium, Text text-sm text-primary,
