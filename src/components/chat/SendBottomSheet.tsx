@@ -156,11 +156,15 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
       ? suggestionScore.result.dimensions
       : null
 
+  // Für welchen Text wurde zuletzt analysiert? Wiederöffnen ohne Textänderung = aus Cache, keine Tokens.
+  const analyzedForTextRef = useRef<string | null>(null)
+
   function handleInspire() {
     setShowExample(true)
-    if (rosenbergText === null || editedText !== originalText) {
+    if (rosenbergText === null || editedText !== analyzedForTextRef.current) {
       setAnalyzing(true)
       analyzeMessage(editedText).then((result) => {
+        analyzedForTextRef.current = editedText
         setRosenbergText(result)
         setAnalyzing(false)
       })
