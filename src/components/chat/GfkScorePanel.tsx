@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronRight } from 'lucide-react'
 import { scoreBand, type GfkScoreResult } from '@/lib/gfkScore'
 
 /** Props für das GFK-Score-Panel */
@@ -9,7 +10,6 @@ export interface GfkScorePanelProps {
   score: GfkScoreResult | null
   loading: boolean
   prevScore?: GfkScoreResult | null
-  activeDim: string | null
   activeMatchId: string | null
   onDimClick: (key: string) => void
   onMatchClick: (dimKey: string, matchId: string) => void
@@ -54,7 +54,6 @@ export function gfkMotivation(
  * @param props.score - Scoring-Ergebnis, null solange nicht geladen
  * @param props.loading - Ob die Analyse noch läuft
  * @param props.prevScore - Vorheriges Scoring für Delta-Animation
- * @param props.activeDim - Aktuell aktive Dimension (bidirektionales Highlight)
  * @param props.activeMatchId - Aktuell aktiver Treffer
  * @param props.onDimClick - Callback bei Klick auf eine Dimension
  * @param props.onMatchClick - Callback bei Klick auf einen Treffer
@@ -65,7 +64,6 @@ export function GfkScorePanel({
   score,
   loading,
   prevScore,
-  activeDim,
   activeMatchId,
   onDimClick,
   onMatchClick,
@@ -186,7 +184,6 @@ export function GfkScorePanel({
               const present = dimData ? dimData.present !== false : true
               const matches = dimData?.matches ?? []
               const isExpanded = effectiveExpanded.has(dim.key)
-              const isActive = activeDim === dim.key
               const visibleMatches = showMoreDims.has(dim.key) ? matches : matches.slice(0, 3)
               const hasDetails = matches.length > 0
 
@@ -212,7 +209,7 @@ export function GfkScorePanel({
                       />
                       <span
                         className="flex-shrink-0 text-left text-xs"
-                        style={{ color: dim.color, fontWeight: 600, width: '4.5rem' }}
+                        style={{ color: dim.color, fontWeight: 600, width: '5rem' }}
                       >
                         {dim.label}
                       </span>
@@ -232,13 +229,8 @@ export function GfkScorePanel({
                           onDimClick(dim.key)
                           if (hasDetails) toggleExpand(dim.key)
                         }}
-                        className="w-full flex items-center gap-2 py-1 rounded-lg transition-colors"
-                        style={{
-                          background: isActive
-                            ? `color-mix(in srgb, ${dim.color} 8%, transparent)`
-                            : 'transparent',
-                          cursor: hasScore ? 'pointer' : 'default',
-                        }}
+                        className="w-full flex items-center gap-2 py-1"
+                        style={{ cursor: hasScore ? 'pointer' : 'default' }}
                       >
                         {/* Checkmark circle — grün wenn score >= 8 */}
                         <motion.div
@@ -286,7 +278,7 @@ export function GfkScorePanel({
 
                         <span
                           className="text-xs flex-shrink-0 text-left"
-                          style={{ color: dim.color, fontWeight: 600, width: '4.5rem' }}
+                          style={{ color: dim.color, fontWeight: 600, width: '5rem' }}
                         >
                           {dim.label}
                         </span>
@@ -397,27 +389,24 @@ export function GfkScorePanel({
                             )}
                           </span>
                         </div>
+
+                        {/* Chevron — dreht nach unten wenn Details ausgeklappt */}
+                        <motion.span
+                          className="flex flex-shrink-0 items-center justify-center"
+                          style={{ width: 16, color: 'var(--color-text-muted)' }}
+                          animate={{ rotate: isExpanded ? 90 : 0 }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
+                        >
+                          {hasDetails && <ChevronRight size={14} aria-hidden="true" />}
+                        </motion.span>
                       </button>
 
-                      {/* Kurzdiagnose + Details-Toggle — startet unter dem Dimensionsnamen, volle Breite */}
+                      {/* Kurzdiagnose — startet unter dem Dimensionsnamen, volle Breite */}
                       {hasScore && dimData && dimScore <= 7 && (
-                        <div className="mb-1 flex items-start justify-between gap-2 pl-[1.625rem] pr-0.5">
-                          <p
-                            className="flex-1 text-xs"
-                            style={{ color: 'var(--color-text-muted)' }}
-                          >
+                        <div className="mb-1 pl-[1.625rem] pr-0.5">
+                          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                             {dimData.summary}
                           </p>
-                          {hasDetails && (
-                            <button
-                              type="button"
-                              onClick={() => toggleExpand(dim.key)}
-                              className="flex-shrink-0 text-xs transition-opacity hover:opacity-70"
-                              style={{ color: dim.color }}
-                            >
-                              {isExpanded ? 'ausblenden ↑' : 'Details ↓'}
-                            </button>
-                          )}
                         </div>
                       )}
 

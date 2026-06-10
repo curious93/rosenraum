@@ -214,7 +214,6 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           score={score}
           loading={scoreLoading}
           prevScore={prevScore}
-          activeDim={activeDim}
           activeMatchId={activeMatchId}
           onDimClick={handleDimClick}
           onMatchClick={handleMatchClick}
