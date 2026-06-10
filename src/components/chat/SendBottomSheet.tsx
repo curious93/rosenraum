@@ -9,6 +9,7 @@ import { scoreMessage } from '@/lib/gfkScore'
 import type { GfkScoreResult } from '@/lib/gfkScore'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
 import { GfkScorePanel, gfkMotivation } from './GfkScorePanel'
+import { useSpeechRecognition } from '@/lib/useSpeechRecognition'
 
 /** Welche Version der Nutzer abschicken möchte */
 export type SendVersion = 'original' | 'rosenberg'
@@ -58,57 +59,24 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   // Feedback zur Scoring-Ansicht (Text + kompletter Kontext → Firestore)
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackText, setFeedbackText] = useState('')
-  const [feedbackState, setFeedbackState] = useState<'idle' | 'sending' | 'done'>('idle')
+  const [feedbackState, setFeedbackState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
 
-  // Sprachaufnahme (Web Speech API) — Live-Transkription, danach frei editierbar
-  const [recState, setRecState] = useState<'idle' | 'recording' | 'stopped'>('idle')
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
-  const recBaseRef = useRef('')
-
-  // Overlay rendert erst nach User-Klick (kein SSR) — Check direkt im Render ist sicher
-  const speechSupported =
-    typeof window !== 'undefined' &&
-    Boolean(window.SpeechRecognition ?? window.webkitSpeechRecognition)
-
-  function stopRecording() {
-    recognitionRef.current?.stop()
-  }
+  // Sprachaufnahme — Live-Transkription, danach frei editierbar
+  const feedbackRec = useSpeechRecognition()
+  const doneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function startRecording() {
-    const SR = window.SpeechRecognition ?? window.webkitSpeechRecognition
-    if (!SR) return
-    const rec = new SR()
-    rec.lang = 'de-DE'
-    rec.continuous = true
-    rec.interimResults = true
-    recBaseRef.current = feedbackText.trim() ? feedbackText.trim() + ' ' : ''
-    rec.onresult = (e) => {
-      let finals = ''
-      let interim = ''
-      for (let i = 0; i < e.results.length; i++) {
-        const r = e.results[i]
-        if (r.isFinal) finals += r[0].transcript
-        else interim += r[0].transcript
-      }
-      setFeedbackText((recBaseRef.current + finals + interim).slice(0, 2000))
-    }
-    rec.onend = () => {
-      recognitionRef.current = null
-      setRecState('stopped')
-    }
-    rec.onerror = () => {
-      recognitionRef.current = null
-      setRecState('stopped')
-    }
-    recognitionRef.current = rec
-    setRecState('recording')
-    rec.start()
+    feedbackRec.start(feedbackText.trim() ? feedbackText.trim() + ' ' : '', (full) =>
+      setFeedbackText(full)
+    )
   }
 
   function closeFeedback() {
-    stopRecording()
+    if (doneTimerRef.current) clearTimeout(doneTimerRef.current)
+    feedbackRec.reset()
     setShowFeedback(false)
-    setRecState('idle')
+    setFeedbackText('')
+    setFeedbackState('idle')
   }
 
   // Initial score on mount — with one retry, always ends loading state
@@ -219,9 +187,10 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   }
 
   async function handleFeedbackSubmit() {
-    if (feedbackState !== 'idle' || !feedbackText.trim()) return
+    if (feedbackState === 'sending' || feedbackState === 'done' || !feedbackText.trim()) return
     setFeedbackState('sending')
-    await fetch('/api/feedback', {
+    feedbackRec.reset()
+    const ok = await fetch('/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -236,16 +205,17 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           suggestionScore: suggestionScore?.result ?? null,
         },
       }),
-    }).catch(() => {})
-    stopRecording()
+    })
+      .then((r) => r.ok)
+      .catch(() => false)
+    if (!ok) {
+      // Ehrlich bleiben: kein Fake-Danke — Text bleibt erhalten, Nutzer kann es erneut versuchen.
+      setFeedbackState('error')
+      return
+    }
     confetti({ particleCount: 80, spread: 65, origin: { y: 0.75 }, scalar: 0.9 })
     setFeedbackState('done')
-    setTimeout(() => {
-      setShowFeedback(false)
-      setFeedbackText('')
-      setFeedbackState('idle')
-      setRecState('idle')
-    }, 2400)
+    doneTimerRef.current = setTimeout(closeFeedback, 5000)
   }
 
   function handleSpanClick(matchId: string, dimKey: string) {
@@ -435,11 +405,23 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
             >
               {feedbackState === 'done' ? (
                 <motion.div
-                  className="flex flex-1 flex-col items-center justify-center gap-2 text-center"
+                  className="relative flex flex-1 flex-col items-center justify-center gap-2 text-center"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                 >
+                  <button
+                    type="button"
+                    onClick={closeFeedback}
+                    aria-label="Schließen"
+                    className="absolute right-0 top-0 flex h-7 w-7 items-center justify-center rounded-full transition-opacity hover:opacity-70"
+                    style={{
+                      background: 'var(--color-bg-elevated)',
+                      color: 'var(--color-text-secondary)',
+                    }}
+                  >
+                    ✕
+                  </button>
                   <div style={{ fontSize: '2.5rem' }}>🌸</div>
                   <p
                     className="text-base font-semibold"
@@ -451,6 +433,18 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                     Dein Feedback macht Rosenraum besser — für dich und alle anderen. Gern wieder,
                     jede Idee zählt.
                   </p>
+                  <div
+                    className="mt-3 h-1 w-40 overflow-hidden rounded-full"
+                    style={{ background: 'var(--color-border-subtle)' }}
+                  >
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: 'var(--color-primary)' }}
+                      initial={{ width: '0%' }}
+                      animate={{ width: '100%' }}
+                      transition={{ duration: 5, ease: 'linear' }}
+                    />
+                  </div>
                 </motion.div>
               ) : (
                 <>
@@ -475,7 +469,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                     autoFocus
                     rows={4}
                     maxLength={2000}
-                    readOnly={recState === 'recording'}
+                    readOnly={feedbackRec.state === 'recording'}
                     placeholder="Was passt — was nicht?"
                     className="w-full flex-1 resize-none rounded-2xl p-3 text-sm leading-relaxed outline-none"
                     style={{
@@ -487,42 +481,46 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                   />
 
                   {/* Sprachaufnahme — Live-Transkription, danach editierbar */}
-                  {speechSupported && (
+                  {feedbackRec.supported && (
                     <div className="flex items-center gap-2.5">
                       <button
                         type="button"
-                        onClick={recState === 'recording' ? stopRecording : startRecording}
+                        onClick={
+                          feedbackRec.state === 'recording' ? feedbackRec.stop : startRecording
+                        }
                         aria-label={
-                          recState === 'recording' ? 'Aufnahme stoppen' : 'Aufnahme starten'
+                          feedbackRec.state === 'recording'
+                            ? 'Aufnahme stoppen'
+                            : 'Aufnahme starten'
                         }
                         className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-80"
                         style={{
                           background:
-                            recState === 'recording'
+                            feedbackRec.state === 'recording'
                               ? 'var(--color-destructive)'
                               : 'var(--color-bg-elevated)',
                           color:
-                            recState === 'recording'
+                            feedbackRec.state === 'recording'
                               ? 'var(--color-on-status)'
                               : 'var(--color-text-secondary)',
                           border: '1px solid var(--color-border)',
                         }}
                       >
-                        {recState === 'recording' ? (
+                        {feedbackRec.state === 'recording' ? (
                           <Square size={14} aria-hidden="true" />
                         ) : (
                           <Mic size={16} aria-hidden="true" />
                         )}
                       </button>
                       <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                        {recState === 'recording' ? (
+                        {feedbackRec.state === 'recording' ? (
                           <motion.span
                             animate={{ opacity: [1, 0.5, 1] }}
                             transition={{ duration: 1.4, repeat: Infinity }}
                           >
                             ● Aufnahme läuft — sprich einfach, tippe zum Stoppen.
                           </motion.span>
-                        ) : recState === 'stopped' ? (
+                        ) : feedbackRec.state === 'stopped' ? (
                           'Aufnahme beendet — du kannst den Text oben noch anpassen.'
                         ) : (
                           'Oder einsprechen statt tippen.'
@@ -531,6 +529,12 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                     </div>
                   )}
 
+                  {feedbackState === 'error' && (
+                    <p className="text-sm" style={{ color: 'var(--color-destructive)' }}>
+                      Konnte gerade nicht gespeichert werden — dein Text bleibt erhalten, bitte
+                      versuch es gleich nochmal.
+                    </p>
+                  )}
                   <div className="flex gap-2.5">
                     <button
                       onClick={closeFeedback}
@@ -544,7 +548,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                     </button>
                     <motion.button
                       onClick={handleFeedbackSubmit}
-                      disabled={feedbackState !== 'idle' || !feedbackText.trim()}
+                      disabled={feedbackState === 'sending' || !feedbackText.trim()}
                       whileTap={{ scale: 0.97 }}
                       className="flex-[2] rounded-2xl py-3 text-sm font-medium transition-opacity disabled:opacity-40"
                       style={{
@@ -563,30 +567,6 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
       </motion.div>
     </>
   )
-}
-
-// ── Web Speech API — minimale Typen (nicht in lib.dom enthalten) ──────────────
-
-interface SpeechRecognitionLike {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  start(): void
-  stop(): void
-  onresult:
-    | ((e: {
-        results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } } & ArrayLike<unknown>>
-      }) => void)
-    | null
-  onend: (() => void) | null
-  onerror: (() => void) | null
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition?: new () => SpeechRecognitionLike
-    webkitSpeechRecognition?: new () => SpeechRecognitionLike
-  }
 }
 
 // ── Internal ──────────────────────────────────────────────────────────────────
@@ -716,6 +696,27 @@ function VersionCard({
   activeMatchId,
   onSpanClick,
 }: VersionCardProps) {
+  // Neuaufnahme im Edit-Modus — ersetzt den Text komplett, daher mit Bestätigung
+  const editRec = useSpeechRecognition()
+  const [confirmReRec, setConfirmReRec] = useState(false)
+
+  function handleMicClick() {
+    if (editRec.state === 'recording') {
+      editRec.stop()
+      return
+    }
+    if (text.trim()) {
+      setConfirmReRec(true)
+      return
+    }
+    editRec.start('', (full) => onTextChange(full))
+  }
+
+  function startReRecording() {
+    setConfirmReRec(false)
+    onTextChange('')
+    editRec.start('', (full) => onTextChange(full))
+  }
   const borderColor = isGreen ? 'var(--color-gfk-beduerfnis)' : 'var(--color-primary)'
   const hasHighlights = score !== null
 
@@ -775,6 +776,7 @@ function VersionCard({
             }
           }}
           rows={3}
+          readOnly={editRec.state === 'recording'}
           style={{
             ...textStyle,
             position: 'relative',
@@ -790,6 +792,79 @@ function VersionCard({
           aria-label="Nachricht bearbeiten"
         />
       </div>
+
+      {/* Neuaufnahme — ersetzt den Text (mit Bestätigung) */}
+      {editRec.supported && (
+        <div className="mt-2 flex items-center gap-2.5">
+          {confirmReRec ? (
+            <>
+              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                Neu aufnehmen? Der bisherige Text wird ersetzt.
+              </p>
+              <button
+                type="button"
+                onClick={startReRecording}
+                className="rounded-full px-3 py-1 text-xs font-medium transition-opacity hover:opacity-80"
+                style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+              >
+                Ja, neu aufnehmen
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmReRec(false)}
+                className="rounded-full px-3 py-1 text-xs font-medium transition-opacity hover:opacity-70"
+                style={{
+                  background: 'var(--color-bg-surface)',
+                  color: 'var(--color-text-secondary)',
+                }}
+              >
+                Abbrechen
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleMicClick}
+                aria-label={
+                  editRec.state === 'recording' ? 'Aufnahme stoppen' : 'Nachricht neu einsprechen'
+                }
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-80"
+                style={{
+                  background:
+                    editRec.state === 'recording'
+                      ? 'var(--color-destructive)'
+                      : 'var(--color-bg-surface)',
+                  color:
+                    editRec.state === 'recording'
+                      ? 'var(--color-on-status)'
+                      : 'var(--color-text-secondary)',
+                }}
+              >
+                {editRec.state === 'recording' ? (
+                  <Square size={13} aria-hidden="true" />
+                ) : (
+                  <Mic size={15} aria-hidden="true" />
+                )}
+              </button>
+              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                {editRec.state === 'recording' ? (
+                  <motion.span
+                    animate={{ opacity: [1, 0.5, 1] }}
+                    transition={{ duration: 1.4, repeat: Infinity }}
+                  >
+                    ● Aufnahme läuft — sprich einfach, tippe zum Stoppen.
+                  </motion.span>
+                ) : editRec.state === 'stopped' ? (
+                  'Aufnahme beendet — du kannst den Text anpassen.'
+                ) : (
+                  'Text anpassen oder neu einsprechen (ersetzt den Text).'
+                )}
+              </p>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }

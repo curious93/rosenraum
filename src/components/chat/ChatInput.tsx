@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { Mic, Square } from 'lucide-react'
+import { useSpeechRecognition } from '@/lib/useSpeechRecognition'
 
 /** Props für das Chat-Eingabefeld. */
 export interface ChatInputProps {
@@ -35,6 +37,15 @@ export function ChatInput({
   const [text, setText] = useState('')
   const [focused, setFocused] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const rec = useSpeechRecognition()
+
+  // „Aufnahme beendet"-Hinweis nach 4s automatisch ausblenden
+  useEffect(() => {
+    if (rec.state !== 'stopped') return
+    const t = setTimeout(() => rec.reset(), 4000)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rec.state])
 
   useEffect(() => {
     const el = textareaRef.current
@@ -68,6 +79,13 @@ export function ChatInput({
         paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
       }}
     >
+      {rec.state !== 'idle' && (
+        <p className="mb-1.5 px-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+          {rec.state === 'recording'
+            ? '● Aufnahme läuft — sprich einfach, tippe zum Stoppen.'
+            : 'Aufnahme beendet — du kannst den Text noch anpassen.'}
+        </p>
+      )}
       <div className="flex items-end gap-2">
         {leading}
         <div
@@ -90,6 +108,7 @@ export function ChatInput({
             onBlur={() => setFocused(false)}
             placeholder={placeholder}
             disabled={disabled}
+            readOnly={rec.state === 'recording'}
             rows={1}
             className="flex-1 resize-none text-base leading-relaxed outline-none bg-transparent py-1.5 disabled:opacity-50"
             style={{
@@ -98,6 +117,35 @@ export function ChatInput({
               maxHeight: '120px',
             }}
           />
+
+          {rec.supported && !disabled && (
+            <button
+              type="button"
+              onClick={() =>
+                rec.state === 'recording'
+                  ? rec.stop()
+                  : rec.start(text.trim() ? text.trim() + ' ' : '', (full) => setText(full))
+              }
+              aria-label={rec.state === 'recording' ? 'Aufnahme stoppen' : 'Nachricht einsprechen'}
+              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mb-0.5 transition-opacity hover:opacity-80"
+              style={{
+                background:
+                  rec.state === 'recording'
+                    ? 'var(--color-destructive)'
+                    : 'var(--color-bg-elevated)',
+                color:
+                  rec.state === 'recording'
+                    ? 'var(--color-on-status)'
+                    : 'var(--color-text-secondary)',
+              }}
+            >
+              {rec.state === 'recording' ? (
+                <Square size={13} aria-hidden="true" />
+              ) : (
+                <Mic size={15} aria-hidden="true" />
+              )}
+            </button>
+          )}
 
           <motion.button
             onClick={handleSend}

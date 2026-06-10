@@ -30,3 +30,11 @@ env:
 
   - variable: ANTHROPIC_API_KEY
     secret: ANTHROPIC_API_KEY
+
+  # Firebase Admin (Firestore-Schreibzugriff, z.B. /api/feedback)
+  - variable: FIREBASE_ADMIN_PROJECT_ID
+    secret: FIREBASE_ADMIN_PROJECT_ID
+  - variable: FIREBASE_ADMIN_CLIENT_EMAIL
+    secret: FIREBASE_ADMIN_CLIENT_EMAIL
+  - variable: FIREBASE_ADMIN_PRIVATE_KEY
+    secret: FIREBASE_ADMIN_PRIVATE_KEY
