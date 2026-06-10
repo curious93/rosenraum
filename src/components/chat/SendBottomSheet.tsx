@@ -35,6 +35,10 @@ export interface SendBottomSheetProps {
 export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomSheetProps) {
   const [editedText, setEditedText] = useState(originalText)
   const [rosenbergText, setRosenbergText] = useState<string | null>(null)
+  const [suggestionScore, setSuggestionScore] = useState<{
+    forText: string
+    result: GfkScoreResult
+  } | null>(null)
   const [analyzing, setAnalyzing] = useState(false)
   const [showExample, setShowExample] = useState(false)
   const [selected, setSelected] = useState<SendVersion>('original')
@@ -106,6 +110,24 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     return () => clearTimeout(scoreTimer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editedText])
+
+  // Vorschlagstext zusätzlich scoren → Dimensions-Highlights im Rosenraum-Beispiel (#6).
+  // Score ist an den Text gekoppelt — veraltete Ergebnisse werden beim Rendern ignoriert.
+  useEffect(() => {
+    if (!rosenbergText) return
+    let cancelled = false
+    scoreMessage(rosenbergText).then((result) => {
+      if (!cancelled && result !== null) setSuggestionScore({ forText: rosenbergText, result })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [rosenbergText])
+
+  const suggestionDims =
+    suggestionScore && suggestionScore.forText === rosenbergText
+      ? suggestionScore.result.dimensions
+      : null
 
   function handleInspire() {
     setShowExample(true)
@@ -227,6 +249,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           ) : (
             <GfkVersionCard
               text={rosenbergText}
+              highlightDims={suggestionDims}
               selected={selected === 'rosenberg'}
               onSelect={() =>
                 rosenbergText !== null && rosenbergText !== '' && setSelected('rosenberg')
@@ -309,7 +332,8 @@ function buildHighlightNodes(
   dims: GfkScoreResult['dimensions'],
   activeDim: string | null,
   activeMatchId: string | null,
-  onSpanClick: (matchId: string, dimKey: string) => void
+  onSpanClick: (matchId: string, dimKey: string) => void,
+  interactive = true
 ): React.ReactNode[] {
   // Collect all valid segments per dim — includes isProblematic=false (improvable spots)
   const segs: AnnotatedSeg[] = []
@@ -372,12 +396,14 @@ function buildHighlightNodes(
     nodes.push(
       <mark
         key={`${from}-${to}`}
-        onClick={() => primary.matchId && onSpanClick(primary.matchId, primary.dimKey)}
+        onClick={() =>
+          interactive && primary.matchId && onSpanClick(primary.matchId, primary.dimKey)
+        }
         style={{
           background: bg,
           borderRadius: '3px',
           boxShadow: shadows,
-          cursor: primary.matchId ? 'pointer' : 'default',
+          cursor: interactive && primary.matchId ? 'pointer' : 'default',
         }}
       >
         {chunk}
@@ -495,9 +521,20 @@ interface GfkVersionCardProps {
   onSelect: () => void
   onClose: () => void
   loading: boolean
+  /** Dimensions-Daten für farbige Highlights im Vorschlagstext (null solange nicht gescored) */
+  highlightDims?: GfkScoreResult['dimensions'] | null
 }
 
-function GfkVersionCard({ text, selected, onSelect, onClose, loading }: GfkVersionCardProps) {
+const noopSpanClick = () => {}
+
+function GfkVersionCard({
+  text,
+  selected,
+  onSelect,
+  onClose,
+  loading,
+  highlightDims,
+}: GfkVersionCardProps) {
   const borderColor = selected ? 'var(--color-primary)' : 'var(--color-border)'
   const isAlreadyOpen = text === ''
   const isError = text === null && !loading
@@ -528,11 +565,6 @@ function GfkVersionCard({ text, selected, onSelect, onClose, loading }: GfkVersi
           <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
             Nur zur Inspiration
           </span>
-          {selected && (
-            <span className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>
-              ✓ ausgewählt
-            </span>
-          )}
         </div>
 
         <AnimatePresence mode="wait">
@@ -570,11 +602,22 @@ function GfkVersionCard({ text, selected, onSelect, onClose, loading }: GfkVersi
               className="text-sm leading-relaxed"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              {isAlreadyOpen
-                ? 'Diese Nachricht klingt bereits offen und wertschätzend.'
-                : isError
-                  ? 'Rosenraum konnte keinen Vorschlag erstellen. Schreib einfach so wie du bist.'
-                  : text}
+              {isAlreadyOpen ? (
+                'Diese Nachricht klingt bereits offen und wertschätzend.'
+              ) : isError ? (
+                'Rosenraum konnte keinen Vorschlag erstellen. Schreib einfach so wie du bist.'
+              ) : highlightDims && text ? (
+                <motion.span
+                  key="highlighted"
+                  initial={{ opacity: 0.4 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                >
+                  {buildHighlightNodes(text, highlightDims, null, null, noopSpanClick, false)}
+                </motion.span>
+              ) : (
+                text
+              )}
             </motion.p>
           )}
         </AnimatePresence>
