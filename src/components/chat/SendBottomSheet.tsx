@@ -440,25 +440,25 @@ function VersionCard({
       )}
 
       <div style={{ position: 'relative' }}>
-        {/* Highlight overlay — behind textarea */}
-        {hasHighlights && (
-          <div
-            aria-hidden
-            style={{
-              ...textStyle,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              pointerEvents: 'none',
-              userSelect: 'none',
-              color: 'transparent',
-            }}
-          >
-            {buildHighlightNodes(text, score!.dimensions, activeDim, activeMatchId, onSpanClick)}
-          </div>
-        )}
+        {/* Highlight overlay — rendered as visible text behind transparent textarea */}
+        <div
+          aria-hidden
+          style={{
+            ...textStyle,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+            userSelect: 'none',
+            color: 'var(--color-text-primary)',
+          }}
+        >
+          {hasHighlights
+            ? buildHighlightNodes(text, score!.dimensions, activeDim, activeMatchId, onSpanClick)
+            : text}
+        </div>
 
-        {/* Editable textarea — on top */}
+        {/* Editable textarea — color transparent so overlay shows through */}
         <textarea
           ref={textareaRef}
           value={text}
@@ -475,7 +475,7 @@ function VersionCard({
             position: 'relative',
             display: 'block',
             background: 'transparent',
-            color: 'var(--color-text-primary)',
+            color: 'transparent',
             caretColor: 'var(--color-text-primary)',
             outline: 'none',
             resize: 'none',
