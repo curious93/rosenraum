@@ -74,20 +74,12 @@ export function GfkScorePanel({
 
   const hasScore = score !== null
 
-  // Nur Dimensionen mit Problemen oder Matches zeigen — der Rest wird als "gut" komprimiert
+  // Nur Dimensionen mit konkreten Treffern (matches) zeigen — fehlende/abstrakte Dimensionen ausblenden
   const activeDims = hasScore
-    ? DIMENSIONS.filter(
-        (d) =>
-          (score!.dimensions[d.key]?.score ?? 10) <= 7 ||
-          (score!.dimensions[d.key]?.matches?.length ?? 0) > 0
-      )
+    ? DIMENSIONS.filter((d) => (score!.dimensions[d.key]?.matches?.length ?? 0) > 0)
     : DIMENSIONS
   const inactiveDims = hasScore
-    ? DIMENSIONS.filter(
-        (d) =>
-          (score!.dimensions[d.key]?.score ?? 10) > 7 &&
-          (score!.dimensions[d.key]?.matches?.length ?? 0) === 0
-      )
+    ? DIMENSIONS.filter((d) => (score!.dimensions[d.key]?.matches?.length ?? 0) === 0)
     : []
 
   function toggleExpand(key: string) {
