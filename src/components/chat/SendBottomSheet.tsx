@@ -313,23 +313,15 @@ function buildHighlightNodes(
   for (const dim of HIGHLIGHT_DIMS) {
     const dimData = dims[dim.key]
     const allMatches = dimData.matches ?? []
-    if (allMatches.length > 0) {
-      for (const match of allMatches) {
-        if (match.start >= 0 && match.end > match.start && match.end <= text.length) {
-          segs.push({
-            start: match.start,
-            end: match.end,
-            color: dim.color,
-            dimKey: dim.key,
-            matchId: match.id,
-          })
-        }
-      }
-    } else {
-      for (const [s, e] of dimData.spans ?? []) {
-        if (s >= 0 && e > s && e <= text.length) {
-          segs.push({ start: s, end: e, color: dim.color, dimKey: dim.key, matchId: null })
-        }
+    for (const match of allMatches) {
+      if (match.start >= 0 && match.end > match.start && match.end <= text.length) {
+        segs.push({
+          start: match.start,
+          end: match.end,
+          color: dim.color,
+          dimKey: dim.key,
+          matchId: match.id,
+        })
       }
     }
   }

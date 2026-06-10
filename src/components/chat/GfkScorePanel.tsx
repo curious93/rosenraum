@@ -162,8 +162,16 @@ export function GfkScorePanel({
                       style={{ width: 16, height: 16 }}
                       animate={
                         hasScore && dimScore >= 8
-                          ? { backgroundColor: 'var(--color-gfk-beduerfnis)', scale: 1 }
-                          : { backgroundColor: 'var(--color-border)', scale: 1 }
+                          ? {
+                              backgroundColor: 'var(--color-gfk-beduerfnis)',
+                              boxShadow: 'none',
+                              scale: 1,
+                            }
+                          : {
+                              backgroundColor: 'transparent',
+                              boxShadow: '0 0 0 1.5px var(--color-text-muted)',
+                              scale: 1,
+                            }
                       }
                       transition={{ duration: 0.4, ease: 'easeOut' }}
                     >

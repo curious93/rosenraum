@@ -84,12 +84,10 @@ export async function POST(request: NextRequest) {
 
     const result: GfkScoreResult = JSON.parse(raw)
 
-    // Sicherstellen dass alle Felder vorhanden sind (Fallback für ältere Antworten)
+    // spans immer aus matches ableiten — API-generierte spans ignorieren
     for (const dim of Object.values(result.dimensions)) {
       if (!dim.matches) dim.matches = []
-      if (!dim.spans || dim.spans.length === 0) {
-        dim.spans = dim.matches.map((m) => [m.start, m.end] as [number, number])
-      }
+      dim.spans = dim.matches.map((m) => [m.start, m.end] as [number, number])
       if (!dim.status) dim.status = 'teilweise'
       if (!dim.summary) dim.summary = ''
     }
