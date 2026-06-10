@@ -298,7 +298,6 @@ export function GfkScorePanel({
                           className="ml-[5.5rem] mr-0 mb-2 rounded-xl p-2.5"
                           style={{
                             background: `color-mix(in srgb, ${dim.color} 6%, var(--color-bg-surface))`,
-                            border: `1px solid color-mix(in srgb, ${dim.color} 20%, transparent)`,
                           }}
                         >
                           {dimData.mainProblem && (
