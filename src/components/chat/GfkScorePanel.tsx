@@ -214,13 +214,13 @@ export function GfkScorePanel({
                             </span>
                           </span>
                           <span
-                            className="text-xs italic"
+                            className="hidden text-xs italic sm:inline"
                             style={{ color: 'var(--color-text-muted)' }}
                           >
                             noch nicht enthalten
                           </span>
                           <span className="text-xs" style={{ color: dim.color }}>
-                            · ergänzen?
+                            <span className="hidden sm:inline">· </span>ergänzen?
                           </span>
                           <span className="flex-1" />
                           <motion.span
@@ -429,20 +429,20 @@ export function GfkScorePanel({
                                 {delta > 0 ? `+${delta}` : `${delta}`}
                               </motion.span>
                             )}
+                            {/* Score-Anzeige bewusst ausgeblendet (User-Wunsch) — Code bleibt für Re-Aktivierung: 'hidden' entfernen */}
                             <span
-                              className="text-right text-xs"
-                              style={{
-                                display: 'inline-block',
-                                width: '5.5rem',
-                                color: labelColor,
-                              }}
+                              className="hidden w-7 text-right text-xs sm:w-[5.5rem]"
+                              style={{ color: labelColor }}
                             >
                               {!hasScore ? (
                                 '–'
                               ) : (
                                 <>
                                   <span className="tabular-nums font-semibold">{dimScore}</span>
-                                  <span style={{ color: 'var(--color-text-muted)' }}>
+                                  <span
+                                    className="hidden sm:inline"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                  >
                                     {' · '}
                                     {scoreBand(dimScore)}
                                   </span>

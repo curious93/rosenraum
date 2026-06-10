@@ -399,9 +399,11 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           {showFeedback && (
             <motion.div
               key="feedback"
-              className="absolute inset-0 z-10 flex flex-col gap-3 rounded-t-2xl px-4 pt-5"
+              className="fixed bottom-0 left-0 right-0 z-[60] mx-auto flex max-h-[88dvh] flex-col gap-3 rounded-t-2xl px-4 pt-5"
               style={{
                 background: 'var(--color-bg-surface)',
+                maxWidth: 'var(--max-width-chat)',
+                boxShadow: '0 -4px 24px rgba(0,0,0,0.10)',
                 paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
               }}
               initial={{ opacity: 0 }}
@@ -479,7 +481,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                       feedbackRec.state === 'recording' || feedbackRec.state === 'formatting'
                     }
                     placeholder="Was passt — was nicht?"
-                    className="w-full flex-1 resize-none rounded-2xl p-3 text-sm leading-relaxed outline-none"
+                    className="w-full min-h-28 flex-1 resize-none rounded-2xl p-3 text-sm leading-relaxed outline-none"
                     style={{
                       background: 'var(--color-bg-elevated)',
                       color: 'var(--color-text-primary)',
