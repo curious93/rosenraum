@@ -74,17 +74,9 @@ export function GfkScorePanel({
 
   const hasScore = score !== null
 
-  // Nur Dimensionen mit mindestens einem isProblematic-Match zeigen
-  const activeDims = hasScore
-    ? DIMENSIONS.filter((d) =>
-        (score!.dimensions[d.key]?.matches ?? []).some((m) => m.isProblematic)
-      )
-    : DIMENSIONS
-  const inactiveDims = hasScore
-    ? DIMENSIONS.filter(
-        (d) => !(score!.dimensions[d.key]?.matches ?? []).some((m) => m.isProblematic)
-      )
-    : []
+  // Immer alle 4 Dimensionen zeigen
+  const activeDims = DIMENSIONS
+  const inactiveDims: (typeof DIMENSIONS)[number][] = []
 
   function toggleExpand(key: string) {
     setExpandedDims((prev) => {
@@ -164,9 +156,45 @@ export function GfkScorePanel({
                       cursor: hasScore ? 'pointer' : 'default',
                     }}
                   >
+                    {/* Checkmark circle — grün wenn score >= 8 */}
+                    <motion.div
+                      className="flex-shrink-0 flex items-center justify-center rounded-full"
+                      style={{ width: 16, height: 16 }}
+                      animate={
+                        hasScore && dimScore >= 8
+                          ? { backgroundColor: 'var(--color-gfk-beduerfnis)', scale: 1 }
+                          : { backgroundColor: 'var(--color-border)', scale: 1 }
+                      }
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                    >
+                      <AnimatePresence>
+                        {hasScore && dimScore >= 8 && (
+                          <motion.svg
+                            key="check"
+                            width="10"
+                            height="10"
+                            viewBox="0 0 10 10"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                            transition={{ duration: 0.25, ease: 'easeOut' }}
+                          >
+                            <polyline
+                              points="2,5 4,7.5 8,3"
+                              fill="none"
+                              stroke="white"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </motion.svg>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+
                     <span
-                      className="text-xs w-20 flex-shrink-0 text-left"
-                      style={{ color: 'var(--color-text-secondary)' }}
+                      className="text-xs flex-shrink-0 text-left"
+                      style={{ color: 'var(--color-text-secondary)', width: '4.5rem' }}
                     >
                       {dim.label}
                     </span>
@@ -262,7 +290,7 @@ export function GfkScorePanel({
 
                   {/* Kurzdiagnose + Details-Toggle — inline, aligned to bar */}
                   {hasScore && dimData && dimScore <= 6 && (
-                    <div className="pl-[5.5rem] pr-[3rem] mb-1 flex items-center justify-between gap-2">
+                    <div className="pl-[7rem] pr-[3rem] mb-1 flex items-center justify-between gap-2">
                       <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                         {dimData.summary}
                       </p>
@@ -290,7 +318,7 @@ export function GfkScorePanel({
                         transition={{ duration: 0.2, ease: 'easeInOut' }}
                         style={{ overflow: 'hidden' }}
                       >
-                        <div className="ml-[5.5rem] mb-2">
+                        <div className="ml-[7rem] mb-2">
                           {dimData.mainProblem && (
                             <p
                               className="text-xs mb-2"
