@@ -34,7 +34,7 @@ export function gfkMotivation(
   loading: boolean
 ): { text: string; color: string } | null {
   if (loading || score === null) return null
-  const allOpen = DIMENSIONS.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 7)
+  const allOpen = DIMENSIONS.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 8)
   if (allOpen) return null
   const total = score.total ?? 0
   if (total >= 7) return { text: 'Gut formuliert ✓', color: 'var(--color-gfk-beduerfnis)' }
@@ -70,7 +70,7 @@ export function GfkScorePanel({
   const alreadyOpen =
     !loading &&
     score !== null &&
-    DIMENSIONS.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 7)
+    DIMENSIONS.every((d) => (score.dimensions[d.key]?.score ?? 0) >= 8)
 
   const hasScore = score !== null
 
