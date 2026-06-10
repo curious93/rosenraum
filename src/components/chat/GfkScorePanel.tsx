@@ -74,12 +74,16 @@ export function GfkScorePanel({
 
   const hasScore = score !== null
 
-  // Nur Dimensionen mit konkreten Treffern (matches) zeigen — fehlende/abstrakte Dimensionen ausblenden
+  // Nur Dimensionen mit mindestens einem isProblematic-Match zeigen
   const activeDims = hasScore
-    ? DIMENSIONS.filter((d) => (score!.dimensions[d.key]?.matches?.length ?? 0) > 0)
+    ? DIMENSIONS.filter((d) =>
+        (score!.dimensions[d.key]?.matches ?? []).some((m) => m.isProblematic)
+      )
     : DIMENSIONS
   const inactiveDims = hasScore
-    ? DIMENSIONS.filter((d) => (score!.dimensions[d.key]?.matches?.length ?? 0) === 0)
+    ? DIMENSIONS.filter(
+        (d) => !(score!.dimensions[d.key]?.matches ?? []).some((m) => m.isProblematic)
+      )
     : []
 
   function toggleExpand(key: string) {
@@ -118,9 +122,7 @@ export function GfkScorePanel({
         <p className="text-sm font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
           ✓ Diese Nachricht klingt bereits offen.
         </p>
-      ) : !hasScore &&
-        loading ? // Initial load — show nothing, bars appear when first results arrive
-      null : (
+      ) : !hasScore && loading ? null : ( // Initial load — show nothing, bars appear when first results arrive
         <div className="space-y-1">
           <AnimatePresence initial={false}>
             {(hasScore ? activeDims : DIMENSIONS).map((dim, idx) => {
@@ -258,9 +260,9 @@ export function GfkScorePanel({
                     </div>
                   </button>
 
-                  {/* Kurzdiagnose + Details-Toggle — inline */}
+                  {/* Kurzdiagnose + Details-Toggle — inline, aligned to bar */}
                   {hasScore && dimData && dimScore <= 6 && (
-                    <div className="pl-[5.5rem] mb-1 flex items-center justify-between gap-2">
+                    <div className="pl-[5.5rem] pr-[3rem] mb-1 flex items-center justify-between gap-2">
                       <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                         {dimData.summary}
                       </p>

@@ -312,8 +312,9 @@ function buildHighlightNodes(
 
   for (const dim of HIGHLIGHT_DIMS) {
     const dimData = dims[dim.key]
-    if (dimData.matches && dimData.matches.length > 0) {
-      for (const match of dimData.matches) {
+    const problematic = (dimData.matches ?? []).filter((m) => m.isProblematic)
+    if (problematic.length > 0) {
+      for (const match of problematic) {
         if (match.start >= 0 && match.end > match.start && match.end <= text.length) {
           segs.push({
             start: match.start,
@@ -325,7 +326,7 @@ function buildHighlightNodes(
         }
       }
     } else {
-      for (const [s, e] of dimData.spans) {
+      for (const [s, e] of dimData.spans ?? []) {
         if (s >= 0 && e > s && e <= text.length) {
           segs.push({ start: s, end: e, color: dim.color, dimKey: dim.key, matchId: null })
         }
