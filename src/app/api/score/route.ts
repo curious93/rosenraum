@@ -5,24 +5,27 @@ const SCORE_SYSTEM_PROMPT = `Du bist ein GFK-Analyse-Assistent. Analysiere den d
 
 Antworte NUR mit validem JSON, ohne Markdown-Blöcke oder Erklärungen.
 
-GRUNDREGEL: Positive, harmlose oder neutrale Nachrichten bekommen hohe Scores (7-10) auf allen Dimensionen und leere matches []. Niedrige Scores (1-5) und matches NUR wenn eine Dimension aktiv problematisch ist.
+GRUNDREGELN:
+1. Wenn score <= 6: matches DARF NICHT leer sein. Zeige die Textstelle wo die Verbesserung möglich wäre.
+2. Wenn score >= 8: matches ist immer []. Dimension ist gut oder nicht relevant.
+3. isProblematic=true bei aktivem Fehler (Bewertung, Vorwurf, Forderung). isProblematic=false wenn Stelle verbesserbar aber kein Fehler (z.B. Gefühl nur angedeutet).
+4. beduerfnis/bitte: score 8 + matches:[] wenn diese Dimension im Text schlicht nicht vorkommt. NUR score<=6 + matches wenn eine Forderung/Drohung im Text steht.
 
 Dimensionen (Score 1-10):
-- beobachtung: Hoch bei faktischen/neutralen/positiven Aussagen. Niedrig bei Generalisierungen ("immer"/"nie"), Bewertungen, Schuldzuweisungen.
-- gefuehl: Hoch bei Ich-Perspektive oder fehlenden Negativemotionen. Niedrig wenn Emotionen als Vorwurf eingesetzt werden.
-- beduerfnis: Hoch wenn Bedürfnis ausgedrückt oder nicht nötig. Niedrig wenn bei klarem Konflikt kein Bedürfnis genannt.
-- bitte: Hoch bei freundlicher Bitte oder keiner nötigen Bitte. Niedrig bei Forderungen oder Drohungen.
+- beobachtung: Niedrig bei Bewertungen/Verallgemeinerungen ("immer","nie","du bist..."). Match = das konkrete Wort/die Phrase.
+- gefuehl: Score 6 wenn Gefühl nur implizit/angedeutet. Match = der Satzbereich der ein Gefühl enthält oder wo eines fehlt, isProblematic=false, suggestion = explizite Ich-Formulierung.
+- beduerfnis: Score 8 + matches:[] wenn Dimension fehlt. Nur niedrig wenn Forderung/Drohung vorhanden.
+- bitte: Score 8 + matches:[] wenn Dimension fehlt. Nur niedrig bei Forderung/Drohung.
 
 Status-Regeln: score 8-10 → "stark", score 6-7 → "teilweise", score 3-5 → "schwach", score 1-2 → "fehlt"
 
-matches: Nur bei score <= 6 UND konkreten Problemstellen. Maximal 5 Treffer pro Dimension, sortiert nach priority (1 = wichtigster). Jeder Match: id (z.B. "obs_1"), text (exakter Ausschnitt aus dem Originaltext), start (0-basiert), end (exklusiv), diagnosis (1-3 Wörter), explanation (1 Satz), suggestion (konkrete Umformulierung), priority (1-5), isProblematic (true/false).
-
-summary: Immer setzen. Kurze Zeile, z.B. "2 Stellen · Bewertung statt Beobachtung" oder "Klar und faktisch formuliert".
-mainProblem: Nur wenn score <= 5 — ein Satz der das Hauptproblem beschreibt.
-spans: Setze spans = Array aller [start, end] von isProblematic matches. Bei keinen matches: spans = [].
+matches: text = exakter Ausschnitt (max 5 Wörter) aus dem Originaltext. start/end = Zeichenpositionen (0-basiert, end exklusiv). Maximal 3 Treffer pro Dimension.
+summary: Immer setzen. Kurze Zeile.
+mainProblem: Nur wenn score <= 5.
+spans: Array aller [start, end] aller matches (inkl. isProblematic=false). Bei keinen matches: spans:[].
 
 Beispiel "ich finde dich wirklich immer Blöd":
-{"dimensions":{"beobachtung":{"score":2,"spans":[[24,34]],"status":"fehlt","summary":"1 Stelle · Bewertung statt Beobachtung","mainProblem":"Du beschreibst kein konkretes Ereignis, sondern bewertest die Person.","matches":[{"id":"obs_1","text":"immer Blöd","start":24,"end":34,"diagnosis":"Bewertung / Verallgemeinerung","explanation":"Diese Stelle enthält eine pauschale Bewertung statt einer konkreten Beobachtung.","suggestion":"Als du heute Abend meine Bitte ignoriert hast …","priority":1,"isProblematic":true}]},"gefuehl":{"score":4,"spans":[],"status":"schwach","summary":"Gefühl angedeutet, aber nicht klar ausgedrückt","mainProblem":"Ein konkretes Ich-Gefühl fehlt.","matches":[]},"beduerfnis":{"score":2,"spans":[],"status":"fehlt","summary":"Kein Bedürfnis genannt","mainProblem":"Was du dir wünschst wird nicht benannt.","matches":[]},"bitte":{"score":2,"spans":[],"status":"fehlt","summary":"Keine konkrete Bitte","mainProblem":"Es fehlt eine freundliche Bitte.","matches":[]}},"total":3}`
+{"dimensions":{"beobachtung":{"score":2,"spans":[[30,40]],"status":"fehlt","summary":"1 Stelle · Bewertung statt Beobachtung","mainProblem":"Du beschreibst kein konkretes Ereignis, sondern bewertest die Person.","matches":[{"id":"obs_1","text":"immer Blöd","start":30,"end":40,"diagnosis":"Bewertung","explanation":"Pauschale Bewertung statt konkreter Beobachtung.","suggestion":"Als du heute Abend meine Bitte ignoriert hast …","priority":1,"isProblematic":true}]},"gefuehl":{"score":6,"spans":[[0,25]],"status":"teilweise","summary":"Gefühl angedeutet, nicht klar benannt","matches":[{"id":"gef_1","text":"ich finde dich wirklich","start":0,"end":23,"diagnosis":"Gefühl fehlt","explanation":"'Finden' drückt kein klares Ich-Gefühl aus.","suggestion":"Ich fühle mich verletzt wenn …","priority":1,"isProblematic":false}]},"beduerfnis":{"score":8,"spans":[],"status":"stark","summary":"Nicht relevant für diesen Satz","matches":[]},"bitte":{"score":8,"spans":[],"status":"stark","summary":"Nicht relevant für diesen Satz","matches":[]}},"total":5}`
 
 /**
  * POST /api/score
@@ -85,9 +88,7 @@ export async function POST(request: NextRequest) {
     for (const dim of Object.values(result.dimensions)) {
       if (!dim.matches) dim.matches = []
       if (!dim.spans || dim.spans.length === 0) {
-        dim.spans = dim.matches
-          .filter((m) => m.isProblematic)
-          .map((m) => [m.start, m.end] as [number, number])
+        dim.spans = dim.matches.map((m) => [m.start, m.end] as [number, number])
       }
       if (!dim.status) dim.status = 'teilweise'
       if (!dim.summary) dim.summary = ''

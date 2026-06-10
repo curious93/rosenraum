@@ -308,13 +308,13 @@ function buildHighlightNodes(
   activeMatchId: string | null,
   onSpanClick: (matchId: string, dimKey: string) => void
 ): React.ReactNode[] {
+  // Collect all valid segments per dim — includes isProblematic=false (improvable spots)
   const segs: AnnotatedSeg[] = []
-
   for (const dim of HIGHLIGHT_DIMS) {
     const dimData = dims[dim.key]
-    const problematic = (dimData.matches ?? []).filter((m) => m.isProblematic)
-    if (problematic.length > 0) {
-      for (const match of problematic) {
+    const allMatches = dimData.matches ?? []
+    if (allMatches.length > 0) {
+      for (const match of allMatches) {
         if (match.start >= 0 && match.end > match.start && match.end <= text.length) {
           segs.push({
             start: match.start,
@@ -336,47 +336,59 @@ function buildHighlightNodes(
 
   if (segs.length === 0) return [text]
 
-  segs.sort((a, b) => a.start - b.start)
-
-  const merged: AnnotatedSeg[] = []
-  for (const seg of segs) {
-    const last = merged[merged.length - 1]
-    if (!last || seg.start >= last.end) {
-      merged.push({ ...seg })
-    } else {
-      merged[merged.length - 1].end = Math.max(last.end, seg.end)
-    }
+  // Build breakpoint set — all start/end positions
+  const points = new Set<number>([0, text.length])
+  for (const s of segs) {
+    points.add(s.start)
+    points.add(s.end)
   }
+  const sorted = Array.from(points).sort((a, b) => a - b)
 
   const nodes: React.ReactNode[] = []
-  let cur = 0
 
-  for (const seg of merged) {
-    if (seg.start > cur) nodes.push(text.slice(cur, seg.start))
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const from = sorted[i]
+    const to = sorted[i + 1]
+    const chunk = text.slice(from, to)
+    if (!chunk) continue
 
-    const isActiveDimMatch = activeDim === seg.dimKey
-    const isActiveMatch = activeMatchId !== null && activeMatchId === seg.matchId
-    const intensity = isActiveMatch ? 45 : isActiveDimMatch ? 30 : 18
+    // Which segments cover this chunk?
+    const covering = segs.filter((s) => s.start <= from && s.end >= to)
+
+    if (covering.length === 0) {
+      nodes.push(chunk)
+      continue
+    }
+
+    // Use first covering segment for click handler, layer backgrounds via box-shadow
+    const primary = covering[0]
+    const isActiveMatch = covering.some(
+      (s) => activeMatchId !== null && activeMatchId === s.matchId
+    )
+    const isActiveDim = covering.some((s) => activeDim === s.dimKey)
+    const intensity = isActiveMatch ? 45 : isActiveDim ? 30 : 18
+
+    // Stack multiple colors via layered box-shadows on bottom border
+    const shadows = covering.map((s) => `inset 0 -2px 0 ${s.color}`).join(', ')
+    // Blend backgrounds: first color as background, others layered
+    const bg = `color-mix(in srgb, ${primary.color} ${intensity}%, transparent)`
 
     nodes.push(
       <mark
-        key={`${seg.start}-${seg.matchId}`}
-        onClick={() => seg.matchId && onSpanClick(seg.matchId, seg.dimKey)}
+        key={`${from}-${to}`}
+        onClick={() => primary.matchId && onSpanClick(primary.matchId, primary.dimKey)}
         style={{
-          background: `color-mix(in srgb, ${seg.color} ${intensity}%, transparent)`,
+          background: bg,
           borderRadius: '3px',
-          color: 'transparent',
-          boxShadow: `inset 0 -2px 0 ${seg.color}`,
-          cursor: seg.matchId ? 'pointer' : 'default',
+          boxShadow: shadows,
+          cursor: primary.matchId ? 'pointer' : 'default',
         }}
       >
-        {text.slice(seg.start, seg.end)}
+        {chunk}
       </mark>
     )
-    cur = seg.end
   }
 
-  if (cur < text.length) nodes.push(text.slice(cur))
   return nodes
 }
 
