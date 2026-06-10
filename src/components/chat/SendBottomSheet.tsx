@@ -54,6 +54,11 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   const [activeMatchId, setActiveMatchId] = useState<string | null>(null)
   const [forceExpandDim, setForceExpandDim] = useState<string | null>(null)
 
+  // Feedback zur Scoring-Ansicht (Text + kompletter Kontext → Firestore)
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [feedbackText, setFeedbackText] = useState('')
+  const [feedbackState, setFeedbackState] = useState<'idle' | 'sending' | 'done'>('idle')
+
   // Initial score on mount — with one retry, always ends loading state
   useEffect(() => {
     let cancelled = false
@@ -161,6 +166,33 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     setActiveMatchId((prev) => (prev === matchId ? null : matchId))
   }
 
+  async function handleFeedbackSubmit() {
+    if (feedbackState !== 'idle' || !feedbackText.trim()) return
+    setFeedbackState('sending')
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: feedbackText.trim(),
+        source: 'scoring',
+        context: {
+          editedText,
+          originalText,
+          score,
+          prevScore,
+          rosenbergText,
+          suggestionScore: suggestionScore?.result ?? null,
+        },
+      }),
+    }).catch(() => {})
+    setFeedbackState('done')
+    setTimeout(() => {
+      setShowFeedback(false)
+      setFeedbackText('')
+      setFeedbackState('idle')
+    }, 1600)
+  }
+
   function handleSpanClick(matchId: string, dimKey: string) {
     setActiveDim(dimKey)
     setActiveMatchId((prev) => (prev === matchId ? null : matchId))
@@ -201,6 +233,16 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           className="w-10 h-1 rounded-full mx-auto mb-5"
           style={{ background: 'var(--color-border)' }}
         />
+
+        {/* Feedback-Link — oben rechts auf der Karte */}
+        <button
+          type="button"
+          onClick={() => setShowFeedback(true)}
+          className="absolute right-4 top-4 text-xs transition-opacity hover:opacity-70"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          Feedback
+        </button>
 
         {/* Prominenter Leitsatz */}
         {motivation && (
@@ -304,6 +346,88 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
             </AnimatePresence>
           </motion.button>
         </div>
+
+        {/* Feedback-Overlay — liegt über der Karte */}
+        <AnimatePresence>
+          {showFeedback && (
+            <motion.div
+              key="feedback"
+              className="absolute inset-0 z-10 flex flex-col gap-3 rounded-t-2xl px-4 pt-5"
+              style={{
+                background: 'var(--color-bg-surface)',
+                paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              {feedbackState === 'done' ? (
+                <div className="flex flex-1 flex-col items-center justify-center gap-2">
+                  <div style={{ fontSize: '2rem' }}>🌸</div>
+                  <p
+                    className="text-base font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    Danke — gespeichert.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p
+                    className="text-base font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    Feedback zu dieser Ansicht
+                  </p>
+                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    Tippen oder diktieren — die ganze Ansicht (Text, Bewertung, Vorschlag) wird zur
+                    Analyse mitgespeichert.
+                  </p>
+                  <textarea
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    autoFocus
+                    rows={4}
+                    maxLength={2000}
+                    placeholder="Was passt — was nicht?"
+                    className="w-full flex-1 resize-none rounded-2xl p-3 text-sm leading-relaxed outline-none"
+                    style={{
+                      background: 'var(--color-bg-elevated)',
+                      color: 'var(--color-text-primary)',
+                      border: '1px solid var(--color-border)',
+                      fontSize: 'max(16px, 0.875rem)',
+                    }}
+                  />
+                  <div className="flex gap-2.5">
+                    <button
+                      onClick={() => setShowFeedback(false)}
+                      className="flex-1 rounded-2xl py-3 text-sm font-medium transition-opacity hover:opacity-70"
+                      style={{
+                        background: 'var(--color-bg-elevated)',
+                        color: 'var(--color-text-secondary)',
+                      }}
+                    >
+                      Abbrechen
+                    </button>
+                    <motion.button
+                      onClick={handleFeedbackSubmit}
+                      disabled={feedbackState !== 'idle' || !feedbackText.trim()}
+                      whileTap={{ scale: 0.97 }}
+                      className="flex-[2] rounded-2xl py-3 text-sm font-medium transition-opacity disabled:opacity-40"
+                      style={{
+                        background: 'var(--color-primary)',
+                        color: 'var(--color-on-primary)',
+                      }}
+                    >
+                      {feedbackState === 'sending' ? 'Speichern…' : 'Feedback speichern'}
+                    </motion.button>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </>
   )

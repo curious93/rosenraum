@@ -6,13 +6,13 @@ import { getAdminDb } from '@/lib/firebaseAdmin'
 export type FeedbackRating = 'sad' | 'happy' | 'love'
 
 /** Woher das Feedback stammt */
-export type FeedbackSource = 'room' | 'landing'
+export type FeedbackSource = 'room' | 'landing' | 'scoring'
 
 /**
  * POST /api/feedback
  * Speichert anonymes Nutzer-Feedback in Firestore.
  *
- * @param request - { text?, rating?, email?, source, roomId? }
+ * @param request - { text?, rating?, email?, source, roomId?, context? (nur scoring) }
  * @returns { success: true } oder { error: string }
  */
 export async function POST(request: NextRequest) {
@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
     email?: string
     source?: FeedbackSource
     roomId?: string
+    context?: unknown
   }
 
   try {
@@ -30,9 +31,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ungültige Anfrage' }, { status: 400 })
   }
 
-  const { text, rating, email, source, roomId } = body
+  const { text, rating, email, source, roomId, context } = body
 
-  if (!source || !['room', 'landing'].includes(source)) {
+  if (!source || !['room', 'landing', 'scoring'].includes(source)) {
     return NextResponse.json({ error: 'Ungültige Quelle' }, { status: 400 })
   }
 
@@ -51,8 +52,13 @@ export async function POST(request: NextRequest) {
   if (email && typeof email === 'string' && email.trim().length > 0) {
     data.email = email.trim().slice(0, 200)
   }
-  if (source === 'room' && roomId && typeof roomId === 'string') {
+  if (['room', 'scoring'].includes(source) && roomId && typeof roomId === 'string') {
     data.roomId = roomId
+  }
+  if (source === 'scoring' && context !== undefined) {
+    // Kompletter Scoring-Kontext (Text, Scores, Vorschlag) für tiefere Analyse — max ~40KB
+    const raw = JSON.stringify(context)
+    if (raw.length <= 40000) data.context = JSON.parse(raw)
   }
 
   try {

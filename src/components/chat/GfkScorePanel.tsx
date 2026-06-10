@@ -126,36 +126,14 @@ export function GfkScorePanel({
 
       {!hasScore && loading ? (
         <div className="flex items-center gap-2 py-1">
-          <motion.div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: 'var(--color-text-muted)',
-            }}
-            animate={{ opacity: [0.3, 1, 0.3] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: 'var(--color-text-muted)',
-            }}
-            animate={{ opacity: [0.3, 1, 0.3] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
-          />
-          <motion.div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: 'var(--color-text-muted)',
-            }}
-            animate={{ opacity: [0.3, 1, 0.3] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
-          />
+          {DIMENSIONS.map((dim, i) => (
+            <motion.div
+              key={dim.key}
+              style={{ width: 8, height: 8, borderRadius: '50%', background: dim.color }}
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: i * 0.2 }}
+            />
+          ))}
           <span className="text-xs ml-1" style={{ color: 'var(--color-text-muted)' }}>
             Analysiere…
           </span>
@@ -229,7 +207,7 @@ export function GfkScorePanel({
                           onDimClick(dim.key)
                           if (hasDetails) toggleExpand(dim.key)
                         }}
-                        className="w-full flex items-center gap-2 py-1"
+                        className="w-full flex items-center gap-2 py-1 outline-none"
                         style={{ cursor: hasScore ? 'pointer' : 'default' }}
                       >
                         {/* Checkmark circle — grün wenn score >= 8 */}
@@ -352,7 +330,7 @@ export function GfkScorePanel({
                         <div className="flex items-center justify-end">
                           <span
                             className="text-xs tabular-nums font-semibold text-right"
-                            style={{ width: '1.75rem', display: 'inline-block' }}
+                            style={{ width: '1rem', display: 'inline-block' }}
                           >
                             {!loading && delta !== 0 && (
                               <motion.span
@@ -374,7 +352,7 @@ export function GfkScorePanel({
                           </span>
                           <span
                             className="text-right text-xs"
-                            style={{ display: 'inline-block', width: '6rem', color: labelColor }}
+                            style={{ display: 'inline-block', width: '5.5rem', color: labelColor }}
                           >
                             {!hasScore ? (
                               '–'
@@ -404,7 +382,7 @@ export function GfkScorePanel({
                       {/* Kurzdiagnose — startet unter dem Dimensionsnamen, volle Breite */}
                       {hasScore && dimData && dimScore <= 7 && (
                         <div className="mb-1 pl-[1.625rem] pr-0.5">
-                          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                             {dimData.summary}
                           </p>
                         </div>
@@ -424,7 +402,7 @@ export function GfkScorePanel({
                             <div className="mb-2 pl-[1.625rem]">
                               {dimData.mainProblem && (
                                 <p
-                                  className="text-xs mb-2"
+                                  className="text-sm mb-2"
                                   style={{ color: 'var(--color-text-secondary)' }}
                                 >
                                   {dimData.mainProblem}
@@ -444,7 +422,7 @@ export function GfkScorePanel({
                                       transition={{ duration: 0.8, ease: 'easeInOut' }}
                                     >
                                       <p
-                                        className="text-xs font-medium mb-0.5"
+                                        className="text-sm font-medium mb-0.5"
                                         style={{
                                           color: isActiveMatch
                                             ? dim.color
@@ -461,7 +439,7 @@ export function GfkScorePanel({
                                       </p>
                                       {match.suggestion && (
                                         <p
-                                          className="text-xs italic"
+                                          className="text-sm italic"
                                           style={{ color: 'var(--color-text-muted)' }}
                                         >
                                           → {match.suggestion}
