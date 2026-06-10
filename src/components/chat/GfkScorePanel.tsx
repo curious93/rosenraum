@@ -114,7 +114,43 @@ export function GfkScorePanel({
         <p className="text-sm font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
           ✓ Diese Nachricht klingt bereits offen.
         </p>
-      ) : !hasScore && loading ? null : ( // Initial load — show nothing, bars appear when first results arrive
+      ) : !hasScore && loading ? (
+        <div className="flex items-center gap-2 py-1">
+          <motion.div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: 'var(--color-text-muted)',
+            }}
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: 'var(--color-text-muted)',
+            }}
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
+          />
+          <motion.div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: 'var(--color-text-muted)',
+            }}
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+          />
+          <span className="text-xs ml-1" style={{ color: 'var(--color-text-muted)' }}>
+            Analysiere…
+          </span>
+        </div>
+      ) : (
         <div className="space-y-1">
           <AnimatePresence initial={false}>
             {(hasScore ? activeDims : DIMENSIONS).map((dim, idx) => {
@@ -159,19 +195,19 @@ export function GfkScorePanel({
                     {/* Checkmark circle — grün wenn score >= 8 */}
                     <motion.div
                       className="flex-shrink-0 flex items-center justify-center rounded-full"
-                      style={{ width: 18, height: 18, margin: '0 1px' }}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        flexShrink: 0,
+                        border:
+                          hasScore && dimScore >= 8
+                            ? 'none'
+                            : '1.5px solid var(--color-text-muted)',
+                      }}
                       animate={
                         hasScore && dimScore >= 8
-                          ? {
-                              backgroundColor: 'var(--color-gfk-beduerfnis)',
-                              outline: 'none',
-                              scale: 1,
-                            }
-                          : {
-                              backgroundColor: 'transparent',
-                              outline: '1.5px solid var(--color-text-muted)',
-                              scale: 1,
-                            }
+                          ? { backgroundColor: 'var(--color-gfk-beduerfnis)' }
+                          : { backgroundColor: 'transparent' }
                       }
                       transition={{ duration: 0.4, ease: 'easeOut' }}
                     >

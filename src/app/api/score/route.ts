@@ -84,9 +84,22 @@ export async function POST(request: NextRequest) {
 
     const result: GfkScoreResult = JSON.parse(raw)
 
-    // spans immer aus matches ableiten — API-generierte spans ignorieren
+    // Positionen aus match.text verifizieren und korrigieren, spans ableiten
     for (const dim of Object.values(result.dimensions)) {
       if (!dim.matches) dim.matches = []
+      dim.matches = dim.matches
+        .filter((m) => m.text && m.text.length > 0)
+        .map((m) => {
+          // Modell-Positionen gegen den echten Text prüfen
+          const slice = text.slice(m.start, m.end)
+          if (slice === m.text) return m // korrekt
+          // Korrigieren: echte Position suchen
+          const idx = text.indexOf(m.text)
+          if (idx !== -1) return { ...m, start: idx, end: idx + m.text.length }
+          // Fallback: ungültigen Match entfernen
+          return null
+        })
+        .filter(Boolean) as typeof dim.matches
       dim.spans = dim.matches.map((m) => [m.start, m.end] as [number, number])
       if (!dim.status) dim.status = 'teilweise'
       if (!dim.summary) dim.summary = ''
