@@ -174,14 +174,6 @@ export function GfkScorePanel({
               ✓ Rund — alle vier GFK-Komponenten sind da.
             </motion.p>
           )}
-          {hasScore && (
-            <p
-              className="mb-1.5 tracking-wide"
-              style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}
-            >
-              1–5 kritisch · 6–7 verbessern · 8–10 gut
-            </p>
-          )}
           <AnimatePresence initial={false}>
             {(hasScore ? activeDims : DIMENSIONS).map((dim, idx) => {
               const dimScore = hasScore ? (score!.dimensions[dim.key]?.score ?? 0) : 0
@@ -189,7 +181,6 @@ export function GfkScorePanel({
               const delta =
                 prevDimScore !== null && !loading && hasScore ? dimScore - prevDimScore : 0
               const initialLoad = false
-              const barColor = hasScore ? dim.color : 'var(--color-skeleton)'
               const labelColor = hasScore ? dim.color : 'var(--color-text-muted)'
               const dimData = hasScore ? score!.dimensions[dim.key] : null
               const present = dimData ? dimData.present !== false : true
@@ -221,7 +212,7 @@ export function GfkScorePanel({
                       />
                       <span
                         className="flex-shrink-0 text-left text-xs"
-                        style={{ color: 'var(--color-text-muted)', width: '4.5rem' }}
+                        style={{ color: dim.color, fontWeight: 600, width: '4.5rem' }}
                       >
                         {dim.label}
                       </span>
@@ -295,7 +286,7 @@ export function GfkScorePanel({
 
                         <span
                           className="text-xs flex-shrink-0 text-left"
-                          style={{ color: 'var(--color-text-secondary)', width: '4.5rem' }}
+                          style={{ color: dim.color, fontWeight: 600, width: '4.5rem' }}
                         >
                           {dim.label}
                         </span>
@@ -321,16 +312,45 @@ export function GfkScorePanel({
                             </div>
                           ) : (
                             <>
+                              {/* Qualitätsverlauf rot→amber→grün, Füllung via clipPath (verzerrungsfrei) */}
                               <motion.div
-                                className="h-full rounded-full"
-                                style={{ background: barColor }}
-                                initial={{ width: '0%' }}
-                                animate={{ width: hasScore ? `${dimScore * 10}%` : '0%' }}
+                                className="absolute inset-0 rounded-full"
+                                style={{
+                                  background:
+                                    'linear-gradient(90deg, var(--color-gfk-band-kritisch) 0%, var(--color-gfk-band-kritisch) 38%, var(--color-gfk-band-verbessern) 52%, var(--color-gfk-band-verbessern) 64%, var(--color-gfk-band-gut) 76%, var(--color-gfk-band-gut-deep) 100%)',
+                                }}
+                                initial={{ clipPath: 'inset(0 100% 0 0 round 9999px)' }}
+                                animate={{
+                                  clipPath: hasScore
+                                    ? `inset(0 ${100 - dimScore * 10}% 0 0 round 9999px)`
+                                    : 'inset(0 100% 0 0 round 9999px)',
+                                }}
                                 transition={{
                                   type: 'spring',
                                   stiffness: 180,
                                   damping: 22,
                                   delay: 0.05 * idx,
+                                }}
+                              />
+                              {/* Schwellen-Marker an den Band-Grenzen 5→6 (50%) und 7→8 (70%) */}
+                              <div
+                                className="absolute z-10"
+                                style={{
+                                  left: '50%',
+                                  top: 0,
+                                  bottom: 0,
+                                  width: '2px',
+                                  background: 'var(--color-bg-elevated)',
+                                }}
+                              />
+                              <div
+                                className="absolute z-10"
+                                style={{
+                                  left: '70%',
+                                  top: 0,
+                                  bottom: 0,
+                                  width: '2px',
+                                  background: 'var(--color-bg-elevated)',
                                 }}
                               />
                             </>

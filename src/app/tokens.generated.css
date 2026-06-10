@@ -83,6 +83,10 @@
   --color-gfk-gefuehl-bg: #FFF7ED;
   --color-gfk-beduerfnis-bg: #F0FDF4;
   --color-gfk-bitte-bg: #FAF5FF;
+  --color-gfk-band-kritisch: #C95D5D;
+  --color-gfk-band-verbessern: #E2A14E;
+  --color-gfk-band-gut: #43A964;
+  --color-gfk-band-gut-deep: #1F8A4C;
 
   /* Semantic colors — default preset (rose) light */
   --color-primary: #D0747F;
