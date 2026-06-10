@@ -294,22 +294,17 @@ export function GfkScorePanel({
                         transition={{ duration: 0.2, ease: 'easeInOut' }}
                         style={{ overflow: 'hidden' }}
                       >
-                        <div
-                          className="ml-[5.5rem] mr-0 mb-2 rounded-xl p-2.5"
-                          style={{
-                            background: `color-mix(in srgb, ${dim.color} 6%, var(--color-bg-surface))`,
-                          }}
-                        >
+                        <div className="ml-[5.5rem] mb-2">
                           {dimData.mainProblem && (
                             <p
-                              className="text-xs mb-2 font-medium"
+                              className="text-xs mb-2"
                               style={{ color: 'var(--color-text-secondary)' }}
                             >
                               {dimData.mainProblem}
                             </p>
                           )}
 
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             {visibleMatches.map((match) => {
                               const isActiveMatch = activeMatchId === match.id
                               return (
@@ -317,23 +312,17 @@ export function GfkScorePanel({
                                   key={match.id}
                                   type="button"
                                   onClick={() => onMatchClick(dim.key, match.id)}
-                                  className="w-full text-left rounded-lg p-2 transition-colors"
-                                  style={{
-                                    background: isActiveMatch
-                                      ? `color-mix(in srgb, ${dim.color} 15%, transparent)`
-                                      : `color-mix(in srgb, ${dim.color} 6%, transparent)`,
-                                    border: `1px solid color-mix(in srgb, ${dim.color} ${isActiveMatch ? '40%' : '15%'}, transparent)`,
-                                  }}
-                                  animate={
-                                    isActiveMatch
-                                      ? { scale: [1, 1.01, 1], opacity: [1, 0.8, 1] }
-                                      : {}
-                                  }
+                                  className="w-full text-left"
+                                  animate={isActiveMatch ? { opacity: [1, 0.6, 1] } : {}}
                                   transition={{ duration: 0.8, ease: 'easeInOut' }}
                                 >
                                   <p
                                     className="text-xs font-medium mb-0.5"
-                                    style={{ color: 'var(--color-text-primary)' }}
+                                    style={{
+                                      color: isActiveMatch
+                                        ? dim.color
+                                        : 'var(--color-text-primary)',
+                                    }}
                                   >
                                     &bdquo;{match.text}&ldquo;
                                   </p>
@@ -342,12 +331,6 @@ export function GfkScorePanel({
                                     style={{ color: dim.color, fontWeight: 500 }}
                                   >
                                     {match.diagnosis}
-                                  </p>
-                                  <p
-                                    className="text-xs mb-1"
-                                    style={{ color: 'var(--color-text-secondary)' }}
-                                  >
-                                    {match.explanation}
                                   </p>
                                   <p
                                     className="text-xs italic"
