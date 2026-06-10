@@ -321,26 +321,6 @@ export function GfkScorePanel({
                             </div>
                           ) : (
                             <>
-                              {prevDimScore !== null && prevDimScore !== dimScore && hasScore && (
-                                <motion.div
-                                  key={`ghost-${dim.key}-${prevDimScore}-${dimScore}`}
-                                  className="absolute rounded-full z-10"
-                                  style={{
-                                    left: `calc(${prevDimScore * 10}% - 1.5px)`,
-                                    top: '15%',
-                                    bottom: '15%',
-                                    width: '3px',
-                                    background: 'var(--color-text-primary)',
-                                  }}
-                                  initial={{ opacity: 1 }}
-                                  animate={{ opacity: [1, 0.2, 1, 0.2, 1] }}
-                                  transition={{
-                                    duration: 2,
-                                    ease: 'easeInOut',
-                                    times: [0, 0.25, 0.5, 0.75, 1],
-                                  }}
-                                />
-                              )}
                               <motion.div
                                 className="h-full rounded-full"
                                 style={{ background: barColor }}
