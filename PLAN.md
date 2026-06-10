@@ -86,17 +86,53 @@ Regel ab jetzt: **Keine Interface-Änderung ohne explizite Freigabe** — erst V
 
 Harness: `/tmp/cdp_send.js` (Sheet öffnen) · `/tmp/journey.js '<text>' <out> 5000` · settled via `/tmp/cdp_shot.js` · `sips` auf 1400px · jeden Screenshot lesen, Soll/Ist notieren.
 
-| #   | Test                       | Vorgehen                                       | Erwartung                                                                                       | Ergebnis |
-| --- | -------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
-| T1  | Gradient + Marker statisch | Küchen-V0 senden                               | Beobachtung-Füllung endet in Rotzone (~20%); Marker bei 50%/70%; Namen farbig+fett; Legende weg | ⏳       |
-| T2  | Zonen bei Verbesserung     | V1 (konkrete Beobachtung)                      | Füllungen in Grünzone; 8 vs 9 unterscheidbar (Ende dunkler grün)                                | ⏳       |
-| T3  | Schwellen-Ausrichtung      | Score 6–7 im Verlauf (V0-Gefühl)               | Füllende zwischen Markern, Ende = Amber                                                         | ⏳       |
-| T4  | „nicht enthalten"          | V0/V1                                          | Zeile wie gehabt (Ring, Einladung), Name farbig                                                 | ⏳       |
-| T5  | Rund-Banner                | Küchen-V3 (alle 4)                             | Banner über 4 Gradient-Balken, Füllungen tief grün                                              | ⏳       |
-| T6  | Vorschlag-Highlights       | „Inspiriere mich →" klicken, ~12s              | Vorschlag erscheint, Highlights faden ein; Klick darauf: keine Aktion, nichts bricht            | ⏳       |
-| T7  | Pfeil-Fix                  | Gut-Highlight im Eingabefeld klicken → Details | Lob-Match OHNE leere „→"-Zeile                                                                  | ⏳       |
-| T8  | Regression Eingabefeld     | während T1–T5                                  | Eingabefeld-Highlights korrekt; Details ↓/↑ funktionieren                                       | ⏳       |
-| T9  | Checks + Build             | Terminal                                       | lint · tsc · check:colors · check:tokens · build grün                                           | ⏳       |
+| #   | Test                       | Vorgehen                                       | Erwartung                                                                                       | Ergebnis                                                                                                              |
+| --- | -------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| T1  | Gradient + Marker statisch | Küchen-V0 senden                               | Beobachtung-Füllung endet in Rotzone (~20%); Marker bei 50%/70%; Namen farbig+fett; Legende weg | ✅ verifiziert (Screenshot T1: Rotzone ~20%, Marker, Namen farbig+fett, Legende weg, Chevrons)                        |
+| T2  | Zonen bei Verbesserung     | V1 (konkrete Beobachtung)                      | Füllungen in Grünzone; 8 vs 9 unterscheidbar (Ende dunkler grün)                                | ✅ verifiziert (gleiche Balkenlängen nach Spalten-Fix, 8 vs 9 unterscheidbar)                                         |
+| T3  | Schwellen-Ausrichtung      | Score 6–7 im Verlauf (V0-Gefühl)               | Füllende zwischen Markern, Ende = Amber                                                         | ⬜ offen (kein stabiler 6–7-Score erzeugt — Scoring-Varianz, siehe Backlog #10)                                       |
+| T4  | „nicht enthalten"          | V0/V1                                          | Zeile wie gehabt (Ring, Einladung), Name farbig                                                 | ✅ verifiziert (Name farbig; Zeile inzwischen klickbar mit Lern-Tipp — Redesign)                                      |
+| T5  | Rund-Banner                | Küchen-V3 (alle 4)                             | Banner über 4 Gradient-Balken, Füllungen tief grün                                              | ✅ verifiziert (Banner über 4 Gradient-Balken, alle tief grün)                                                        |
+| T6  | Vorschlag-Highlights       | „Inspiriere mich →" klicken, ~12s              | Vorschlag erscheint, Highlights faden ein; Klick darauf: keine Aktion, nichts bricht            | ✅ verifiziert (4 Highlight-Farben im Vorschlag; bei „bereits offen" korrekt keine)                                   |
+| T7  | Pfeil-Fix                  | Gut-Highlight im Eingabefeld klicken → Details | Lob-Match OHNE leere „→"-Zeile                                                                  | ⬜ teils: Pfeil-Fix im Code; Klick-auf-Highlight im Eingabefeld geht konstruktionsbedingt nicht (offener Punkt unten) |
+| T8  | Regression Eingabefeld     | während T1–T5                                  | Eingabefeld-Highlights korrekt; Details ↓/↑ funktionieren                                       | ✅ während T1–T6 mitverifiziert                                                                                       |
+| T9  | Checks + Build             | Terminal                                       | lint · tsc · check:colors · check:tokens · build grün                                           | ✅ lint·tsc·colors·tokens·build grün (Build 14:05)                                                                    |
+
+## 10. Abgleich letzte 5 User-Nachrichten (2026-06-10 nachmittags)
+
+| #   | Nachricht (Kern)                                                                                                                                                                                              | Status                                                                                                                                                                                                                                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Feedback-Modal: Punkt am Satzende · DB-Ankunft prüfen · Danke 5s mit Ladebalken (ohne %) + X + Auto-Close · Speech-to-Text auch im Chat-Composer · Edit-Modus nur Komplett-Neuaufnahme mit Sicherheitsabfrage | ✅ umgesetzt (`8882868`). DB-Prüfung deckte auf: **Feedback wurde NIE gespeichert** (FIREBASE*ADMIN*\* fehlten lokal UND deployed; stiller `.catch` zeigte Fake-Danke). Fix: SA-Key, Secrets v2 + IAM-Grant, apphosting.yaml, .env.local; lokal verifiziert (write/read/delete OK); ehrlicher Fehler-State. ⬜ E2E gegen deployte API (Schritt 3.5) · ⬜ User: lokalen Dev-Server neu starten |
+| 2   | „Speed up the AI — just think and answer"                                                                                                                                                                     | ✅ beantwortet · Umsetzung = §11                                                                                                                                                                                                                                                                                                                                                              |
+| 3   | Edit-Modus-Hinweis: „Text anpassen oder neu einsprechen (ersetzt den Text)."                                                                                                                                  | ✅ umgesetzt (`8882868`)                                                                                                                                                                                                                                                                                                                                                                      |
+| 4   | Diagnose („Zu vage"/„Verallgemeinerung") fett, dunkel, eine Farbe + „Was machst Du gerade?"                                                                                                                   | ✅ umgesetzt (`ed40c04`) · beantwortet                                                                                                                                                                                                                                                                                                                                                        |
+| 5   | „Wieviel % Tokens einsparbar?"                                                                                                                                                                                | ✅ gemessen: 23% tote Felder, 30–35% realistisch (§11)                                                                                                                                                                                                                                                                                                                                        |
+
+## 11. KI-Beschleunigung — Plan & Messwerte
+
+**Messung (echte Antwort, Küchen-Text):** Voll 1.517 Zeichen → ohne tote Felder 1.169 (−23%). Feld-Anteile: explanation 283 · summary 228 · suggestion 149 · mainProblem 119 · spans 77 · status 76 · priority 45 · start/end 71. **Baseline-Latenz lokal: 6.03 / 13.60 / 6.13 s (Median ~6,1s).**
+
+**Phase 1 (Umsetzung jetzt):**
+
+1. Kurz-Schema im Modell-Output: pro Dimension `p,s,sum(nur ≤7),m[]`; pro Match `t,d,e,v,ip`. Entfällt: spans, mainProblem, status, priority, start/end, id → Server-Remap auf bestehende Typen (status aus Band, id/priority generiert, Positionen via vorhandener indexOf-Korrektur, spans aus matches). Client unverändert.
+2. max_tokens 1200→800 · Prompt-Caching (`cache_control: ephemeral` auf System-Block).
+3. Client: Debounce 800→500ms · scoreMessage-Cache (Map, 20, FIFO) · Whitespace-Only-Änderungen ohne Re-Score.
+
+**5 Optionen → Abdeckung:** (1) Output schlank = 1 · (2) Zwei-Phasen = Phase 2 unten · (3) Streaming = bewusst zurückgestellt (gleicher Effekt wie Zwei-Phasen, aufwändiger; ggf. Phase 3) · (4) Caching = 2 · (5) Kleinkram = 3.
+
+**Phase 2 (nach Messung, Zwischenbericht an User):** Quick-Mode `{mode:'quick'}` im selben Endpoint → nur `{p,s}`×4, max_tokens 120 (~1–1,5s); Client feuert quick+full parallel, Balken sofort, Details wenn full da.
+
+**Ziel:** real ~6s → 3–4s (Phase 1), gefühlt ~1–1,5s bis Balken (Phase 2).
+
+## 12. Konsolidierte offene Punkte
+
+- ⬜ E2E-Feedback-Verifikation deployed (nach aktuellem Deploy) — §10/1
+- ⬜ User-Aktion: Dev-Server-Neustart für lokale Feedback-Speicherung
+- ⬜ Issues #1–#7 schließen (umgesetzt, Schließung ausstehend)
+- ⬜ T3 (Schwellen-Optik bei 6–7) — hängt an Score-Varianz (#10)
+- ⬜ Klick auf Highlight im Eingabefeld → Details: Overlay ist pointer-events:none unter der Textarea; Lösungsidee: Klick auf Textarea → Cursorposition → zugehöriger Match (`selectionStart`)
+- ⬜ Entscheidung Checkbox-Ring: aktuell grau — ursprünglicher Wunsch war grün (Empfehlung: grau lassen, grün = „erfüllt"-Semantik)
+- ⬜ Backlog: #8 Stale-Re-Score-Anzeige (teilweise adressiert durch 4-Punkte-Header) · #9 „Gut formuliert"-Widerspruch · #10 Score-Stabilität (Prompt-Anker)
 
 ## 6. Erledigt heute (deployed)
 
