@@ -48,6 +48,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   // Interaktions-State für bidirektionales Highlighting
   const [activeDim, setActiveDim] = useState<string | null>(null)
   const [activeMatchId, setActiveMatchId] = useState<string | null>(null)
+  const [forceExpandDim, setForceExpandDim] = useState<string | null>(null)
 
   // Initial score on mount — with one retry, always ends loading state
   useEffect(() => {
@@ -141,6 +142,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   function handleSpanClick(matchId: string, dimKey: string) {
     setActiveDim(dimKey)
     setActiveMatchId((prev) => (prev === matchId ? null : matchId))
+    setForceExpandDim(dimKey)
   }
 
   const isGreenScore = !scoreLoading && score !== null && score.total >= 7
@@ -194,6 +196,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           activeMatchId={activeMatchId}
           onDimClick={handleDimClick}
           onMatchClick={handleMatchClick}
+          forceExpandDim={forceExpandDim}
         />
 
         <div className="space-y-2.5 mb-5">

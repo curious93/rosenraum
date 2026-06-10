@@ -13,6 +13,7 @@ export interface GfkScorePanelProps {
   activeMatchId: string | null
   onDimClick: (key: string) => void
   onMatchClick: (dimKey: string, matchId: string) => void
+  forceExpandDim?: string | null
 }
 
 const DIMENSIONS = [
@@ -53,6 +54,7 @@ export function gfkMotivation(
  * @param props.activeMatchId - Aktuell aktiver Treffer
  * @param props.onDimClick - Callback bei Klick auf eine Dimension
  * @param props.onMatchClick - Callback bei Klick auf einen Treffer
+ * @param props.forceExpandDim - Dimension die von außen geöffnet werden soll (z.B. bei Span-Klick)
  * @returns GfkScorePanel JSX
  */
 export function GfkScorePanel({
@@ -63,6 +65,7 @@ export function GfkScorePanel({
   activeMatchId,
   onDimClick,
   onMatchClick,
+  forceExpandDim,
 }: GfkScorePanelProps) {
   const [expandedDims, setExpandedDims] = useState<Set<string>>(new Set())
   const [showMoreDims, setShowMoreDims] = useState<Set<string>>(new Set())
@@ -77,6 +80,11 @@ export function GfkScorePanel({
   // Immer alle 4 Dimensionen zeigen
   const activeDims = DIMENSIONS
   const inactiveDims: (typeof DIMENSIONS)[number][] = []
+
+  // Merge forceExpandDim into expandedDims without a side-effect
+  const effectiveExpanded = forceExpandDim
+    ? new Set([...expandedDims, forceExpandDim])
+    : expandedDims
 
   function toggleExpand(key: string) {
     setExpandedDims((prev) => {
@@ -163,7 +171,7 @@ export function GfkScorePanel({
               const labelColor = hasScore ? dim.color : 'var(--color-text-muted)'
               const dimData = hasScore ? score!.dimensions[dim.key] : null
               const matches = dimData?.matches ?? []
-              const isExpanded = expandedDims.has(dim.key)
+              const isExpanded = effectiveExpanded.has(dim.key)
               const isActive = activeDim === dim.key
               const visibleMatches = showMoreDims.has(dim.key) ? matches : matches.slice(0, 3)
               const hasDetails = matches.length > 0
