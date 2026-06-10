@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logMetric } from '@/lib/metrics'
 import { GFK_SYSTEM_PROMPT } from '@/lib/gfkPrompt'
 
 /**
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Text fehlt oder zu lang' }, { status: 400 })
   }
 
+  const t0 = Date.now()
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -45,15 +47,21 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const err = await response.text()
       console.error('Claude API error:', response.status, err)
+      logMetric('analyze', false, Date.now() - t0)
       return NextResponse.json({ error: 'KI-Dienst nicht verfügbar' }, { status: 502 })
     }
 
-    const data = (await response.json()) as { content?: Array<{ text?: string }> }
+    const data = (await response.json()) as {
+      content?: Array<{ text?: string }>
+      usage?: import('@/lib/metrics').MetricUsage
+    }
     const rosenbergText = data.content?.[0]?.text ?? ''
 
+    logMetric('analyze', true, Date.now() - t0, data.usage)
     return NextResponse.json({ rosenbergText })
   } catch (err) {
     console.error('analyze route error:', err)
+    logMetric('analyze', false, Date.now() - t0)
     return NextResponse.json({ error: 'Interner Fehler' }, { status: 500 })
   }
 }

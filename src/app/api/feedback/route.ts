@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { FieldValue } from 'firebase-admin/firestore'
 import { getAdminDb } from '@/lib/firebaseAdmin'
+import { logMetric } from '@/lib/metrics'
 
 /** Emoji-Bewertung */
 export type FeedbackRating = 'sad' | 'happy' | 'love'
@@ -61,11 +62,14 @@ export async function POST(request: NextRequest) {
     if (raw.length <= 40000) data.context = JSON.parse(raw)
   }
 
+  const t0 = Date.now()
   try {
     await getAdminDb().collection('feedback').add(data)
+    logMetric('feedback', true, Date.now() - t0)
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('feedback write error:', err)
+    logMetric('feedback', false, Date.now() - t0)
     return NextResponse.json({ error: 'Konnte nicht gespeichert werden' }, { status: 500 })
   }
 }

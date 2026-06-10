@@ -1,4 +1,5 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app'
+import { getAuth } from 'firebase-admin/auth'
 import { getFirestore } from 'firebase-admin/firestore'
 
 /**
@@ -18,4 +19,14 @@ export function getAdminDb() {
     })
   }
   return getFirestore()
+}
+
+/**
+ * Returns the Firebase Admin Auth instance (initializes the app on first call).
+ *
+ * @returns Admin-Auth-Instanz (für verifyIdToken)
+ */
+export function getAdminAuth() {
+  getAdminDb() // stellt App-Initialisierung sicher
+  return getAuth()
 }
