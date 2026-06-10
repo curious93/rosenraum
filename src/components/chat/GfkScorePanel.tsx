@@ -374,7 +374,7 @@ export function GfkScorePanel({
                           </span>
                           <span
                             className="text-right text-xs"
-                            style={{ display: 'inline-block', color: labelColor }}
+                            style={{ display: 'inline-block', width: '6rem', color: labelColor }}
                           >
                             {!hasScore ? (
                               '–'
