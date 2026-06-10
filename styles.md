@@ -175,7 +175,7 @@ Jede Änderung an Typo/Farbe/Abständen hier zuerst nachziehen, sonst gilt sie a
 ```
 Dimensionsname:   text-xs · fontWeight 600 · Dimensionsfarbe (--color-gfk-*) · Spalte 6rem · Info-Icon 13px muted dahinter
 Balken:           h-2 · fester Verlauf rot→amber→grün (--color-gfk-band-*) · Füllung via clipPath · 2px-Marker bei 50%/70% (bg-elevated)
-Score rechts:     text-xs · „N · band" — Zahl semibold in Dimensionsfarbe, Band-Wort muted · Spalte 5.5rem · Delta-Spalte 1rem
+Score rechts:     text-xs · „N · band" — Zahl semibold in Dimensionsfarbe, Band-Wort muted · Spalte 5.5rem · Delta schwebt absolut links davon (keine eigene Spalte)
 Chevron:          16px-Slot · ChevronRight 14px muted · rotiert 90° wenn ausgeklappt
 Kurzdiagnose:     text-sm muted · unter dem Namen (pl 1.625rem) · nur bei score ≤ 7
 Nicht enthalten:  Ring 18px in --color-border · Name farbig · „nicht enthalten" italic muted · „· + ergänzen?" Dimensionsfarbe 75%

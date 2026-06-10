@@ -359,29 +359,25 @@ export function GfkScorePanel({
                             )}
                           </div>
 
-                          <div className="flex items-center justify-end">
-                            <span
-                              className="text-xs tabular-nums font-semibold text-right"
-                              style={{ width: '1rem', display: 'inline-block' }}
-                            >
-                              {!loading && delta !== 0 && (
-                                <motion.span
-                                  key={`delta-${dim.key}-${prevDimScore}-${dimScore}`}
-                                  style={{
-                                    display: 'inline-block',
-                                    color:
-                                      delta > 0
-                                        ? 'var(--color-gfk-beduerfnis)'
-                                        : 'var(--color-gfk-gefuehl)',
-                                  }}
-                                  initial={{ opacity: 1, y: delta > 0 ? 4 : -4 }}
-                                  animate={{ opacity: 0, y: 0 }}
-                                  transition={{ duration: 1.5, delay: 0.3 }}
-                                >
-                                  {delta > 0 ? `+${delta}` : `${delta}`}
-                                </motion.span>
-                              )}
-                            </span>
+                          <div className="relative flex items-center justify-end">
+                            {/* Delta schwebt absolut — reserviert keine Balkenbreite */}
+                            {!loading && delta !== 0 && (
+                              <motion.span
+                                key={`delta-${dim.key}-${prevDimScore}-${dimScore}`}
+                                className="absolute right-full mr-1 text-xs tabular-nums font-semibold"
+                                style={{
+                                  color:
+                                    delta > 0
+                                      ? 'var(--color-gfk-beduerfnis)'
+                                      : 'var(--color-gfk-gefuehl)',
+                                }}
+                                initial={{ opacity: 1, y: delta > 0 ? 4 : -4 }}
+                                animate={{ opacity: 0, y: 0 }}
+                                transition={{ duration: 1.5, delay: 0.3 }}
+                              >
+                                {delta > 0 ? `+${delta}` : `${delta}`}
+                              </motion.span>
+                            )}
                             <span
                               className="text-right text-xs"
                               style={{
