@@ -604,13 +604,9 @@ export function GfkScorePanel({
                           style={{ borderTop: '1px solid var(--color-border-subtle)' }}
                         >
                           <p
-                            className="mb-1.5 flex items-center gap-2 text-sm font-semibold"
+                            className="mb-1.5 text-sm font-semibold"
                             style={{ color: 'var(--color-text-primary)' }}
                           >
-                            <span
-                              className="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
-                              style={{ background: dimColor }}
-                            />
                             {section.label}
                           </p>
                           {section.body ? (

@@ -84,7 +84,7 @@ Rosenraum spricht wie ein guter Freund — warm, geduldig, nie belehrend.
 Sektions-/Modal-Header: text-sm · font-semibold · --color-text-primary  (Header NIE muted/secondary)
 Fließtext:              text-sm · --color-text-secondary · leading-relaxed
 Micro-Labels:           text-xs · font-medium · --color-text-secondary  (muted nur rein dekorativ)
-Farb-Akzent an Headern: 6px-Punkt in Kontextfarbe — nie farbige Header-Schrift
+Farb-Akzente sparsam (Boxen/Balken/Marks) — nie farbige Header-Schrift, keine Deko-Punkte an Headern
 ```
 
 ---
@@ -195,7 +195,7 @@ Details-Karte:    1) Zitat als mark: Tint 18% + inset-Unterstrich 2px Dimensions
 Rund-Banner:      text-sm medium · --color-gfk-beduerfnis · über den Balken, Balken bleiben sichtbar
 Lade-Dots:        4 × 8px in den 4 Dimensionsfarben · Stagger 0.2s · „Analysiere…" muted
 Info-Modal:       zentriert · max-width --max-width-sheet · z-60 · Sektionen durch border-subtle getrennt ·
-                  Header: text-sm semibold text-primary + 6px-Farbpunkt (Typo-Rollen §3) · Body text-sm secondary ·
+                  Header: text-sm semibold text-primary, OHNE Farbpunkt (Typo-Rollen §3) · Body text-sm secondary ·
                   Beispiel: Micro-Labels „Vorher"/„Besser" (secondary), vorher line-through, nachher Besser-Box ·
                   Button „Alles klar" ohne Emoji · Panel-Titel: „Dein Lernfeedback" (Begriff „GFK" nicht im UI)
 Interaktion:      Zeilen-Button ohne Focus-Ring (outline-none) · KEIN Aktiv-Hintergrund-Tint
