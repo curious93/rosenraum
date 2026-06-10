@@ -64,6 +64,40 @@ Szenario: „Nie räumst du die Küche auf, du bist so faul! Das nervt mich tier
 
 Regel ab jetzt: **Keine Interface-Änderung ohne explizite Freigabe** — erst Vorschlag, dann Umsetzung.
 
+## 7. Einzeltickets Panel-Redesign + Vorschlag-Highlights (GitHub Issues)
+
+**Ziel:** Score-Bedeutung auf den ersten Blick (Befund 5b/5). Dimensionsfarbe wandert in den Namen, Qualität in einen festen Rot→Grün-Verlauf mit Schwellen-Markern; das Rosenraum-Beispiel erklärt sich durch dieselben Highlights wie das Eingabefeld.
+
+| Issue                                                 | Ticket | Inhalt                                                                                | Status |
+| ----------------------------------------------------- | ------ | ------------------------------------------------------------------------------------- | ------ |
+| [#1](https://github.com/curious93/rosenraum/issues/1) | T-A    | Dimensionsname in Dimensionsfarbe, fett (alle Zeilen)                                 | ⏳     |
+| [#2](https://github.com/curious93/rosenraum/issues/2) | T-B    | Balken = Rot→Grün-Verlauf, Füllung via clipPath, ab 8 „noch grüner"                   | ⏳     |
+| [#3](https://github.com/curious93/rosenraum/issues/3) | T-C    | Schwellen-Marker bei 50% + 70% (Band-Grenzen)                                         | ⏳     |
+| [#4](https://github.com/curious93/rosenraum/issues/4) | T-D    | Mini-Legende entfernen                                                                | ⏳     |
+| [#5](https://github.com/curious93/rosenraum/issues/5) | T-E    | Band-Farb-Tokens in tokens.json (`--color-gfk-band-*`)                                | ⏳     |
+| [#6](https://github.com/curious93/rosenraum/issues/6) | T-F    | Rosenraum-Beispiel: Dimensions-Highlights (Vorschlag scoren, nicht klickbar, Fade-in) | ⏳     |
+| [#7](https://github.com/curious93/rosenraum/issues/7) | T-G    | Verwaister Pfeil „→" bei leerer suggestion                                            | ⏳     |
+
+**Backlog (warten auf Freigabe):** [#8](https://github.com/curious93/rosenraum/issues/8) Stale-Zustand bei Re-Score · [#9](https://github.com/curious93/rosenraum/issues/9) Widerspruch „Gut formuliert"/Vollständigkeit · [#10](https://github.com/curious93/rosenraum/issues/10) Scoring-Stabilität (Prompt-Anker)
+
+**Design-Entscheidungen:** Verlauf nutzt gedämpft-warme Töne (kein Alarmrot) — bewusste Ausnahme von styles.md „kein Rot/Orange", weil Rot hier die gewollte Semantik _kritisch_ ist. Alle Balken sehen gleich aus (gleicher Verlauf) — gewollt: die Information ist der Füllstand auf der Zonen-Skala. Verlaufs-Stops treffen die Marker: kritisch bis ~38%, Übergang, verbessern 52–64%, Übergang, gut ab 76%, gut-deep bei 100%.
+
+## 8. Ausführlicher Testplan (wird befolgt, Ergebnisse hier eingetragen)
+
+Harness: `/tmp/cdp_send.js` (Sheet öffnen) · `/tmp/journey.js '<text>' <out> 5000` · settled via `/tmp/cdp_shot.js` · `sips` auf 1400px · jeden Screenshot lesen, Soll/Ist notieren.
+
+| #   | Test                       | Vorgehen                                       | Erwartung                                                                                       | Ergebnis |
+| --- | -------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
+| T1  | Gradient + Marker statisch | Küchen-V0 senden                               | Beobachtung-Füllung endet in Rotzone (~20%); Marker bei 50%/70%; Namen farbig+fett; Legende weg | ⏳       |
+| T2  | Zonen bei Verbesserung     | V1 (konkrete Beobachtung)                      | Füllungen in Grünzone; 8 vs 9 unterscheidbar (Ende dunkler grün)                                | ⏳       |
+| T3  | Schwellen-Ausrichtung      | Score 6–7 im Verlauf (V0-Gefühl)               | Füllende zwischen Markern, Ende = Amber                                                         | ⏳       |
+| T4  | „nicht enthalten"          | V0/V1                                          | Zeile wie gehabt (Ring, Einladung), Name farbig                                                 | ⏳       |
+| T5  | Rund-Banner                | Küchen-V3 (alle 4)                             | Banner über 4 Gradient-Balken, Füllungen tief grün                                              | ⏳       |
+| T6  | Vorschlag-Highlights       | „Inspiriere mich →" klicken, ~12s              | Vorschlag erscheint, Highlights faden ein; Klick darauf: keine Aktion, nichts bricht            | ⏳       |
+| T7  | Pfeil-Fix                  | Gut-Highlight im Eingabefeld klicken → Details | Lob-Match OHNE leere „→"-Zeile                                                                  | ⏳       |
+| T8  | Regression Eingabefeld     | während T1–T5                                  | Eingabefeld-Highlights korrekt; Details ↓/↑ funktionieren                                       | ⏳       |
+| T9  | Checks + Build             | Terminal                                       | lint · tsc · check:colors · check:tokens · build grün                                           | ⏳       |
+
 ## 6. Erledigt heute (deployed)
 
 - GFK „enthalten vs. nicht enthalten" + Bewertungsbänder (`present`, `scoreBand`, Legende, „{score} · {band}")
