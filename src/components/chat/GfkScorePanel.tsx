@@ -440,7 +440,7 @@ export function GfkScorePanel({
                                         key={match.id}
                                         type="button"
                                         onClick={() => onMatchClick(dim.key, match.id)}
-                                        className="w-full text-left"
+                                        className="w-full text-left outline-none"
                                         animate={isActiveMatch ? { opacity: [1, 0.6, 1] } : {}}
                                         transition={{ duration: 0.8, ease: 'easeInOut' }}
                                       >
@@ -466,15 +466,11 @@ export function GfkScorePanel({
                                           {match.diagnosis}
                                           {match.explanation ? ` — ${match.explanation}` : ''}
                                         </p>
-                                        {/* 3. „Besser:"-Box — der Held */}
+                                        {/* 3. „Besser:" — schlichte Textzeile */}
                                         {match.suggestion && (
-                                          <div
-                                            className="rounded-lg px-3 py-2 text-sm"
-                                            style={{
-                                              background: 'var(--color-bg-surface)',
-                                              borderLeft: `3px solid ${dim.color}`,
-                                              color: 'var(--color-text-primary)',
-                                            }}
+                                          <p
+                                            className="text-sm leading-relaxed"
+                                            style={{ color: 'var(--color-text-primary)' }}
                                           >
                                             <span
                                               className="font-medium"
@@ -483,7 +479,7 @@ export function GfkScorePanel({
                                               Besser:{' '}
                                             </span>
                                             {match.suggestion}
-                                          </div>
+                                          </p>
                                         )}
                                       </motion.button>
                                     )

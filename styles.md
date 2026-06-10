@@ -190,8 +190,9 @@ Kurzdiagnose:     text-sm muted · unter dem Namen (pl 1.625rem) · nur bei scor
 Nicht enthalten:  Ring 18px in --color-border · Name farbig · „nicht enthalten" italic muted · „· + ergänzen?" Dimensionsfarbe 75%
 Details-Karte:    1) Zitat als mark: Tint 18% + inset-Unterstrich 2px Dimensionsfarbe, text-sm, text-primary
                   2) „Diagnose — Erklärung" in EINER Zeile, text-sm, text-secondary
-                  3) Besser-Box: bg-surface · borderLeft 3px Dimensionsfarbe · text-sm text-primary · Label „Besser:" secondary/medium
-                  mainProblem wird NICHT angezeigt (redundant zu 2).
+                  3) „Besser:"-Zeile: schlichter Text — Label „Besser:" secondary/medium, Text text-sm text-primary,
+                     KEINE Box, KEIN Farbbalken (zu viel Design)
+                  mainProblem wird NICHT angezeigt (redundant zu 2). Match-Klickfläche ohne Focus-Ring (outline-none).
 Rund-Banner:      text-sm medium · --color-gfk-beduerfnis · über den Balken, Balken bleiben sichtbar
 Lade-Dots:        4 × 8px in den 4 Dimensionsfarben · Stagger 0.2s · „Analysiere…" muted
 Info-Modal:       zentriert · max-width --max-width-sheet · z-60 · Sektionen durch border-subtle getrennt ·
