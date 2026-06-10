@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check } from 'lucide-react'
+import { Check, Mic, Square } from 'lucide-react'
+import confetti from 'canvas-confetti'
 import { analyzeMessage } from '@/lib/gfkPrompt'
 import { scoreMessage } from '@/lib/gfkScore'
 import type { GfkScoreResult } from '@/lib/gfkScore'
@@ -58,6 +59,57 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackText, setFeedbackText] = useState('')
   const [feedbackState, setFeedbackState] = useState<'idle' | 'sending' | 'done'>('idle')
+
+  // Sprachaufnahme (Web Speech API) — Live-Transkription, danach frei editierbar
+  const [recState, setRecState] = useState<'idle' | 'recording' | 'stopped'>('idle')
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
+  const recBaseRef = useRef('')
+
+  // Overlay rendert erst nach User-Klick (kein SSR) — Check direkt im Render ist sicher
+  const speechSupported =
+    typeof window !== 'undefined' &&
+    Boolean(window.SpeechRecognition ?? window.webkitSpeechRecognition)
+
+  function stopRecording() {
+    recognitionRef.current?.stop()
+  }
+
+  function startRecording() {
+    const SR = window.SpeechRecognition ?? window.webkitSpeechRecognition
+    if (!SR) return
+    const rec = new SR()
+    rec.lang = 'de-DE'
+    rec.continuous = true
+    rec.interimResults = true
+    recBaseRef.current = feedbackText.trim() ? feedbackText.trim() + ' ' : ''
+    rec.onresult = (e) => {
+      let finals = ''
+      let interim = ''
+      for (let i = 0; i < e.results.length; i++) {
+        const r = e.results[i]
+        if (r.isFinal) finals += r[0].transcript
+        else interim += r[0].transcript
+      }
+      setFeedbackText((recBaseRef.current + finals + interim).slice(0, 2000))
+    }
+    rec.onend = () => {
+      recognitionRef.current = null
+      setRecState('stopped')
+    }
+    rec.onerror = () => {
+      recognitionRef.current = null
+      setRecState('stopped')
+    }
+    recognitionRef.current = rec
+    setRecState('recording')
+    rec.start()
+  }
+
+  function closeFeedback() {
+    stopRecording()
+    setShowFeedback(false)
+    setRecState('idle')
+  }
 
   // Initial score on mount — with one retry, always ends loading state
   useEffect(() => {
@@ -185,12 +237,15 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
         },
       }),
     }).catch(() => {})
+    stopRecording()
+    confetti({ particleCount: 80, spread: 65, origin: { y: 0.75 }, scalar: 0.9 })
     setFeedbackState('done')
     setTimeout(() => {
       setShowFeedback(false)
       setFeedbackText('')
       setFeedbackState('idle')
-    }, 1600)
+      setRecState('idle')
+    }, 2400)
   }
 
   function handleSpanClick(matchId: string, dimKey: string) {
@@ -363,26 +418,40 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
               transition={{ duration: 0.15 }}
             >
               {feedbackState === 'done' ? (
-                <div className="flex flex-1 flex-col items-center justify-center gap-2">
-                  <div style={{ fontSize: '2rem' }}>🌸</div>
+                <motion.div
+                  className="flex flex-1 flex-col items-center justify-center gap-2 text-center"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                >
+                  <div style={{ fontSize: '2.5rem' }}>🌸</div>
                   <p
                     className="text-base font-semibold"
                     style={{ color: 'var(--color-text-primary)' }}
                   >
-                    Danke — gespeichert.
+                    Tausend Dank!
                   </p>
-                </div>
+                  <p className="max-w-xs text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    Dein Feedback macht Rosenraum besser — für dich und alle anderen. Gern wieder,
+                    jede Idee zählt.
+                  </p>
+                </motion.div>
               ) : (
                 <>
                   <p
                     className="text-base font-semibold"
                     style={{ color: 'var(--color-text-primary)' }}
                   >
-                    Feedback zu dieser Ansicht
+                    Deine Idee für Rosenraum
                   </p>
-                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    Tippen oder diktieren — die ganze Ansicht (Text, Bewertung, Vorschlag) wird zur
-                    Analyse mitgespeichert.
+                  <p
+                    className="text-sm leading-relaxed"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    Was passt, was fehlt, was wäre schlauer? Schreib oder sprich es ein — diese
+                    Ansicht (dein Text, die Bewertung, der Vorschlag) wird zur Analyse
+                    mitgespeichert. Jedes Feedback hilft uns und allen, die Rosenraum nutzen — je
+                    öfter, desto wertvoller.
                   </p>
                   <textarea
                     value={feedbackText}
@@ -390,6 +459,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                     autoFocus
                     rows={4}
                     maxLength={2000}
+                    readOnly={recState === 'recording'}
                     placeholder="Was passt — was nicht?"
                     className="w-full flex-1 resize-none rounded-2xl p-3 text-sm leading-relaxed outline-none"
                     style={{
@@ -399,9 +469,55 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                       fontSize: 'max(16px, 0.875rem)',
                     }}
                   />
+
+                  {/* Sprachaufnahme — Live-Transkription, danach editierbar */}
+                  {speechSupported && (
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={recState === 'recording' ? stopRecording : startRecording}
+                        aria-label={
+                          recState === 'recording' ? 'Aufnahme stoppen' : 'Aufnahme starten'
+                        }
+                        className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-80"
+                        style={{
+                          background:
+                            recState === 'recording'
+                              ? 'var(--color-destructive)'
+                              : 'var(--color-bg-elevated)',
+                          color:
+                            recState === 'recording'
+                              ? 'var(--color-on-status)'
+                              : 'var(--color-text-secondary)',
+                          border: '1px solid var(--color-border)',
+                        }}
+                      >
+                        {recState === 'recording' ? (
+                          <Square size={14} aria-hidden="true" />
+                        ) : (
+                          <Mic size={16} aria-hidden="true" />
+                        )}
+                      </button>
+                      <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        {recState === 'recording' ? (
+                          <motion.span
+                            animate={{ opacity: [1, 0.5, 1] }}
+                            transition={{ duration: 1.4, repeat: Infinity }}
+                          >
+                            ● Aufnahme läuft — sprich einfach, tippe zum Stoppen.
+                          </motion.span>
+                        ) : recState === 'stopped' ? (
+                          'Aufnahme beendet — du kannst den Text oben noch anpassen.'
+                        ) : (
+                          'Oder einsprechen statt tippen.'
+                        )}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="flex gap-2.5">
                     <button
-                      onClick={() => setShowFeedback(false)}
+                      onClick={closeFeedback}
                       className="flex-1 rounded-2xl py-3 text-sm font-medium transition-opacity hover:opacity-70"
                       style={{
                         background: 'var(--color-bg-elevated)',
@@ -431,6 +547,30 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
       </motion.div>
     </>
   )
+}
+
+// ── Web Speech API — minimale Typen (nicht in lib.dom enthalten) ──────────────
+
+interface SpeechRecognitionLike {
+  lang: string
+  continuous: boolean
+  interimResults: boolean
+  start(): void
+  stop(): void
+  onresult:
+    | ((e: {
+        results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } } & ArrayLike<unknown>>
+      }) => void)
+    | null
+  onend: (() => void) | null
+  onerror: (() => void) | null
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognitionLike
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike
+  }
 }
 
 // ── Internal ──────────────────────────────────────────────────────────────────
