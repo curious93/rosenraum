@@ -450,12 +450,14 @@ export function GfkScorePanel({
                                       >
                                         {match.diagnosis}
                                       </p>
-                                      <p
-                                        className="text-xs italic"
-                                        style={{ color: 'var(--color-text-muted)' }}
-                                      >
-                                        → {match.suggestion}
-                                      </p>
+                                      {match.suggestion && (
+                                        <p
+                                          className="text-xs italic"
+                                          style={{ color: 'var(--color-text-muted)' }}
+                                        >
+                                          → {match.suggestion}
+                                        </p>
+                                      )}
                                     </motion.button>
                                   )
                                 })}

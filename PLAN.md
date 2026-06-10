@@ -43,6 +43,27 @@ Kein API-/Prompt-Change nötig. Verifikation: gleiche Lernreise erneut, Stufe 4 
 - **`chrome-devtools-mcp` eingerichtet** (offizieller Chrome-Team MCP-Server): `claude mcp add chrome-devtools -s local -- npx chrome-devtools-mcp@latest --browser-url=http://127.0.0.1:9223`. Ab nächster Session Standard für UI-Tests (navigate/click/fill/screenshot/console). `/tmp`-Skripte bleiben Fallback.
 - **Antigravity Browser Extension: geprüft, nicht nutzen.** Sie ist die Brücke Antigravity-IDE-Agent → Extension-HTTP-Server (Port 3025) → CDP auf **Haupt-Chrome 9222** (bei uns tabu). Von außen nur über undokumentierte API ansteuerbar, laut Foren fragil. Nützlich nur, wenn der User selbst in der Antigravity IDE arbeitet — installiert lassen, für unsere Tests irrelevant.
 
+## 5b. Test-Protokoll Lernreise „Küche" (2026-06-10, nach Panel-Fix)
+
+Szenario: „Nie räumst du die Küche auf, du bist so faul! Das nervt mich tierisch." → schrittweise zu GFK. Screenshot je ~5s nach Änderung + settled.
+
+| Schritt | Änderung                             | Settled-Ergebnis                                                                                     |
+| ------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| V0      | Rohfassung                           | Beobachtung 2·kritisch, Gefühl 7·verbessern („Übertreibung"), 2× „+ ergänzen?", 3 Highlights korrekt |
+| V1      | Bewertung → konkrete Beobachtung     | Beobachtung 9·gut, Gefühl 8·gut, Highlights korrekt                                                  |
+| V2      | + Bedürfnis („Verantwortung teilen") | Bedürfnis 9·gut, grünes Highlight korrekt                                                            |
+| V3      | + Bitte („Wärst du bereit…?")        | Alle 4 gut, „Rund"-Banner über sichtbaren Balken, 4 Farben im Text                                   |
+
+**Analyse — Befunde nach Schwere:**
+
+1. **🔴 Stale-Zustand bei jedem Re-Score (systematisch):** ~5–7s lang bleiben alte Balken/Diagnosen stehen, Highlights kleben an alten Zeichenpositionen und zerschneiden Wörter mitten durch („Ges|chirr", „A|bend", „mi|r"), kein Lade-Hinweis, Motivations-Header verschwindet. Der Nutzer sieht kaputt aussehendes UI genau in dem Moment, in dem er seiner Änderung folgen will. → Vorschlag: während `scoreLoading` Highlights ausblenden/abdimmen + dezenter „Analysiere…"-Puls am Panel.
+2. **🟠 Widersprüchliche Signale bei Unvollständigkeit:** Header „Gut formuliert ✓" + grüner Senden-Button bei 2 von 4 Komponenten, direkt über zwei „+ ergänzen?"-Einladungen (total-basiert vs. Vollständigkeit). → Vorschlag: Header/Button-Grün an `isComplete` koppeln oder Text ändern („Schon gut sendbar — magst du es rund machen?").
+3. **🟠 Bewertung nicht stabil:** Identischer Satz „Das nervt mich tierisch": V0 = 7·verbessern, V1 = 8·gut. Gleiche Formulierung, anderes Urteil — untergräbt Vertrauen ins Lernfeedback. → Vorschlag: Anker-Beispiele im Prompt kalibrieren.
+4. **🟡 Verwaister Pfeil „→" in Details:** Bei Lob-Matches (suggestion leer) rendert eine leere Pfeilzeile (User-Screenshot „Präzise Beobachtung / →"). Fix lokal vorbereitet (Zeile nur bei vorhandener suggestion), **wartet auf Freigabe**.
+5. **🟡 Legende „1–5 kritisch …" liest niemand** (User-Feedback): Bedeutung muss auf den ersten Blick visuell klar sein, Interface insgesamt „wenig inspirierend". → Design-Pass nötig (Vorschläge ausarbeiten, vor Umsetzung freigeben lassen).
+
+Regel ab jetzt: **Keine Interface-Änderung ohne explizite Freigabe** — erst Vorschlag, dann Umsetzung.
+
 ## 6. Erledigt heute (deployed)
 
 - GFK „enthalten vs. nicht enthalten" + Bewertungsbänder (`present`, `scoreBand`, Legende, „{score} · {band}")
