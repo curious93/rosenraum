@@ -118,7 +118,9 @@ export function GfkScorePanel({
         <p className="text-sm font-medium" style={{ color: 'var(--color-gfk-beduerfnis)' }}>
           ✓ Diese Nachricht klingt bereits offen.
         </p>
-      ) : (
+      ) : !hasScore &&
+        loading ? // Initial load — show nothing, bars appear when first results arrive
+      null : (
         <div className="space-y-1">
           <AnimatePresence initial={false}>
             {(hasScore ? activeDims : DIMENSIONS).map((dim, idx) => {
@@ -126,7 +128,7 @@ export function GfkScorePanel({
               const prevDimScore = prevScore?.dimensions[dim.key]?.score ?? null
               const delta =
                 prevDimScore !== null && !loading && hasScore ? dimScore - prevDimScore : 0
-              const initialLoad = loading && !hasScore
+              const initialLoad = false
               const barColor = hasScore ? dim.color : 'var(--color-skeleton)'
               const labelColor = hasScore ? dim.color : 'var(--color-text-muted)'
               const dimData = hasScore ? score!.dimensions[dim.key] : null

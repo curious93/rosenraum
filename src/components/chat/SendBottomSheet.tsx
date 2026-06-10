@@ -196,13 +196,6 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           onMatchClick={handleMatchClick}
         />
 
-        <p
-          className="text-xs font-medium mb-3 uppercase tracking-wide"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Deine Nachricht
-        </p>
-
         <div className="space-y-2.5 mb-5">
           <VersionCard
             text={editedText}
