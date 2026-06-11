@@ -399,7 +399,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           {showFeedback && (
             <motion.div
               key="feedback"
-              className="fixed bottom-0 left-0 right-0 z-[60] mx-auto flex max-h-[88dvh] flex-col gap-3 rounded-t-2xl px-4 pt-5"
+              className="fixed bottom-0 left-0 right-0 z-[60] mx-auto flex h-[88dvh] flex-col gap-3 rounded-t-2xl px-4 pt-5"
               style={{
                 background: 'var(--color-bg-surface)',
                 maxWidth: 'var(--max-width-chat)',
@@ -456,20 +456,31 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                 </motion.div>
               ) : (
                 <>
-                  <p
-                    className="text-base font-semibold"
-                    style={{ color: 'var(--color-text-primary)' }}
-                  >
-                    Deine Idee für Rosenraum
-                  </p>
+                  <div className="flex items-start justify-between">
+                    <p
+                      className="text-base font-semibold"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      Deine Idee für Rosenraum
+                    </p>
+                    <button
+                      type="button"
+                      onClick={closeFeedback}
+                      aria-label="Schließen"
+                      className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-70"
+                      style={{
+                        background: 'var(--color-bg-elevated)',
+                        color: 'var(--color-text-secondary)',
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
                   <p
                     className="text-sm leading-relaxed"
                     style={{ color: 'var(--color-text-secondary)' }}
                   >
-                    Was passt, was fehlt, was wäre schlauer? Schreib oder sprich es ein — diese
-                    Ansicht (dein Text, die Bewertung, der Vorschlag) wird zur Analyse
-                    mitgespeichert. Jedes Feedback hilft uns und allen, die Rosenraum nutzen — je
-                    öfter, desto wertvoller.
+                    Was passt, was fehlt? Deine Idee hilft — die Ansicht wird mitgespeichert.
                   </p>
                   <textarea
                     value={feedbackText}
@@ -547,30 +558,18 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                       versuch es gleich nochmal.
                     </p>
                   )}
-                  <div className="flex gap-2.5">
-                    <button
-                      onClick={closeFeedback}
-                      className="flex-1 rounded-2xl py-3 text-sm font-medium transition-opacity hover:opacity-70"
-                      style={{
-                        background: 'var(--color-bg-elevated)',
-                        color: 'var(--color-text-secondary)',
-                      }}
-                    >
-                      Abbrechen
-                    </button>
-                    <motion.button
-                      onClick={handleFeedbackSubmit}
-                      disabled={feedbackState === 'sending' || !feedbackText.trim()}
-                      whileTap={{ scale: 0.97 }}
-                      className="flex-[2] rounded-2xl py-3 text-sm font-medium transition-opacity disabled:opacity-40"
-                      style={{
-                        background: 'var(--color-primary)',
-                        color: 'var(--color-on-primary)',
-                      }}
-                    >
-                      {feedbackState === 'sending' ? 'Speichern…' : 'Feedback speichern'}
-                    </motion.button>
-                  </div>
+                  <motion.button
+                    onClick={handleFeedbackSubmit}
+                    disabled={feedbackState === 'sending' || !feedbackText.trim()}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full rounded-2xl py-3 text-sm font-medium transition-opacity disabled:opacity-40"
+                    style={{
+                      background: 'var(--color-primary)',
+                      color: 'var(--color-on-primary)',
+                    }}
+                  >
+                    {feedbackState === 'sending' ? 'Speichern…' : 'Feedback speichern'}
+                  </motion.button>
                 </>
               )}
             </motion.div>
