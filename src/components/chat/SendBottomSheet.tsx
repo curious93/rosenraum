@@ -481,7 +481,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                   className="text-sm leading-relaxed"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  Was passt, was fehlt? Deine Idee hilft — die Ansicht wird mitgespeichert.
+                  Was passt, was fehlt? Deine Idee hilft!
                 </p>
                 <textarea
                   value={feedbackText}

@@ -57,9 +57,10 @@ export async function POST(request: NextRequest) {
     data.roomId = roomId
   }
   if (source === 'scoring' && context !== undefined) {
-    // Kompletter Scoring-Kontext (Text, Scores, Vorschlag) für tiefere Analyse — max ~40KB
+    // Kompletter Scoring-Kontext (Text, Scores, Vorschlag) für tiefere Analyse — max ~40KB.
+    // Als JSON-String, weil Firestore verschachtelte Arrays (z.B. spans: number[][]) ablehnt.
     const raw = JSON.stringify(context)
-    if (raw.length <= 40000) data.context = JSON.parse(raw)
+    if (raw.length <= 40000) data.context = raw
   }
 
   const t0 = Date.now()
