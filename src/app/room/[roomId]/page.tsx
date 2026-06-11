@@ -260,7 +260,7 @@ export default function RoomPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="text-xs"
+                  className="text-xs truncate"
                   style={{ color: 'var(--color-text-muted)' }}
                 >
                   Warte auf Gesprächspartner…
