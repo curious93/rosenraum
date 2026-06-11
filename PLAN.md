@@ -146,7 +146,17 @@ Harness: `/tmp/cdp_send.js` (Sheet öffnen) · `/tmp/journey.js '<text>' <out> 5
 | [#13](https://github.com/curious93/rosenraum/issues/13) | P3    | `/admin`: Google-Login (Firebase Auth) + `ADMIN_EMAILS`-Allowlist, **Auto-Logout 10min**, `metrics`-Collection (route, ok, ms, tokensIn/Out, cacheRead) aus allen KI-Routen; Dashboard: API-Health-Ampel (p50/p95, Fehlerquote) · Token+Kosten heute/7d · Nutzung (Räume/Nachrichten/aktive Teilnehmer) · Lern-Funnel (rosenberg vs original) · Feedback-Insights (letzte 10 + Zähler) · System (SHA, PIN-Version, Code ändern) | ⏳     |
 | [#14](https://github.com/curious93/rosenraum/issues/14) | P5    | Mobile-Pass iPhone 14 (390×844, eigener emulierter Tab — nie User-Tab): alle Screens, Fixes nur `max-sm:`                                                                                                                                                                                                                                                                                                                       | ⏳     |
 
-**P5-Ergebnistabelle** (wird beim Pass gefüllt): Unlock · Landing · Room · Composer+Mic · Panel · Details · Lern-Tipp · Info-Modal · Vorschlag · Feedback-Overlay · Admin-Gate — je ⏳.
+**Status (2026-06-11):** Alle 5 Pakete umgesetzt, Issues #11–#15 geschlossen.
+
+- P5-Pass (390×844, eigener Tab): Unlock ✅ · Landing ✅ · Room ✅ · Composer+Mic ✅ · Panel ✅ (Fixes: Score-Spalte ausgeblendet, kompakte ergänzen?-Zeile) · Details ✅ · Lern-Tipp ✅ · Info-Modal ✅ · Vorschlag ✅ · Feedback-Overlay ✅ (Fix: aus Sheet-Container gelöst, 88dvh) · Admin-Gate ✅
+- Feedback-Modal nach User-Feedback: volle Höhe, Kurztext, X statt Abbrechen ✅
+- Deploy-Fix: `apphosting:secrets:grantaccess` für SITE_LOCK_SECRET (Build-SA) — erster Deploy nach P4 war deshalb rot
+- E2E lokal verifiziert: Punctuate (Komma/Groß/Punkt korrekt, Wörter unverändert) · Site-PIN (307/401/Cookie/429) · Admin-APIs (401 ohne/mit Fake-Token)
+
+**⬜ User-Aktionen (einzige verbleibende):**
+
+1. **Google-Login aktivieren** (1 Klick, API kann das nicht ohne OAuth-Client): Firebase Console → Authentication → Sign-in method → Google → Aktivieren. Danach dort unter „Settings → Authorized domains" die Domain `rosenraum-1--rosenraum-app.europe-west4.hosted.app` hinzufügen.
+2. Optional iPhone-Realtest (Emulation ≠ echtes Safari): Code 5551 → Raum → Mikro testen.
 
 **Folgepunkt (User):** Umgang mit dem von Claude detached gestarteten Dev-Server klären (Ownership/Stop: aktuell `pkill -f "Rosenraum.*next"`; Lösungsidee: kleines `npm run dev:stop`-Skript + Hinweis in CLAUDE.md, oder Server wieder an User-Terminal zurückgeben).
 
