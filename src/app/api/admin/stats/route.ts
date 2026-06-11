@@ -94,6 +94,45 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // ── Zeitreihen ──
+    const HOUR = 3600_000
+    const DAY = 24 * HOUR
+    const start24h = now - 24 * HOUR
+    const start7d = now - 7 * DAY
+    const calls24h = Array.from({ length: 24 }, () => ({ calls: 0, errors: 0 }))
+    for (const m of m24) {
+      const ts = m.createdAt?.toMillis() ?? 0
+      const idx = Math.min(23, Math.max(0, Math.floor((ts - start24h) / HOUR)))
+      calls24h[idx].calls++
+      if (!m.ok) calls24h[idx].errors++
+    }
+    const cost7d = Array.from({ length: 7 }, () => 0)
+    for (const m of metrics) {
+      const ts = m.createdAt?.toMillis() ?? 0
+      const idx = Math.min(6, Math.max(0, Math.floor((ts - start7d) / DAY)))
+      const cost =
+        ((m.tokensIn ?? 0) * PRICE_IN +
+          (m.tokensOut ?? 0) * PRICE_OUT +
+          (m.cacheRead ?? 0) * PRICE_CACHE_READ) /
+        1_000_000
+      cost7d[idx] += cost
+    }
+    const [msgs7dSnap, rooms7dSnap] = await Promise.all([
+      db.collectionGroup('messages').where('timestamp', '>=', t7d).get(),
+      db.collection('rooms').where('createdAt', '>=', t7d).get(),
+    ])
+    const messages7d = Array.from({ length: 7 }, () => 0)
+    for (const d of msgs7dSnap.docs) {
+      const ts = (d.data().timestamp as Timestamp | undefined)?.toMillis() ?? 0
+      messages7d[Math.min(6, Math.max(0, Math.floor((ts - start7d) / DAY)))]++
+    }
+    const roomsSeries7d = Array.from({ length: 7 }, () => 0)
+    for (const d of rooms7dSnap.docs) {
+      const ts = (d.data().createdAt as Timestamp | undefined)?.toMillis() ?? 0
+      roomsSeries7d[Math.min(6, Math.max(0, Math.floor((ts - start7d) / DAY)))]++
+    }
+    const days = Array.from({ length: 7 }, (_, i) => start7d + i * DAY)
+
     // ── Nutzung ──
     const [roomsTotal, rooms24h, rooms7d] = await Promise.all([
       db.collection('rooms').count().get(),
@@ -125,6 +164,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       generatedAt: now,
       health,
+      series: {
+        calls24h,
+        days,
+        messages7d,
+        rooms7d: roomsSeries7d,
+        cost7d: cost7d.map((c) => Math.round(c * 1000) / 1000),
+      },
       tokens: { today: tokenAgg(m24), week: tokenAgg(metrics) },
       usage: {
         roomsTotal: roomsTotal.data().count,

@@ -40,6 +40,13 @@ interface Stats {
     p95: number
     lastError: number | null
   }>
+  series: {
+    calls24h: Array<{ calls: number; errors: number }>
+    days: number[]
+    messages7d: number[]
+    rooms7d: number[]
+    cost7d: number[]
+  }
   tokens: {
     today: { tokensIn: number; tokensOut: number; cacheShare: number; costUsd: number }
     week: { tokensIn: number; tokensOut: number; cacheShare: number; costUsd: number }
@@ -251,6 +258,182 @@ function FunnelBar({
   )
 }
 
+/** Gemeinsamer Kachel-Look (Surface, Border, Schatten) */
+const TILE_STYLE: React.CSSProperties = {
+  background: 'var(--color-bg-surface)',
+  border: '1px solid var(--color-border-subtle)',
+  boxShadow: 'var(--shadow-sm)',
+}
+
+/**
+ * Halbkreis-Gauge mit animiertem Bogen und Wert in der Mitte.
+ *
+ * @param props - Gauge-Props
+ * @param props.label - Beschriftung unter dem Bogen
+ * @param props.pct - Füllstand 0–100
+ * @param props.display - Text in der Bogenmitte
+ * @param props.color - Bogenfarbe (Token-Var)
+ * @returns Gauge JSX
+ */
+function Gauge({
+  label,
+  pct,
+  display,
+  color,
+}: {
+  label: string
+  pct: number
+  display: string
+  color: string
+}) {
+  const clamped = Math.min(100, Math.max(0, pct))
+  return (
+    <div className="flex flex-col items-center rounded-2xl p-4" style={TILE_STYLE}>
+      <svg
+        viewBox="0 0 100 58"
+        className="w-full max-w-[8.5rem]"
+        role="img"
+        aria-label={`${label}: ${display}`}
+      >
+        <path
+          d="M 8 52 A 42 42 0 0 1 92 52"
+          fill="none"
+          stroke="var(--color-border-subtle)"
+          strokeWidth="9"
+          strokeLinecap="round"
+        />
+        {clamped > 0 && (
+          <motion.path
+            d="M 8 52 A 42 42 0 0 1 92 52"
+            fill="none"
+            stroke={color}
+            strokeWidth="9"
+            strokeLinecap="round"
+            pathLength={100}
+            strokeDasharray={100}
+            initial={{ strokeDashoffset: 100 }}
+            animate={{ strokeDashoffset: 100 - clamped }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+        )}
+        <text
+          x="50"
+          y="50"
+          textAnchor="middle"
+          style={{ fill: 'var(--color-text-primary)', fontSize: '15px', fontWeight: 600 }}
+        >
+          {display}
+        </text>
+      </svg>
+      <p
+        className="mt-1 text-center text-xs font-medium"
+        style={{ color: 'var(--color-text-secondary)' }}
+      >
+        {label}
+      </p>
+    </div>
+  )
+}
+
+/**
+ * Flächen-Liniendiagramm (7 Punkte) mit weichem Verlauf.
+ *
+ * @param props - Chart-Props
+ * @param props.values - Werte, älteste zuerst
+ * @param props.labels - X-Achsen-Beschriftungen (gleiche Länge)
+ * @returns AreaChart JSX
+ */
+function AreaChart({ values, labels }: { values: number[]; labels: string[] }) {
+  const W = 280
+  const H = 64
+  const max = Math.max(...values, 1)
+  const pts = values.map(
+    (v, i) => [(i / Math.max(values.length - 1, 1)) * W, H - 4 - (v / max) * (H - 14)] as const
+  )
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')
+  const area = `${line} L${W},${H} L0,${H} Z`
+  return (
+    <div>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="h-20 w-full"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path d={area} fill="color-mix(in srgb, var(--color-primary) 14%, transparent)" />
+        <motion.path
+          d={line}
+          fill="none"
+          stroke="var(--color-primary)"
+          strokeWidth={2}
+          vectorEffect="non-scaling-stroke"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+        />
+      </svg>
+      <div className="mt-1 flex justify-between">
+        {labels.map((l, i) => (
+          <span key={i} className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+            {l}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Kompakte Balkenreihe (z.B. Calls pro Stunde, Kosten pro Tag).
+ *
+ * @param props - Balken-Props
+ * @param props.values - Balkenhöhen (roh, werden normalisiert)
+ * @param props.highlight - Indizes, die in Warnfarbe markiert werden (z.B. Stunden mit Fehlern)
+ * @param props.leftLabel - Beschriftung links unter den Balken
+ * @param props.rightLabel - Beschriftung rechts unter den Balken
+ * @returns MiniBars JSX
+ */
+function MiniBars({
+  values,
+  highlight,
+  leftLabel,
+  rightLabel,
+}: {
+  values: number[]
+  highlight?: Set<number>
+  leftLabel: string
+  rightLabel: string
+}) {
+  const max = Math.max(...values, 1)
+  return (
+    <div>
+      <div className="flex h-14 items-end gap-[2px]" aria-hidden="true">
+        {values.map((v, i) => (
+          <motion.div
+            key={i}
+            className="min-w-0 flex-1 rounded-t-sm"
+            style={{
+              background: highlight?.has(i)
+                ? 'var(--color-warning)'
+                : 'color-mix(in srgb, var(--color-primary) 55%, transparent)',
+            }}
+            initial={{ height: 2 }}
+            animate={{ height: `${Math.max(4, (v / max) * 100)}%` }}
+            transition={{ duration: 0.45, ease: 'easeOut', delay: i * 0.012 }}
+          />
+        ))}
+      </div>
+      <div
+        className="mt-1 flex justify-between text-[10px]"
+        style={{ color: 'var(--color-text-muted)' }}
+      >
+        <span>{leftLabel}</span>
+        <span>{rightLabel}</span>
+      </div>
+    </div>
+  )
+}
+
 /**
  * Skeleton-Platzhalter während die Statistiken laden.
  *
@@ -377,6 +560,28 @@ export default function AdminPage() {
   const mm = Math.floor(remaining / 60000)
   const ss = Math.floor((remaining % 60000) / 1000)
   const countdown = `${mm}:${String(ss).padStart(2, '0')}`
+
+  // Abgeleitete Kennzahlen für Gauges & Charts
+  const totalCalls24h = stats?.health.reduce((a, h) => a + h.count24h, 0) ?? 0
+  const errorPct24h = totalCalls24h
+    ? (stats!.health.reduce((a, h) => a + (h.count24h * h.errorRate) / 100, 0) / totalCalls24h) *
+      100
+    : 0
+  const lernQuote =
+    stats && stats.funnel.messagesTotal
+      ? (stats.funnel.withLearningDots / stats.funnel.messagesTotal) * 100
+      : 0
+  const annahmeQuote =
+    stats && stats.funnel.withLearningDots
+      ? (stats.funnel.sentRosenberg / stats.funnel.withLearningDots) * 100
+      : 0
+  const dayLabels =
+    stats?.series?.days.map((ts) =>
+      new Date(ts).toLocaleDateString('de-DE', { weekday: 'short' })
+    ) ?? []
+  const errorHours = new Set(
+    (stats?.series?.calls24h ?? []).map((c, i) => (c.errors > 0 ? i : -1)).filter((i) => i >= 0)
+  )
 
   // ── Login-Gate ──
   if (!user) {
@@ -531,8 +736,59 @@ export default function AdminPage() {
               />
             </div>
 
+            {/* Aktivität 7 Tage */}
+            {stats.series && (
+              <Card title="Aktivität" meta="Nachrichten pro Tag · 7 Tage">
+                <AreaChart values={stats.series.messages7d} labels={dayLabels} />
+              </Card>
+            )}
+
+            {/* Gauges */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <Gauge
+                label="Cache-Anteil heute"
+                pct={stats.tokens.today.cacheShare}
+                display={`${stats.tokens.today.cacheShare} %`}
+                color="var(--color-primary)"
+              />
+              <Gauge
+                label="Fehlerquote 24 h"
+                pct={errorPct24h}
+                display={`${errorPct24h > 0 && errorPct24h < 10 ? errorPct24h.toFixed(1) : Math.round(errorPct24h)} %`}
+                color={
+                  errorPct24h === 0
+                    ? 'var(--color-success)'
+                    : errorPct24h >= 20
+                      ? 'var(--color-destructive)'
+                      : 'var(--color-warning)'
+                }
+              />
+              <Gauge
+                label="Lern-Angebot-Quote"
+                pct={lernQuote}
+                display={`${Math.round(lernQuote)} %`}
+                color="var(--color-primary)"
+              />
+              <Gauge
+                label="Annahme-Quote"
+                pct={annahmeQuote}
+                display={`${Math.round(annahmeQuote)} %`}
+                color="var(--color-success)"
+              />
+            </div>
+
             {/* API-Health */}
             <Card title="API-Health" meta="letzte 24 h">
+              {stats.series && totalCalls24h > 0 && (
+                <div className="mb-3">
+                  <MiniBars
+                    values={stats.series.calls24h.map((c) => c.calls)}
+                    highlight={errorHours}
+                    leftLabel="vor 24 h"
+                    rightLabel="jetzt"
+                  />
+                </div>
+              )}
               {stats.health.length === 0 ? (
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   Noch keine Anfragen — Metriken erscheinen, sobald die App genutzt wird.
@@ -617,6 +873,21 @@ export default function AdminPage() {
                   </div>
                 ))}
               </div>
+              {stats.series && (
+                <div className="mt-4">
+                  <p
+                    className="mb-1.5 text-xs font-medium uppercase tracking-wide"
+                    style={{ color: 'var(--color-text-muted)' }}
+                  >
+                    Kosten pro Tag
+                  </p>
+                  <MiniBars
+                    values={stats.series.cost7d}
+                    leftLabel={dayLabels[0] ?? ''}
+                    rightLabel="heute"
+                  />
+                </div>
+              )}
             </Card>
 
             {/* Lern-Funnel */}
