@@ -393,36 +393,82 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
             </AnimatePresence>
           </motion.button>
         </div>
+      </motion.div>
 
-        {/* Feedback-Overlay — liegt über der Karte */}
-        <AnimatePresence>
-          {showFeedback && (
-            <motion.div
-              key="feedback"
-              className="fixed bottom-0 left-0 right-0 z-[60] mx-auto flex h-[88dvh] flex-col gap-3 rounded-t-2xl px-4 pt-5"
-              style={{
-                background: 'var(--color-bg-surface)',
-                maxWidth: 'var(--max-width-chat)',
-                boxShadow: '0 -4px 24px rgba(0,0,0,0.10)',
-                paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
-              }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              {feedbackState === 'done' ? (
-                <motion.div
-                  className="relative flex flex-1 flex-col items-center justify-center gap-2 text-center"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      {/* Feedback-Overlay — liegt über der Karte */}
+      <AnimatePresence>
+        {showFeedback && (
+          <motion.div
+            key="feedback"
+            className="fixed bottom-0 left-0 right-0 z-[60] mx-auto flex h-[88dvh] flex-col gap-3 rounded-t-2xl px-4 pt-5"
+            style={{
+              background: 'var(--color-bg-surface)',
+              maxWidth: 'var(--max-width-chat)',
+              boxShadow: '0 -4px 24px rgba(0,0,0,0.10)',
+              paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {feedbackState === 'done' ? (
+              <motion.div
+                className="relative flex flex-1 flex-col items-center justify-center gap-2 text-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              >
+                <button
+                  type="button"
+                  onClick={closeFeedback}
+                  aria-label="Schließen"
+                  className="absolute right-0 top-0 flex h-7 w-7 items-center justify-center rounded-full transition-opacity hover:opacity-70"
+                  style={{
+                    background: 'var(--color-bg-elevated)',
+                    color: 'var(--color-text-secondary)',
+                  }}
                 >
+                  ✕
+                </button>
+                <div style={{ fontSize: '2.5rem' }}>🌸</div>
+                <p
+                  className="text-base font-semibold"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  Tausend Dank!
+                </p>
+                <p className="max-w-xs text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  Dein Feedback macht Rosenraum besser — für dich und alle anderen. Gern wieder,
+                  jede Idee zählt.
+                </p>
+                <div
+                  className="mt-3 h-1 w-40 overflow-hidden rounded-full"
+                  style={{ background: 'var(--color-border-subtle)' }}
+                >
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: 'var(--color-primary)' }}
+                    initial={{ width: '0%' }}
+                    animate={{ width: '100%' }}
+                    transition={{ duration: 5, ease: 'linear' }}
+                  />
+                </div>
+              </motion.div>
+            ) : (
+              <>
+                <div className="flex items-start justify-between">
+                  <p
+                    className="text-base font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    Deine Idee für Rosenraum
+                  </p>
                   <button
                     type="button"
                     onClick={closeFeedback}
                     aria-label="Schließen"
-                    className="absolute right-0 top-0 flex h-7 w-7 items-center justify-center rounded-full transition-opacity hover:opacity-70"
+                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-70"
                     style={{
                       background: 'var(--color-bg-elevated)',
                       color: 'var(--color-text-secondary)',
@@ -430,152 +476,102 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                   >
                     ✕
                   </button>
-                  <div style={{ fontSize: '2.5rem' }}>🌸</div>
-                  <p
-                    className="text-base font-semibold"
-                    style={{ color: 'var(--color-text-primary)' }}
-                  >
-                    Tausend Dank!
-                  </p>
-                  <p className="max-w-xs text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    Dein Feedback macht Rosenraum besser — für dich und alle anderen. Gern wieder,
-                    jede Idee zählt.
-                  </p>
-                  <div
-                    className="mt-3 h-1 w-40 overflow-hidden rounded-full"
-                    style={{ background: 'var(--color-border-subtle)' }}
-                  >
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ background: 'var(--color-primary)' }}
-                      initial={{ width: '0%' }}
-                      animate={{ width: '100%' }}
-                      transition={{ duration: 5, ease: 'linear' }}
-                    />
-                  </div>
-                </motion.div>
-              ) : (
-                <>
-                  <div className="flex items-start justify-between">
-                    <p
-                      className="text-base font-semibold"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
-                      Deine Idee für Rosenraum
-                    </p>
+                </div>
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
+                  Was passt, was fehlt? Deine Idee hilft — die Ansicht wird mitgespeichert.
+                </p>
+                <textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  autoFocus
+                  rows={4}
+                  maxLength={2000}
+                  readOnly={feedbackRec.state === 'recording' || feedbackRec.state === 'formatting'}
+                  placeholder="Was passt — was nicht?"
+                  className="w-full min-h-28 flex-1 resize-none rounded-2xl p-3 text-sm leading-relaxed outline-none"
+                  style={{
+                    background: 'var(--color-bg-elevated)',
+                    color: 'var(--color-text-primary)',
+                    border: '1px solid var(--color-border)',
+                    fontSize: 'max(16px, 0.875rem)',
+                  }}
+                />
+
+                {/* Sprachaufnahme — Live-Transkription, danach editierbar */}
+                {feedbackRec.supported && (
+                  <div className="flex items-center gap-2.5">
                     <button
                       type="button"
-                      onClick={closeFeedback}
-                      aria-label="Schließen"
-                      className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-70"
+                      onClick={
+                        feedbackRec.state === 'recording' ? feedbackRec.stop : startRecording
+                      }
+                      aria-label={
+                        feedbackRec.state === 'recording' ? 'Aufnahme stoppen' : 'Aufnahme starten'
+                      }
+                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-80"
                       style={{
-                        background: 'var(--color-bg-elevated)',
-                        color: 'var(--color-text-secondary)',
+                        background:
+                          feedbackRec.state === 'recording'
+                            ? 'var(--color-destructive)'
+                            : 'var(--color-bg-elevated)',
+                        color:
+                          feedbackRec.state === 'recording'
+                            ? 'var(--color-on-status)'
+                            : 'var(--color-text-secondary)',
+                        border: '1px solid var(--color-border)',
                       }}
                     >
-                      ✕
+                      {feedbackRec.state === 'recording' ? (
+                        <Square size={14} aria-hidden="true" />
+                      ) : (
+                        <Mic size={16} aria-hidden="true" />
+                      )}
                     </button>
-                  </div>
-                  <p
-                    className="text-sm leading-relaxed"
-                    style={{ color: 'var(--color-text-secondary)' }}
-                  >
-                    Was passt, was fehlt? Deine Idee hilft — die Ansicht wird mitgespeichert.
-                  </p>
-                  <textarea
-                    value={feedbackText}
-                    onChange={(e) => setFeedbackText(e.target.value)}
-                    autoFocus
-                    rows={4}
-                    maxLength={2000}
-                    readOnly={
-                      feedbackRec.state === 'recording' || feedbackRec.state === 'formatting'
-                    }
-                    placeholder="Was passt — was nicht?"
-                    className="w-full min-h-28 flex-1 resize-none rounded-2xl p-3 text-sm leading-relaxed outline-none"
-                    style={{
-                      background: 'var(--color-bg-elevated)',
-                      color: 'var(--color-text-primary)',
-                      border: '1px solid var(--color-border)',
-                      fontSize: 'max(16px, 0.875rem)',
-                    }}
-                  />
-
-                  {/* Sprachaufnahme — Live-Transkription, danach editierbar */}
-                  {feedbackRec.supported && (
-                    <div className="flex items-center gap-2.5">
-                      <button
-                        type="button"
-                        onClick={
-                          feedbackRec.state === 'recording' ? feedbackRec.stop : startRecording
-                        }
-                        aria-label={
-                          feedbackRec.state === 'recording'
-                            ? 'Aufnahme stoppen'
-                            : 'Aufnahme starten'
-                        }
-                        className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-80"
-                        style={{
-                          background:
-                            feedbackRec.state === 'recording'
-                              ? 'var(--color-destructive)'
-                              : 'var(--color-bg-elevated)',
-                          color:
-                            feedbackRec.state === 'recording'
-                              ? 'var(--color-on-status)'
-                              : 'var(--color-text-secondary)',
-                          border: '1px solid var(--color-border)',
-                        }}
-                      >
-                        {feedbackRec.state === 'recording' ? (
-                          <Square size={14} aria-hidden="true" />
-                        ) : (
-                          <Mic size={16} aria-hidden="true" />
-                        )}
-                      </button>
-                      <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                        {feedbackRec.state === 'recording' ? (
-                          <motion.span
-                            animate={{ opacity: [1, 0.5, 1] }}
-                            transition={{ duration: 1.4, repeat: Infinity }}
-                          >
-                            ● Aufnahme läuft — sprich einfach, tippe zum Stoppen.
-                          </motion.span>
-                        ) : feedbackRec.state === 'formatting' ? (
-                          'Formatiere…'
-                        ) : feedbackRec.state === 'stopped' ? (
-                          'Aufnahme beendet — du kannst den Text oben noch anpassen.'
-                        ) : (
-                          'Oder einsprechen statt tippen.'
-                        )}
-                      </p>
-                    </div>
-                  )}
-
-                  {feedbackState === 'error' && (
-                    <p className="text-sm" style={{ color: 'var(--color-destructive)' }}>
-                      Konnte gerade nicht gespeichert werden — dein Text bleibt erhalten, bitte
-                      versuch es gleich nochmal.
+                    <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                      {feedbackRec.state === 'recording' ? (
+                        <motion.span
+                          animate={{ opacity: [1, 0.5, 1] }}
+                          transition={{ duration: 1.4, repeat: Infinity }}
+                        >
+                          ● Aufnahme läuft — sprich einfach, tippe zum Stoppen.
+                        </motion.span>
+                      ) : feedbackRec.state === 'formatting' ? (
+                        'Formatiere…'
+                      ) : feedbackRec.state === 'stopped' ? (
+                        'Aufnahme beendet — du kannst den Text oben noch anpassen.'
+                      ) : (
+                        'Oder einsprechen statt tippen.'
+                      )}
                     </p>
-                  )}
-                  <motion.button
-                    onClick={handleFeedbackSubmit}
-                    disabled={feedbackState === 'sending' || !feedbackText.trim()}
-                    whileTap={{ scale: 0.97 }}
-                    className="w-full rounded-2xl py-3 text-sm font-medium transition-opacity disabled:opacity-40"
-                    style={{
-                      background: 'var(--color-primary)',
-                      color: 'var(--color-on-primary)',
-                    }}
-                  >
-                    {feedbackState === 'sending' ? 'Speichern…' : 'Feedback speichern'}
-                  </motion.button>
-                </>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+                  </div>
+                )}
+
+                {feedbackState === 'error' && (
+                  <p className="text-sm" style={{ color: 'var(--color-destructive)' }}>
+                    Konnte gerade nicht gespeichert werden — dein Text bleibt erhalten, bitte
+                    versuch es gleich nochmal.
+                  </p>
+                )}
+                <motion.button
+                  onClick={handleFeedbackSubmit}
+                  disabled={feedbackState === 'sending' || !feedbackText.trim()}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full rounded-2xl py-3 text-sm font-medium transition-opacity disabled:opacity-40"
+                  style={{
+                    background: 'var(--color-primary)',
+                    color: 'var(--color-on-primary)',
+                  }}
+                >
+                  {feedbackState === 'sending' ? 'Speichern…' : 'Feedback speichern'}
+                </motion.button>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
