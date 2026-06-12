@@ -11,12 +11,12 @@ export interface ThemeMeta {
 
 /** All themes in display order. */
 export const THEMES: ThemeMeta[] = [
-  { id: 'rose', name: 'Rose', swatches: ['#D0747F', '#F3E4D6', '#D8E5D4', '#FBF7F4'] },
-  { id: 'forst', name: 'Forst', swatches: ['#4A7C59', '#DFF0D8', '#C8E3C0', '#F6F8F4'] },
-  { id: 'lila', name: 'Lila', swatches: ['#7B6EA8', '#EBE6F6', '#D4E8D4', '#F8F7FB'] },
-  { id: 'ozean', name: 'Ozean', swatches: ['#6A66A3', '#DDE8F5', '#B3CBB9', '#F4F6FB'] },
-  { id: 'koralle', name: 'Koralle', swatches: ['#028090', '#F0F3BD', '#C8EDD8', '#F8FCFC'] },
-  { id: 'meer', name: 'Himmel', swatches: ['#004A54', '#CFF2F8', '#C8E8CC', '#FDF7EC'] },
+  { id: 'rose', name: 'Rose', swatches: ['#DC6A79', '#F7E2CF', '#D8E5D4', '#FBF7F4'] },
+  { id: 'forst', name: 'Forst', swatches: ['#35824F', '#D8F0D0', '#C8E3C0', '#F6F8F4'] },
+  { id: 'lila', name: 'Lila', swatches: ['#6F5BB9', '#E6DEF7', '#D4E8D4', '#F8F7FB'] },
+  { id: 'ozean', name: 'Ozean', swatches: ['#5953B2', '#D4E4F7', '#B3CBB9', '#F4F6FB'] },
+  { id: 'koralle', name: 'Koralle', swatches: ['#00829B', '#F0F3B4', '#C8EDD8', '#F8FCFC'] },
+  { id: 'meer', name: 'Himmel', swatches: ['#005A66', '#C5EFF7', '#C8E8CC', '#FDF7EC'] },
 ]
 
 /** Colour-mode options. 'system' follows the OS `prefers-color-scheme`. */
@@ -26,6 +26,20 @@ export type ColorMode = 'light' | 'dark' | 'system'
 const THEME_KEY = 'rosenraum_theme'
 /** localStorage key for the active colour mode. */
 const MODE_KEY = 'rosenraum_mode'
+
+let transitionTimer: ReturnType<typeof setTimeout> | undefined
+
+/**
+ * Adds the `.theme-transition` class to <html> for the duration of a theme or
+ * mode switch, so colours and glows crossfade instead of snapping
+ * (see globals.css). Repeated calls extend the window.
+ */
+function withThemeTransition(): void {
+  const root = document.documentElement
+  root.classList.add('theme-transition')
+  clearTimeout(transitionTimer)
+  transitionTimer = setTimeout(() => root.classList.remove('theme-transition'), 400)
+}
 
 /**
  * Returns the stored theme from localStorage, or 'rose' as default.
@@ -45,6 +59,7 @@ export function getStoredTheme(): Theme {
  * @param theme - The theme identifier to activate
  */
 export function applyTheme(theme: Theme): void {
+  withThemeTransition()
   if (theme === 'rose') {
     document.documentElement.removeAttribute('data-theme')
   } else {
@@ -85,6 +100,7 @@ export function resolveMode(mode: ColorMode): 'light' | 'dark' {
  * @param mode - The colour mode to activate.
  */
 export function applyMode(mode: ColorMode): void {
+  withThemeTransition()
   const effective = resolveMode(mode)
   document.documentElement.classList.toggle('dark', effective === 'dark')
   localStorage.setItem(MODE_KEY, mode)
