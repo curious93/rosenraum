@@ -76,7 +76,7 @@ export function ChatInput({
 
   return (
     <div
-      className="px-3 py-2.5 flex-shrink-0"
+      className="pl-3 pr-4 py-2.5 flex-shrink-0"
       style={{
         background: 'var(--color-bg-page)',
         paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
