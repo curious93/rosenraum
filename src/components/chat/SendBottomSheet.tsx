@@ -50,6 +50,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   const [prevScore, setPrevScore] = useState<GfkScoreResult | null>(null)
   const [scoreLoading, setScoreLoading] = useState(true)
   const scoreRef = useRef<GfkScoreResult | null>(null)
+  const confettiFiredRef = useRef(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Interaktions-State für bidirektionales Highlighting
@@ -80,6 +81,14 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     setFeedbackState('idle')
   }
 
+  function maybeFireConfetti(result: GfkScoreResult | null) {
+    if (!result || confettiFiredRef.current) return
+    if (result.total < 7) return
+    if (localStorage.getItem('rosenraum_confetti_off') === '1') return
+    confettiFiredRef.current = true
+    confetti({ particleCount: 80, spread: 65, origin: { y: 0.6 }, scalar: 0.9 })
+  }
+
   // Initial score on mount — with one retry, always ends loading state
   useEffect(() => {
     let cancelled = false
@@ -95,6 +104,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
       scoreRef.current = result
       setScore(result)
       setScoreLoading(false)
+      maybeFireConfetti(result)
     }
     run().catch(() => {
       if (!cancelled) setScoreLoading(false)
@@ -132,6 +142,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           setPrevScore(scoreRef.current)
           scoreRef.current = result
           setScore(result)
+          maybeFireConfetti(result)
         }
         setScoreLoading(false)
       })

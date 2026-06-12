@@ -38,6 +38,16 @@ export function ThemeSheet({ onClose }: ThemeSheetProps) {
   const [active, setActive] = useState<Theme>(getStoredTheme)
   const [mode, setMode] = useState<ColorMode>(getStoredMode)
   const [balance, setBalance] = useState<number | null>(null)
+  const [confettiOn, setConfettiOn] = useState(
+    () => localStorage.getItem('rosenraum_confetti_off') !== '1'
+  )
+
+  function toggleConfetti() {
+    const next = !confettiOn
+    setConfettiOn(next)
+    if (next) localStorage.removeItem('rosenraum_confetti_off')
+    else localStorage.setItem('rosenraum_confetti_off', '1')
+  }
 
   useEffect(() => {
     fetch('/api/credits')
@@ -183,6 +193,30 @@ export function ThemeSheet({ onClose }: ThemeSheetProps) {
                 </AnimatePresence>
               </motion.button>
             ))}
+          </div>
+
+          {/* Konfetti-Toggle */}
+          <div className="mt-5 flex items-center justify-between">
+            <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              Konfetti bei guter Nachricht
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={confettiOn}
+              onClick={toggleConfetti}
+              className="relative flex-shrink-0 w-11 h-6 rounded-full transition-colors duration-200"
+              style={{
+                background: confettiOn ? 'var(--color-primary)' : 'var(--color-border)',
+              }}
+            >
+              <motion.span
+                className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full"
+                style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }}
+                animate={{ x: confettiOn ? 20 : 0 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            </button>
           </div>
 
           {/* Guthaben */}
