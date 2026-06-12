@@ -142,15 +142,18 @@ export default function HomePage() {
               fill="var(--color-primary-light)"
               aria-hidden="true"
             />
-            <h1
-              className="font-semibold tracking-tight title-breathe"
+            <motion.h1
+              className="font-semibold tracking-tight"
               style={{
                 fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
                 color: 'var(--color-text-primary)',
+                display: 'inline-block',
               }}
+              animate={{ scale: [1, 1.045, 1] }}
+              transition={{ duration: 3.5, ease: 'easeInOut', repeat: Infinity }}
             >
               Rosenraum
-            </h1>
+            </motion.h1>
             <p
               className="text-xl font-medium leading-snug"
               style={{ color: 'var(--color-text-primary)' }}
