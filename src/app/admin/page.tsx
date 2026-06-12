@@ -502,6 +502,7 @@ export default function AdminPage() {
   const [fbTopicFilter, setFbTopicFilter] = useState<string | null>(null)
   const [topics, setTopics] = useState<FeedbackTopic[] | null>(null)
   const [topicsLoading, setTopicsLoading] = useState(false)
+  const [backfillMsg, setBackfillMsg] = useState<string | null>(null)
   const logoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const auth = getAuth(app)
@@ -601,6 +602,26 @@ export default function AdminPage() {
       const data = (await res?.json().catch(() => null)) as { error?: string } | null
       setPinMsg({ ok: false, text: data?.error ?? 'Änderung fehlgeschlagen.' })
     }
+  }
+
+  async function backfillScores() {
+    if (!auth.currentUser) return
+    setBackfillMsg('Läuft…')
+    const token = await auth.currentUser.getIdToken()
+    const res = await fetch('/api/admin/backfill-scores', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null)
+    if (!res?.ok) {
+      setBackfillMsg('Fehler beim Backfill.')
+      return
+    }
+    const d = (await res.json()) as { scored: number; skipped: number; total: number }
+    setBackfillMsg(`${d.scored} bewertet, ${d.skipped} übersprungen (${d.total} gesamt)`)
+    setTimeout(() => {
+      setBackfillMsg(null)
+      loadStats()
+    }, 4000)
   }
 
   const mm = Math.floor(remaining / 60000)
@@ -1006,6 +1027,30 @@ export default function AdminPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Backfill-KI-Score für bestehende Einträge */}
+              <div className="mb-3 flex items-center gap-2">
+                <button
+                  onClick={backfillScores}
+                  disabled={backfillMsg === 'Läuft…'}
+                  className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs transition-colors"
+                  style={{
+                    background: 'var(--color-bg-elevated)',
+                    color: 'var(--color-text-muted)',
+                    border: '1px solid var(--color-border-subtle)',
+                    opacity: backfillMsg === 'Läuft…' ? 0.5 : 1,
+                  }}
+                  title="KI-Score für alle Einträge ohne Bewertung nachträglich berechnen"
+                >
+                  <RefreshCw size={11} aria-hidden="true" />
+                  KI-Scores nachberechnen
+                </button>
+                {backfillMsg && (
+                  <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    {backfillMsg}
+                  </span>
+                )}
               </div>
 
               {/* Liste */}
