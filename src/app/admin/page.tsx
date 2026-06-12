@@ -14,6 +14,7 @@ import {
   Activity,
   AlertTriangle,
   CheckCircle2,
+  ChevronDown,
   CircleDollarSign,
   DoorOpen,
   Eye,
@@ -22,6 +23,8 @@ import {
   LogOut,
   MessageCircle,
   RefreshCw,
+  Search,
+  Star,
   Users,
   XCircle,
 } from 'lucide-react'
@@ -63,7 +66,16 @@ interface Stats {
   feedback: {
     count24h: number
     count7d: number
-    latest: Array<{ id: string; text: string; source: string; createdAt: number | null }>
+    latest: Array<{
+      id: string
+      text: string
+      source: string
+      rating: 'sad' | 'happy' | 'love' | null
+      email: string | null
+      roomId: string | null
+      aiScore: number | null
+      createdAt: number | null
+    }>
   }
   system: { pinVersion: number | null }
 }
@@ -477,6 +489,9 @@ export default function AdminPage() {
   const [showPin, setShowPin] = useState(false)
   const [pinMsg, setPinMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [deploySha, setDeploySha] = useState<string | null>(null)
+  const [fbSearch, setFbSearch] = useState('')
+  const [fbSort, setFbSort] = useState<'date' | 'score'>('date')
+  const [fbExpanded, setFbExpanded] = useState<Set<string>>(new Set())
   const logoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const auth = getAuth(app)
@@ -919,43 +934,238 @@ export default function AdminPage() {
               title="Feedback"
               meta={`${stats.feedback.count24h} heute · ${stats.feedback.count7d} / 7 Tage`}
             >
+              {/* Suchfeld + Sortierung */}
+              <div className="mb-3 flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search
+                    size={13}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ color: 'var(--color-text-muted)' }}
+                    aria-hidden="true"
+                  />
+                  <input
+                    type="search"
+                    placeholder="Suchen…"
+                    value={fbSearch}
+                    onChange={(e) => setFbSearch(e.target.value)}
+                    className="w-full rounded-xl py-1.5 pl-7 pr-3 text-sm outline-none"
+                    style={{
+                      background: 'var(--color-bg-elevated)',
+                      color: 'var(--color-text-primary)',
+                      border: '1px solid var(--color-border-subtle)',
+                    }}
+                  />
+                </div>
+                <div
+                  className="flex rounded-xl overflow-hidden text-xs font-medium"
+                  style={{ border: '1px solid var(--color-border-subtle)' }}
+                >
+                  {(['date', 'score'] as const).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setFbSort(s)}
+                      className="px-2.5 py-1.5 transition-colors"
+                      style={{
+                        background:
+                          fbSort === s ? 'var(--color-primary)' : 'var(--color-bg-elevated)',
+                        color: fbSort === s ? 'white' : 'var(--color-text-secondary)',
+                      }}
+                    >
+                      {s === 'date' ? 'Datum' : 'Bewertung'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Liste */}
               {stats.feedback.latest.length === 0 ? (
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   Noch kein Feedback — sobald jemand etwas schreibt, erscheint es hier.
                 </p>
               ) : (
-                <ul>
-                  {stats.feedback.latest.map((f, i) => (
-                    <li
-                      key={f.id}
-                      className="py-2.5 first:pt-0 last:pb-0"
+                (() => {
+                  const q = fbSearch.toLowerCase()
+                  const filtered = stats.feedback.latest.filter(
+                    (f) =>
+                      !q ||
+                      f.text.toLowerCase().includes(q) ||
+                      (f.email ?? '').toLowerCase().includes(q) ||
+                      f.source.toLowerCase().includes(q)
+                  )
+                  const sorted = [...filtered].sort((a, b) => {
+                    if (fbSort === 'score') {
+                      return (b.aiScore ?? 0) - (a.aiScore ?? 0)
+                    }
+                    return (b.createdAt ?? 0) - (a.createdAt ?? 0)
+                  })
+                  if (sorted.length === 0) {
+                    return (
+                      <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                        Keine Treffer für &bdquo;{fbSearch}&ldquo;.
+                      </p>
+                    )
+                  }
+                  return (
+                    <ul
                       style={{
-                        borderTop: i > 0 ? '1px solid var(--color-border-subtle)' : 'none',
+                        maxHeight: '420px',
+                        overflowY: 'auto',
+                        marginRight: '-4px',
+                        paddingRight: '4px',
                       }}
                     >
-                      <div className="mb-0.5 flex items-center gap-2">
-                        <span
-                          className="rounded-full px-2 py-0.5 text-xs font-medium"
-                          style={{
-                            background: 'var(--color-bg-elevated)',
-                            color: 'var(--color-text-secondary)',
-                          }}
-                        >
-                          {f.source || 'App'}
-                        </span>
-                        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                          {f.createdAt ? relTime(f.createdAt) : ''}
-                        </span>
-                      </div>
-                      <p
-                        className="text-sm leading-relaxed"
-                        style={{ color: 'var(--color-text-primary)' }}
-                      >
-                        {f.text || '—'}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
+                      {sorted.map((f, i) => {
+                        const isOpen = fbExpanded.has(f.id)
+                        const dateStr = f.createdAt
+                          ? new Date(f.createdAt).toLocaleString('de-DE', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                          : null
+                        const ratingEmoji =
+                          f.rating === 'love'
+                            ? '❤️'
+                            : f.rating === 'happy'
+                              ? '😊'
+                              : f.rating === 'sad'
+                                ? '😞'
+                                : null
+                        return (
+                          <li
+                            key={f.id}
+                            className="py-2.5 first:pt-0"
+                            style={{
+                              borderTop: i > 0 ? '1px solid var(--color-border-subtle)' : 'none',
+                            }}
+                          >
+                            {/* Header-Zeile — klickbar */}
+                            <button
+                              className="w-full text-left"
+                              onClick={() =>
+                                setFbExpanded((prev) => {
+                                  const next = new Set(prev)
+                                  if (next.has(f.id)) next.delete(f.id)
+                                  else next.add(f.id)
+                                  return next
+                                })
+                              }
+                            >
+                              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                                {/* Quelle */}
+                                <span
+                                  className="rounded-full px-2 py-0.5 text-xs font-medium"
+                                  style={{
+                                    background: 'var(--color-bg-elevated)',
+                                    color: 'var(--color-text-secondary)',
+                                  }}
+                                >
+                                  {f.source || 'App'}
+                                </span>
+                                {/* Emoji-Rating */}
+                                {ratingEmoji && (
+                                  <span className="text-xs" aria-label={`Bewertung: ${f.rating}`}>
+                                    {ratingEmoji}
+                                  </span>
+                                )}
+                                {/* AI-Score */}
+                                {f.aiScore !== null && (
+                                  <span
+                                    className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-medium"
+                                    style={{
+                                      background: 'var(--color-bg-elevated)',
+                                      color: 'var(--color-text-secondary)',
+                                    }}
+                                  >
+                                    <Star size={10} aria-hidden="true" />
+                                    {f.aiScore}
+                                  </span>
+                                )}
+                                {/* Datum */}
+                                <span
+                                  className="text-xs ml-auto"
+                                  style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                  {f.createdAt ? relTime(f.createdAt) : ''}
+                                </span>
+                                {/* Chevron */}
+                                <ChevronDown
+                                  size={14}
+                                  style={{
+                                    color: 'var(--color-text-muted)',
+                                    transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    transition: 'transform 200ms',
+                                    flexShrink: 0,
+                                  }}
+                                  aria-hidden="true"
+                                />
+                              </div>
+                              {/* Textvorschau (kompakt, 2 Zeilen) */}
+                              <p
+                                className="text-sm leading-relaxed"
+                                style={{
+                                  color: 'var(--color-text-primary)',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: isOpen ? undefined : 2,
+                                  WebkitBoxOrient: 'vertical' as const,
+                                  overflow: isOpen ? 'visible' : 'hidden',
+                                }}
+                              >
+                                {f.text || '—'}
+                              </p>
+                            </button>
+
+                            {/* Ausgeklappt: Metadaten */}
+                            {isOpen && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="mt-2 flex flex-col gap-1"
+                              >
+                                {dateStr && (
+                                  <p
+                                    className="text-xs"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                  >
+                                    {dateStr}
+                                  </p>
+                                )}
+                                {f.email && (
+                                  <p
+                                    className="text-xs"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                  >
+                                    E-Mail: {f.email}
+                                  </p>
+                                )}
+                                {f.roomId && (
+                                  <p
+                                    className="text-xs font-mono"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                  >
+                                    Raum: {f.roomId}
+                                  </p>
+                                )}
+                                {f.aiScore !== null && (
+                                  <p
+                                    className="text-xs"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                  >
+                                    KI-Bewertung: {f.aiScore}/5 · Hilfsbereitschaft
+                                  </p>
+                                )}
+                              </motion.div>
+                            )}
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )
+                })()
               )}
             </Card>
 

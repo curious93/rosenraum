@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
     const [fb24h, fb7d, fbLatest] = await Promise.all([
       db.collection('feedback').where('createdAt', '>=', t24h).count().get(),
       db.collection('feedback').where('createdAt', '>=', t7d).count().get(),
-      db.collection('feedback').orderBy('createdAt', 'desc').limit(10).get(),
+      db.collection('feedback').orderBy('createdAt', 'desc').limit(50).get(),
     ])
 
     // ── System ──
@@ -194,6 +194,10 @@ export async function GET(request: NextRequest) {
             id: d.id,
             text: x.text ?? '',
             source: x.source ?? '',
+            rating: x.rating ?? null,
+            email: x.email ?? null,
+            roomId: x.roomId ?? null,
+            aiScore: x.aiScore ?? null,
             createdAt: x.createdAt?.toMillis?.() ?? null,
           }
         }),
