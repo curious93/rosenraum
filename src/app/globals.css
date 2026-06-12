@@ -54,6 +54,23 @@ body {
    Tokens: --shadow-glow / --shadow-glow-strong / --shadow-glow-focus
    (design/tokens.json → primitive.shadow). Glow nie als raw rgba hardcoden. */
 
+/* Sanftes Pulsieren für den Hero-Titel */
+@keyframes title-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 0px color-mix(in srgb, var(--color-primary) 0%, transparent);
+  }
+  50% {
+    opacity: 0.82;
+    text-shadow: 0 2px 24px color-mix(in srgb, var(--color-primary) 28%, transparent);
+  }
+}
+
+.title-breathe {
+  animation: title-breathe 4s ease-in-out infinite;
+}
+
 /* Breathing-Ring für den Senden-Button (Idle, wenn sendbar) */
 @keyframes send-pulse {
   0%,
@@ -106,6 +123,9 @@ body {
   .send-pulse {
     animation: none;
     box-shadow: var(--shadow-glow);
+  }
+  .title-breathe {
+    animation: none;
   }
   .theme-transition,
   .theme-transition * {

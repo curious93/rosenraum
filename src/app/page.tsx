@@ -143,7 +143,7 @@ export default function HomePage() {
               aria-hidden="true"
             />
             <h1
-              className="font-semibold tracking-tight"
+              className="font-semibold tracking-tight title-breathe"
               style={{
                 fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
                 color: 'var(--color-text-primary)',

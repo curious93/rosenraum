@@ -77,3 +77,11 @@ Format: Decision · Alternatives considered · Reason · Affected · Date · Rol
 - **Reason:** Door-Projekt-Glow-Ästhetik, aber theme-fähig und CI-konform (color-mix-Präzedenz: admin/page.tsx).
 - **Affected:** `design/tokens.json` (`primitive.shadow`), `src/app/globals.css` (send-pulse, glow-primary, icon-spin-hover), `ChatInput.tsx` (Focus-Glow-Fix).
 - **Date:** 2026-06-12 · **Rollback:** drei Shadow-Keys entfernen + Klassen aus globals.css.
+
+### Glow-Stärke erhöht + Title-Breathe Animation
+
+- **Decision:** Shadow-tokens `glow` (22%→38%, 12px→18px), `glow-strong` (32%→54%, 20px→28px), `glow-focus` (14%→20%) — damit die Glow-Effekte auf hellem Hintergrund sichtbar sind. Dazu `title-breathe` CSS-Animation auf dem Hero-"Rosenraum"-Titel: 4s sanftes Opacity-Pulsieren mit leichtem text-shadow in Primärfarbe.
+- **Alternatives:** Glow auf alten Werten belassen (war unsichtbar); neon-starke Werte (Door-Ästhetik — vom User ausgeschlossen).
+- **Reason:** User-Feedback: Glow war auf der Homepage nicht wahrnehmbar. Titel-Puls inspiriert von Door-Opener „welcome"-Animation.
+- **Affected:** `design/tokens.json` (`primitive.shadow`), `src/app/globals.css` (title-breathe + reduced-motion), `src/app/page.tsx` (title-breathe Klasse auf h1).
+- **Date:** 2026-06-12 · **Rollback:** Shadow-Werte und Klassen zurücksetzen.
