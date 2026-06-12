@@ -276,8 +276,8 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           Feedback
         </button>
 
-        {/* Prominenter Leitsatz — während Re-Analyse: 4 Punkte wie beim Start */}
-        {scoreLoading && score !== null ? (
+        {/* Prominenter Leitsatz — während Analyse (initial + Re-Analyse): 4 Punkte */}
+        {scoreLoading ? (
           <div className="mb-3 flex items-center gap-2 px-0.5" style={{ minHeight: '1.5rem' }}>
             {HIGHLIGHT_DIMS.map((d, i) => (
               <motion.div

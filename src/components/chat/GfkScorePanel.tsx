@@ -509,17 +509,12 @@ export function GfkScorePanel({
                                             {match.text}
                                           </mark>
                                         </p>
-                                        {/* 2. Eine Begründungszeile — neutral */}
+                                        {/* 2. Eine Begründungszeile — neutral, einheitliches Gewicht */}
                                         <p
-                                          className="text-sm mb-1.5"
+                                          className="text-sm mb-1.5 leading-relaxed"
                                           style={{ color: 'var(--color-text-secondary)' }}
                                         >
-                                          <span
-                                            className="font-semibold"
-                                            style={{ color: 'var(--color-text-primary)' }}
-                                          >
-                                            {match.diagnosis}
-                                          </span>
+                                          {match.diagnosis}
                                           {match.explanation ? ` — ${match.explanation}` : ''}
                                         </p>
                                         {/* 3. „Besser:" — schlichte Textzeile */}
