@@ -497,7 +497,10 @@ export default function AdminPage() {
   const [pinMsg, setPinMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [deploySha, setDeploySha] = useState<string | null>(null)
   const [fbSearch, setFbSearch] = useState('')
-  const [fbSort, setFbSort] = useState<'date' | 'score'>('date')
+  const [fbSort, setFbSort] = useState<{ field: 'date' | 'score'; dir: 'asc' | 'desc' }>({
+    field: 'date',
+    dir: 'desc',
+  })
   const [fbExpanded, setFbExpanded] = useState<Set<string>>(new Set())
   const [fbTopicFilter, setFbTopicFilter] = useState<string | null>(null)
   const [topics, setTopics] = useState<FeedbackTopic[] | null>(null)
@@ -1008,24 +1011,34 @@ export default function AdminPage() {
                     }}
                   />
                 </div>
-                <div
-                  className="flex rounded-xl overflow-hidden text-xs font-medium"
-                  style={{ border: '1px solid var(--color-border-subtle)' }}
-                >
-                  {(['date', 'score'] as const).map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setFbSort(s)}
-                      className="px-2.5 py-1.5 transition-colors"
-                      style={{
-                        background:
-                          fbSort === s ? 'var(--color-primary)' : 'var(--color-bg-elevated)',
-                        color: fbSort === s ? 'white' : 'var(--color-text-secondary)',
-                      }}
-                    >
-                      {s === 'date' ? 'Datum' : 'Bewertung'}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-1 text-xs">
+                  {(['date', 'score'] as const).map((field) => {
+                    const active = fbSort.field === field
+                    const label = field === 'date' ? 'Datum' : 'Bewertung'
+                    const nextDir = active && fbSort.dir === 'desc' ? 'asc' : 'desc'
+                    return (
+                      <button
+                        key={field}
+                        onClick={() => setFbSort({ field, dir: active ? nextDir : 'desc' })}
+                        className="flex items-center gap-0.5 px-2 py-1 rounded-lg transition-colors"
+                        style={{
+                          background: active ? 'var(--color-bg-elevated)' : 'transparent',
+                          color: active ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                          fontWeight: active ? 500 : 400,
+                          border: active
+                            ? '1px solid var(--color-border-subtle)'
+                            : '1px solid transparent',
+                        }}
+                      >
+                        {label}
+                        {active && (
+                          <span style={{ fontSize: '10px', lineHeight: 1 }}>
+                            {fbSort.dir === 'desc' ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -1073,10 +1086,11 @@ export default function AdminPage() {
                     return matchesSearch && matchesTopic
                   })
                   const sorted = [...filtered].sort((a, b) => {
-                    if (fbSort === 'score') {
-                      return (b.aiScore ?? 0) - (a.aiScore ?? 0)
+                    const mul = fbSort.dir === 'asc' ? 1 : -1
+                    if (fbSort.field === 'score') {
+                      return mul * ((a.aiScore ?? 0) - (b.aiScore ?? 0))
                     }
-                    return (b.createdAt ?? 0) - (a.createdAt ?? 0)
+                    return mul * ((a.createdAt ?? 0) - (b.createdAt ?? 0))
                   })
                   if (sorted.length === 0) {
                     return (
@@ -1133,54 +1147,63 @@ export default function AdminPage() {
                                 })
                               }
                             >
-                              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                                {/* Quelle */}
-                                <span
-                                  className="rounded-full px-2 py-0.5 text-xs font-medium"
-                                  style={{
-                                    background: 'var(--color-bg-elevated)',
-                                    color: 'var(--color-text-secondary)',
-                                  }}
-                                >
-                                  {f.source || 'App'}
-                                </span>
-                                {/* Emoji-Rating */}
-                                {ratingEmoji && (
-                                  <span className="text-xs" aria-label={`Bewertung: ${f.rating}`}>
-                                    {ratingEmoji}
-                                  </span>
-                                )}
-                                {/* AI-Score */}
-                                {f.aiScore !== null && (
+                              <div className="flex items-center gap-2 mb-0.5">
+                                {/* Badges links */}
+                                <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                                  {/* Quelle */}
                                   <span
-                                    className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-medium"
+                                    className="rounded-full px-2 py-0.5 text-xs font-medium"
                                     style={{
                                       background: 'var(--color-bg-elevated)',
                                       color: 'var(--color-text-secondary)',
                                     }}
                                   >
-                                    <Star size={10} aria-hidden="true" />
-                                    {f.aiScore}
+                                    {f.source || 'App'}
                                   </span>
-                                )}
-                                {/* Datum */}
-                                <span
-                                  className="text-xs ml-auto"
-                                  style={{ color: 'var(--color-text-muted)' }}
-                                >
-                                  {f.createdAt ? relTime(f.createdAt) : ''}
-                                </span>
-                                {/* Chevron */}
-                                <ChevronDown
-                                  size={14}
-                                  style={{
-                                    color: 'var(--color-text-muted)',
-                                    transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                    transition: 'transform 200ms',
-                                    flexShrink: 0,
-                                  }}
-                                  aria-hidden="true"
-                                />
+                                  {/* Emoji-Rating */}
+                                  {ratingEmoji && (
+                                    <span className="text-xs" aria-label={`Bewertung: ${f.rating}`}>
+                                      {ratingEmoji}
+                                    </span>
+                                  )}
+                                </div>
+                                {/* Rechte Seite: Score + Datum + Chevron — immer fixiert */}
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <span
+                                    className="flex items-center justify-center gap-0.5 rounded-full py-0.5 text-xs font-medium"
+                                    style={{
+                                      width: '2rem',
+                                      background:
+                                        f.aiScore !== null
+                                          ? 'var(--color-bg-elevated)'
+                                          : 'transparent',
+                                      color: 'var(--color-text-secondary)',
+                                    }}
+                                  >
+                                    {f.aiScore !== null && (
+                                      <>
+                                        <Star size={10} aria-hidden="true" />
+                                        {f.aiScore}
+                                      </>
+                                    )}
+                                  </span>
+                                  <span
+                                    className="text-xs text-right"
+                                    style={{ color: 'var(--color-text-muted)', width: '4rem' }}
+                                  >
+                                    {f.createdAt ? relTime(f.createdAt) : ''}
+                                  </span>
+                                  <ChevronDown
+                                    size={14}
+                                    style={{
+                                      color: 'var(--color-text-muted)',
+                                      transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                      transition: 'transform 200ms',
+                                      flexShrink: 0,
+                                    }}
+                                    aria-hidden="true"
+                                  />
+                                </div>
                               </div>
                               {/* Textvorschau (kompakt, 2 Zeilen) */}
                               <p
