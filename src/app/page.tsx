@@ -179,9 +179,9 @@ export default function HomePage() {
               onClick={() => router.push('/join')}
               className="block w-full py-3.5 px-6 rounded-2xl text-base font-medium transition-opacity hover:opacity-80"
               style={{
-                background: 'var(--color-bg-elevated)',
+                background: 'transparent',
                 color: 'var(--color-text-primary)',
-                border: '1.5px solid var(--color-border)',
+                border: '2px solid var(--color-border)',
               }}
             >
               Ich habe einen Code
