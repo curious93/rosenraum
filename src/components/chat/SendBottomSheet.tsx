@@ -50,7 +50,8 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   const [prevScore, setPrevScore] = useState<GfkScoreResult | null>(null)
   const [scoreLoading, setScoreLoading] = useState(true)
   const scoreRef = useRef<GfkScoreResult | null>(null)
-  const confettiFiredRef = useRef(false)
+  const prevWasGoodRef = useRef<boolean | null>(null)
+  const [redGlow, setRedGlow] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Interaktions-State für bidirektionales Highlighting
@@ -81,12 +82,19 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     setFeedbackState('idle')
   }
 
-  function maybeFireConfetti(result: GfkScoreResult | null) {
-    if (!result || confettiFiredRef.current) return
-    if (result.total < 7) return
-    if (localStorage.getItem('rosenraum_confetti_off') === '1') return
-    confettiFiredRef.current = true
-    confetti({ particleCount: 80, spread: 65, origin: { y: 0.6 }, scalar: 0.9 })
+  function handleScoreTransition(result: GfkScoreResult | null) {
+    if (!result) return
+    const isGood = result.total >= 7
+    const wasGood = prevWasGoodRef.current
+    if (isGood && wasGood !== true) {
+      if (localStorage.getItem('rosenraum_confetti_off') !== '1') {
+        confetti({ particleCount: 80, spread: 65, origin: { y: 0.6 }, scalar: 0.9 })
+      }
+    } else if (!isGood && wasGood === true) {
+      setRedGlow(true)
+      setTimeout(() => setRedGlow(false), 1200)
+    }
+    prevWasGoodRef.current = isGood
   }
 
   // Initial score on mount — with one retry, always ends loading state
@@ -104,7 +112,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
       scoreRef.current = result
       setScore(result)
       setScoreLoading(false)
-      maybeFireConfetti(result)
+      handleScoreTransition(result)
     }
     run().catch(() => {
       if (!cancelled) setScoreLoading(false)
@@ -142,7 +150,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           setPrevScore(scoreRef.current)
           scoreRef.current = result
           setScore(result)
-          maybeFireConfetti(result)
+          handleScoreTransition(result)
         }
         setScoreLoading(false)
       })
@@ -264,7 +272,10 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           background: 'var(--color-bg-surface)',
           maxWidth: 'var(--max-width-chat)',
           paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
-          boxShadow: '0 -4px 24px rgba(0,0,0,0.10)',
+          boxShadow: redGlow
+            ? '0 -4px 32px rgba(220, 60, 60, 0.4), 0 -4px 24px rgba(0,0,0,0.10)'
+            : '0 -4px 24px rgba(0,0,0,0.10)',
+          transition: 'box-shadow 0.5s ease-out',
         }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
@@ -287,8 +298,8 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           Feedback
         </button>
 
-        {/* Prominenter Leitsatz — während Analyse (initial + Re-Analyse): 4 Punkte */}
-        {scoreLoading ? (
+        {/* Prominenter Leitsatz — bei Re-Analyse: 4 Punkte; initial: GfkScorePanel zeigt Dots */}
+        {score !== null && scoreLoading ? (
           <div className="mb-3 flex items-center gap-2 px-0.5" style={{ minHeight: '1.5rem' }}>
             {HIGHLIGHT_DIMS.map((d, i) => (
               <motion.div
@@ -303,6 +314,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
             </span>
           </div>
         ) : (
+          !scoreLoading &&
           motivation && (
             <p className="text-base font-semibold mb-3 px-0.5" style={{ color: motivation.color }}>
               {motivation.text}
