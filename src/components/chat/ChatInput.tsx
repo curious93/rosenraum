@@ -106,7 +106,7 @@ export function ChatInput({
       <div className="flex items-end gap-2">
         {leading}
         <div
-          className="flex flex-1 items-end gap-2 px-4 py-2 rounded-3xl"
+          className="flex-1 px-4 py-2 rounded-3xl"
           style={{
             background: 'var(--color-bg-surface)',
             border: `1.5px solid ${focused ? 'var(--color-primary)' : 'var(--color-border)'}`,
@@ -127,81 +127,80 @@ export function ChatInput({
             disabled={disabled}
             readOnly={rec.state === 'recording' || rec.state === 'formatting'}
             rows={1}
-            className="flex-1 resize-none text-base leading-relaxed outline-none bg-transparent py-1.5 disabled:opacity-50"
+            className="w-full resize-none text-base leading-relaxed outline-none bg-transparent py-1.5 disabled:opacity-50"
             style={{
               color: 'var(--color-text-primary)',
               minHeight: '36px',
               maxHeight: '120px',
+              overflowY: 'auto',
             }}
           />
-
-          {rec.supported && !disabled && (
-            <button
-              type="button"
-              disabled={rec.state === 'formatting'}
-              onClick={() =>
-                rec.state === 'recording'
-                  ? rec.stop()
-                  : rec.start(text.trim() ? text.trim() + ' ' : '', (full) => setText(full))
-              }
-              aria-label={rec.state === 'recording' ? 'Aufnahme stoppen' : 'Nachricht einsprechen'}
-              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mb-0.5 transition-opacity hover:opacity-80"
-              style={{
-                background:
-                  rec.state === 'recording'
-                    ? 'var(--color-destructive)'
-                    : 'var(--color-bg-elevated)',
-                color:
-                  rec.state === 'recording'
-                    ? 'var(--color-on-status)'
-                    : 'var(--color-text-secondary)',
-              }}
-            >
-              {rec.state === 'recording' ? (
-                <Square size={13} aria-hidden="true" />
-              ) : (
-                <Mic size={15} aria-hidden="true" />
-              )}
-            </button>
-          )}
-
-          <motion.button
-            onClick={handleSend}
-            disabled={!canSend}
-            whileTap={canSend ? { scale: 0.85 } : {}}
-            whileHover={canSend ? { scale: 1.08 } : {}}
-            className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mb-0.5 disabled:opacity-30 ${canSend ? 'send-pulse' : ''}`}
-            style={{
-              background: canSend ? 'var(--color-primary)' : 'var(--color-skeleton)',
-              transition: 'background 200ms ease',
-            }}
-            aria-label="Senden"
-          >
-            <motion.svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              animate={{ x: canSend ? 0 : -1 }}
-              transition={{ duration: 0.15 }}
-            >
-              <path
-                d="M22 2L11 13"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M22 2L15 22L11 13L2 9L22 2Z"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </motion.svg>
-          </motion.button>
         </div>
+
+        {rec.supported && !disabled && (
+          <button
+            type="button"
+            disabled={rec.state === 'formatting'}
+            onClick={() =>
+              rec.state === 'recording'
+                ? rec.stop()
+                : rec.start(text.trim() ? text.trim() + ' ' : '', (full) => setText(full))
+            }
+            aria-label={rec.state === 'recording' ? 'Aufnahme stoppen' : 'Nachricht einsprechen'}
+            className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
+            style={{
+              background:
+                rec.state === 'recording' ? 'var(--color-destructive)' : 'var(--color-bg-elevated)',
+              color:
+                rec.state === 'recording'
+                  ? 'var(--color-on-status)'
+                  : 'var(--color-text-secondary)',
+            }}
+          >
+            {rec.state === 'recording' ? (
+              <Square size={13} aria-hidden="true" />
+            ) : (
+              <Mic size={15} aria-hidden="true" />
+            )}
+          </button>
+        )}
+
+        <motion.button
+          onClick={handleSend}
+          disabled={!canSend}
+          whileTap={canSend ? { scale: 0.85 } : {}}
+          whileHover={canSend ? { scale: 1.08 } : {}}
+          className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center disabled:opacity-30 ${canSend ? 'send-pulse' : ''}`}
+          style={{
+            background: canSend ? 'var(--color-primary)' : 'var(--color-skeleton)',
+            transition: 'background 200ms ease',
+          }}
+          aria-label="Senden"
+        >
+          <motion.svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            animate={{ x: canSend ? 0 : -1 }}
+            transition={{ duration: 0.15 }}
+          >
+            <path
+              d="M22 2L11 13"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M22 2L15 22L11 13L2 9L22 2Z"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </motion.svg>
+        </motion.button>
       </div>
     </div>
   )
