@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "./tokens.generated.css";
+@import 'tailwindcss';
+@import './tokens.generated.css';
 
 /* Design tokens (:root, [data-theme="…"], dark scopes, shadcn bridge) are
    generated from design/tokens.json by scripts/build-tokens.mjs — see
@@ -14,7 +14,10 @@ body {
   height: 100%;
   background-color: var(--color-bg-page);
   color: var(--color-text-primary);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-size: 1rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -38,16 +41,91 @@ body {
 
 /* Pulse-Animation für Skeleton */
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* ── Theme-aware Glow (folgt --color-primary der aktiven Farbwelt) ─────────
+   Tokens: --shadow-glow / --shadow-glow-strong / --shadow-glow-focus
+   (design/tokens.json → primitive.shadow). Glow nie als raw rgba hardcoden. */
+
+/* Breathing-Ring für den Senden-Button (Idle, wenn sendbar) */
+@keyframes send-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 2px 10px color-mix(in srgb, var(--color-primary) 26%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--color-primary) 22%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 2px 10px color-mix(in srgb, var(--color-primary) 26%, transparent),
+      0 0 0 7px transparent;
+  }
+}
+
+.send-pulse {
+  animation: send-pulse 2.8s var(--ease-in-out) infinite;
+}
+
+/* Ruhender Glow für Primär-Buttons, stärker auf Hover */
+.glow-primary {
+  box-shadow: var(--shadow-glow);
+  transition: box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.glow-primary:hover {
+  box-shadow: var(--shadow-glow-strong);
+}
+
+/* Icon-Rotation auf Hover (Stil-/Palette-Button) */
+.icon-spin-hover svg {
+  transition: transform 0.4s var(--ease-spring);
+}
+
+.icon-spin-hover:hover svg {
+  transform: rotate(45deg);
+}
+
+/* Theme-Switch-Crossfade — Klasse wird von applyTheme()/applyMode() kurz gesetzt */
+.theme-transition,
+.theme-transition * {
+  transition:
+    background-color var(--duration-base) var(--ease-smooth),
+    color var(--duration-base) var(--ease-smooth),
+    border-color var(--duration-base) var(--ease-smooth),
+    box-shadow var(--duration-base) var(--ease-smooth) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .send-pulse {
+    animation: none;
+    box-shadow: var(--shadow-glow);
+  }
+  .theme-transition,
+  .theme-transition * {
+    transition: none !important;
+  }
+  .icon-spin-hover:hover svg {
+    transform: none;
+  }
 }
 
 /* iOS/Android: Zoom beim Tippen verhindern — font-size < 16px triggert iOS-AutoZoom */
-input, textarea, select {
+input,
+textarea,
+select {
   font-size: max(16px, 1rem);
 }
 
 /* Doppel-Tap-Zoom auf Buttons/Links deaktivieren (iOS + Android) */
-button, a, [role="button"] {
+button,
+a,
+[role='button'] {
   touch-action: manipulation;
 }

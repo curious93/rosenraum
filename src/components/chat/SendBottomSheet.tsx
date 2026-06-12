@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Mic, Square } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { analyzeMessage } from '@/lib/gfkPrompt'
+import { morphIn, morphOut, morphTo } from '@/lib/motion'
 import { scoreMessage } from '@/lib/gfkScore'
 import type { GfkScoreResult } from '@/lib/gfkScore'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
@@ -322,33 +323,41 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
             onSpanClick={handleSpanClick}
           />
 
-          {!showExample ? (
-            <button
-              onClick={handleInspire}
-              className="w-full text-left px-3.5 py-2.5 rounded-2xl text-sm transition-opacity hover:opacity-70"
-              style={{
-                background: 'var(--color-bubble-gfk)',
-                color: 'var(--color-primary-dark)',
-                border: '2px solid var(--color-border)',
-              }}
-            >
-              Inspiriere mich →
-            </button>
-          ) : (
-            <GfkVersionCard
-              text={rosenbergText}
-              highlightDims={suggestionDims}
-              selected={selected === 'rosenberg'}
-              onSelect={() =>
-                rosenbergText !== null && rosenbergText !== '' && setSelected('rosenberg')
-              }
-              onClose={() => {
-                setShowExample(false)
-                setSelected('original')
-              }}
-              loading={analyzing}
-            />
-          )}
+          <AnimatePresence mode="wait">
+            {!showExample ? (
+              <motion.button
+                key="inspire"
+                initial={morphIn}
+                animate={morphTo}
+                exit={morphOut}
+                onClick={handleInspire}
+                className="w-full text-left px-3.5 py-2.5 rounded-2xl text-sm transition-opacity hover:opacity-70"
+                style={{
+                  background: 'var(--color-bubble-gfk)',
+                  color: 'var(--color-primary-dark)',
+                  border: '2px solid var(--color-border)',
+                }}
+              >
+                Inspiriere mich →
+              </motion.button>
+            ) : (
+              <motion.div key="example" initial={morphIn} animate={morphTo} exit={morphOut}>
+                <GfkVersionCard
+                  text={rosenbergText}
+                  highlightDims={suggestionDims}
+                  selected={selected === 'rosenberg'}
+                  onSelect={() =>
+                    rosenbergText !== null && rosenbergText !== '' && setSelected('rosenberg')
+                  }
+                  onClose={() => {
+                    setShowExample(false)
+                    setSelected('original')
+                  }}
+                  loading={analyzing}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="flex gap-2.5">
@@ -362,10 +371,10 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
           <motion.button
             onClick={handleSend}
             disabled={sendFlash}
-            className="flex-[2] py-3 rounded-2xl text-sm font-medium text-primary-foreground transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+            className="glow-primary flex-[2] py-3 rounded-2xl text-sm font-medium text-primary-foreground transition-all disabled:opacity-40 flex items-center justify-center gap-2"
             style={{
               background: isGreenScore ? 'var(--color-gfk-beduerfnis)' : 'var(--color-primary)',
-              transition: 'background 400ms',
+              transition: 'background 400ms, box-shadow 200ms var(--ease-smooth)',
             }}
             whileTap={{ scale: 0.97 }}
           >

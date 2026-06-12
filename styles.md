@@ -134,11 +134,26 @@ Farb-Akzente sparsam (Boxen/Balken/Marks) — nie farbige Header-Schrift, keine 
 
 **Animationsregeln:**
 
-- Chat-Bubble erscheint: `scale(0.8) → scale(1)` mit `--ease-spring`, 200ms
+- Chat-Bubble erscheint: `scale(0.8) → scale(1)` mit `--ease-spring`, 200ms; eigene Bubble mit Lift-off (`y: 20 → 0`)
 - Bottom Sheet: slide-up 300ms `--ease-in-out`
 - Bubble-Toggle (Original ↔ GFK): cross-fade + slight scale, 250ms
-- Lern-Dot: fade-in 500ms nach Senden, dann subtle pulse 1x
+- Lern-Dot: erscheint 500ms nach Senden mit einmaligem Pulse (`scale 0 → 1.35 → 1`, 450ms) — implementiert in ChatBubble
+- Panel-Morph (Wechsel zweier Panels am selben Ort): `AnimatePresence mode="wait"` + Varianten aus `src/lib/motion.ts` (`morphIn`/`morphTo`/`morphOut`) — opacity + scale 0.96/1.03 + y ±10 + blur 6px; Exit 200ms, Enter 400ms
+- Card-in (Empty-State-Karten): `y: 32, scale: 0.95 → 1` mit Spring `stiffness 260, damping 19` (leichtes Überschwingen)
+- Theme-/Mode-Wechsel: Crossfade via `.theme-transition` auf `<html>` (400ms, von `applyTheme()`/`applyMode()` gesetzt)
 - Kein paralleles Flackern mehrerer Animationen
+- `prefers-reduced-motion` wird respektiert: `MotionConfig reducedMotion="user"` (framer-motion, in PageTransition) + CSS-Media-Query in globals.css (send-pulse, theme-transition, icon-spin aus)
+
+**Glow-System (theme-aware):**
+
+- Glow folgt **immer** `--color-primary` der aktiven Farbwelt via `color-mix(in srgb, var(--color-primary) N%, transparent)` — nie als raw rgba hardcoden
+- Tokens (`design/tokens.json` → `primitive.shadow`): `--shadow-glow` (22 %), `--shadow-glow-strong` (32 %, Hover), `--shadow-glow-focus` (3px-Ring 14 % + 16px-Schein 12 %)
+- `.glow-primary`: ruhender Glow für Primär-Buttons (Raum erstellen, Einladen, Link kopieren, Senden →, Feedback-CTA), Hover → strong
+- `.send-pulse`: Breathing-Ring auf dem Senden-Button im Composer, nur wenn sendbar (2.8s, Ring wächst auf 7px und verblasst)
+- Input-Focus: `var(--shadow-glow-focus)` (ChatInput)
+- `.icon-spin-hover`: Icon rotiert 45° auf Hover (Stil-/Palette-Button), `--ease-spring`
+- Hero-Heart: `drop-shadow(0 0 10px color-mix(… 30 %))` — weicher Halo
+- GFK-Bubble (gesendete GFK-Version): Whisper-Glow `0 0 10px color-mix(in srgb, var(--color-dot-learning) 16%, transparent)`
 
 ---
 

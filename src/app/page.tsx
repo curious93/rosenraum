@@ -20,6 +20,7 @@ import {
   Lightbulb,
 } from 'lucide-react'
 import { createRoom } from '@/lib/firestore'
+import { morphIn, morphOut, morphTo } from '@/lib/motion'
 import { ThemeSheet } from '@/components/ThemeSheet'
 import { FeedbackSheet } from '@/components/feedback/FeedbackSheet'
 
@@ -118,7 +119,7 @@ export default function HomePage() {
           transition={{ delay: 0.5 }}
           whileTap={{ scale: 0.88 }}
           onClick={() => setShowTheme(true)}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
+          className="icon-spin-hover absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
           style={{ color: 'var(--color-text-muted)', background: 'var(--color-bg-elevated)' }}
           aria-label="Stil ändern"
         >
@@ -133,7 +134,11 @@ export default function HomePage() {
           <motion.div variants={fadeUp} className="space-y-3">
             <Heart
               className="w-14 h-14 mx-auto"
-              style={{ color: 'var(--color-primary)' }}
+              style={{
+                color: 'var(--color-primary)',
+                filter:
+                  'drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 30%, transparent))',
+              }}
               fill="var(--color-primary-light)"
               aria-hidden="true"
             />
@@ -165,7 +170,7 @@ export default function HomePage() {
           <motion.div variants={fadeUp} className="space-y-3">
             <button
               onClick={scrollToCreate}
-              className="block w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity hover:opacity-90 active:opacity-80"
+              className="glow-primary block w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity hover:opacity-90 active:opacity-80"
               style={{ background: 'var(--color-primary)' }}
             >
               Raum erstellen
@@ -711,10 +716,9 @@ export default function HomePage() {
               {createState !== 'created' ? (
                 <motion.div
                   key="form"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
+                  initial={morphIn}
+                  animate={morphTo}
+                  exit={morphOut}
                   className="max-w-sm mx-auto space-y-3"
                 >
                   <input
@@ -734,7 +738,7 @@ export default function HomePage() {
                   <button
                     onClick={handleCreate}
                     disabled={createState === 'loading'}
-                    className="w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity disabled:opacity-60"
+                    className="glow-primary w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity disabled:opacity-60"
                     style={{ background: 'var(--color-primary)' }}
                   >
                     {createState === 'loading' ? 'Raum wird erstellt…' : 'Raum erstellen →'}
@@ -743,10 +747,9 @@ export default function HomePage() {
               ) : (
                 <motion.div
                   key="created"
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
+                  initial={morphIn}
+                  animate={morphTo}
+                  exit={morphOut}
                   className="max-w-sm mx-auto space-y-4"
                 >
                   <div className="text-center space-y-2">
@@ -823,7 +826,7 @@ export default function HomePage() {
 
                   <button
                     onClick={() => router.push(`/room/${createdRoom!.roomId}`)}
-                    className="w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity hover:opacity-90"
+                    className="glow-primary w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity hover:opacity-90"
                     style={{ background: 'var(--color-primary)' }}
                   >
                     Raum betreten →
@@ -861,7 +864,7 @@ export default function HomePage() {
           <motion.button
             onClick={() => setShowFeedback(true)}
             whileTap={{ scale: 0.96 }}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-medium transition-opacity hover:opacity-80"
+            className="glow-primary inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-medium transition-opacity hover:opacity-80"
             style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
           >
             Feedback geben 🌸

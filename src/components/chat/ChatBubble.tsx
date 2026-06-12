@@ -45,7 +45,7 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
     <>
       <motion.div
         layout
-        initial={{ opacity: 0, scale: isOwn ? 0.75 : 0.88, y: isOwn ? 12 : 8 }}
+        initial={{ opacity: 0, scale: isOwn ? 0.75 : 0.88, y: isOwn ? 20 : 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={
           isOwn
@@ -68,15 +68,20 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
               background: bgColor,
               color: 'var(--color-text-primary)',
               borderRadius: isOwn ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              boxShadow: showingGfk
+                ? '0 1px 4px rgba(0,0,0,0.06), 0 0 10px color-mix(in srgb, var(--color-dot-learning) 16%, transparent)'
+                : '0 1px 4px rgba(0,0,0,0.06)',
             }}
           >
             {sentText}
           </div>
 
-          {/* Lern-Dot — rein visuell */}
+          {/* Lern-Dot — rein visuell, erscheint 500ms nach Senden mit einmaligem Pulse */}
           {canLearn && (
-            <div
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: [0, 1.35, 1], opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.45, times: [0, 0.6, 1] }}
               className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 pointer-events-none"
               style={{
                 background: 'var(--color-dot-learning)',

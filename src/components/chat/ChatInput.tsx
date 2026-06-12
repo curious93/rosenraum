@@ -96,7 +96,7 @@ export function ChatInput({
             background: 'var(--color-bg-surface)',
             border: `1.5px solid ${focused ? 'var(--color-primary)' : 'var(--color-border)'}`,
             boxShadow: focused
-              ? '0 0 0 3px rgba(201,123,132,0.12), 0 2px 8px rgba(0,0,0,0.05)'
+              ? 'var(--shadow-glow-focus), 0 2px 8px rgba(0,0,0,0.05)'
               : '0 2px 8px rgba(0,0,0,0.05)',
             transition: 'border-color 200ms ease, box-shadow 200ms ease',
           }}
@@ -155,7 +155,7 @@ export function ChatInput({
             disabled={!canSend}
             whileTap={canSend ? { scale: 0.85 } : {}}
             whileHover={canSend ? { scale: 1.08 } : {}}
-            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mb-0.5 disabled:opacity-30"
+            className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mb-0.5 disabled:opacity-30 ${canSend ? 'send-pulse' : ''}`}
             style={{
               background: canSend ? 'var(--color-primary)' : 'var(--color-skeleton)',
               transition: 'background 200ms ease',

@@ -296,7 +296,7 @@ export default function RoomPage() {
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={() => setShowTheme(true)}
-          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
+          className="icon-spin-hover flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
           style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-elevated)' }}
           aria-label="Stil auswählen"
         >
@@ -307,7 +307,7 @@ export default function RoomPage() {
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={() => setShowInvite(true)}
-          className="flex-shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl font-medium transition-opacity hover:opacity-80"
+          className={`flex-shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl font-medium transition-opacity hover:opacity-80 ${partnerCount < 2 ? 'glow-primary' : ''}`}
           style={
             partnerCount < 2
               ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' }
@@ -341,7 +341,11 @@ export default function RoomPage() {
                 >
                   <Heart
                     className="w-10 h-10 mx-auto"
-                    style={{ color: 'var(--color-primary)' }}
+                    style={{
+                      color: 'var(--color-primary)',
+                      filter:
+                        'drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 30%, transparent))',
+                    }}
                     fill="var(--color-primary-light)"
                     aria-hidden="true"
                   />
@@ -359,9 +363,9 @@ export default function RoomPage() {
                 </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15, type: 'spring', stiffness: 300, damping: 26 }}
+                  initial={{ opacity: 0, y: 32, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.15, type: 'spring', stiffness: 260, damping: 19 }}
                   className="w-full max-w-xs rounded-2xl overflow-hidden"
                   style={{
                     background: 'var(--color-bg-surface)',
@@ -393,7 +397,7 @@ export default function RoomPage() {
                     <motion.button
                       onClick={copyInviteLink}
                       whileTap={{ scale: 0.97 }}
-                      className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
+                      className="glow-primary w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
                       style={{
                         background: 'var(--color-primary)',
                         color: 'var(--color-on-primary)',
