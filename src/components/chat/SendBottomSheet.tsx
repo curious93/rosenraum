@@ -62,6 +62,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
   // Feedback zur Scoring-Ansicht (Text + kompletter Kontext → Firestore)
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackText, setFeedbackText] = useState('')
+  const [feedbackEmail, setFeedbackEmail] = useState('')
   const [feedbackState, setFeedbackState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
 
   // Sprachaufnahme — Live-Transkription, danach frei editierbar
@@ -79,6 +80,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
     feedbackRec.reset()
     setShowFeedback(false)
     setFeedbackText('')
+    setFeedbackEmail('')
     setFeedbackState('idle')
   }
 
@@ -221,6 +223,7 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: feedbackText.trim(),
+        email: feedbackEmail.trim() || undefined,
         source: 'scoring',
         context: {
           editedText,
@@ -580,6 +583,20 @@ export function SendBottomSheet({ originalText, onSend, onClose }: SendBottomShe
                     </p>
                   </div>
                 )}
+
+                <input
+                  type="email"
+                  value={feedbackEmail}
+                  onChange={(e) => setFeedbackEmail(e.target.value)}
+                  placeholder="E-Mail (optional — falls wir uns melden dürfen)"
+                  className="w-full rounded-2xl px-3 py-2.5 text-sm outline-none"
+                  style={{
+                    background: 'var(--color-bg-elevated)',
+                    color: 'var(--color-text-primary)',
+                    border: '1px solid var(--color-border)',
+                    fontSize: 'max(16px, 0.875rem)',
+                  }}
+                />
 
                 {feedbackState === 'error' && (
                   <p className="text-sm" style={{ color: 'var(--color-destructive)' }}>
