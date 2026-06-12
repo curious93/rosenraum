@@ -128,22 +128,32 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
               </div>
 
               {/* Emoji-Bewertung */}
-              <div className="flex gap-3 justify-center py-1">
+              <div className="flex gap-2 py-1">
                 {RATINGS.map((r) => (
                   <button
                     key={r.id}
                     onClick={() => setRating((v) => (v === r.id ? null : r.id))}
-                    className="flex flex-col items-center gap-1 px-4 py-2.5 rounded-2xl transition-all"
+                    className="flex flex-1 flex-col items-center gap-2 py-4 rounded-2xl transition-all"
                     style={{
-                      background: rating === r.id ? 'var(--color-bg-elevated)' : 'transparent',
-                      border: `2px solid ${rating === r.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                      transform: rating === r.id ? 'scale(1.08)' : 'scale(1)',
+                      background:
+                        rating === r.id
+                          ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg-surface))'
+                          : 'var(--color-bg-elevated)',
+                      border: `2px solid ${rating === r.id ? 'var(--color-primary)' : 'transparent'}`,
+                      transform: rating === r.id ? 'scale(1.04)' : 'scale(1)',
+                      boxShadow: rating === r.id ? 'var(--shadow-glow)' : 'none',
                     }}
                     aria-label={r.label}
                     aria-pressed={rating === r.id}
                   >
-                    <span style={{ fontSize: '1.5rem' }}>{r.emoji}</span>
-                    <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                    <span style={{ fontSize: '2rem', lineHeight: 1 }}>{r.emoji}</span>
+                    <span
+                      className="text-xs font-medium"
+                      style={{
+                        color:
+                          rating === r.id ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                      }}
+                    >
                       {r.label}
                     </span>
                   </button>
