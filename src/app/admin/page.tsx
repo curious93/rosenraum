@@ -33,6 +33,13 @@ import { app } from '@/lib/firebase'
 /** Auto-Logout nach 10 Minuten */
 const SESSION_MS = 10 * 60 * 1000
 
+interface FeedbackTopic {
+  id: string
+  label: string
+  description: string
+  count: number
+}
+
 interface Stats {
   generatedAt: number
   health: Array<{
@@ -492,6 +499,9 @@ export default function AdminPage() {
   const [fbSearch, setFbSearch] = useState('')
   const [fbSort, setFbSort] = useState<'date' | 'score'>('date')
   const [fbExpanded, setFbExpanded] = useState<Set<string>>(new Set())
+  const [fbTopicFilter, setFbTopicFilter] = useState<string | null>(null)
+  const [topics, setTopics] = useState<FeedbackTopic[] | null>(null)
+  const [topicsLoading, setTopicsLoading] = useState(false)
   const logoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const auth = getAuth(app)
@@ -541,15 +551,36 @@ export default function AdminPage() {
     setStats((await res.json()) as Stats)
   }, [auth, doLogout])
 
+  const loadTopics = useCallback(
+    async (force = false) => {
+      if (!auth.currentUser) return
+      setTopicsLoading(true)
+      const token = await auth.currentUser.getIdToken()
+      const res = await fetch('/api/admin/feedback-topics', {
+        method: force ? 'POST' : 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => null)
+      setTopicsLoading(false)
+      if (!res?.ok) return
+      const data = (await res.json()) as { topics: FeedbackTopic[] }
+      setTopics(data.topics)
+    },
+    [auth]
+  )
+
   useEffect(() => {
     if (!user) return
     const t = setTimeout(loadStats, 0)
+    const t2 = setTimeout(() => loadTopics(), 500)
     fetch('/api/version')
       .then((r) => r.json())
       .then((d: { sha?: string }) => setDeploySha(d.sha?.slice(0, 7) ?? null))
       .catch(() => {})
-    return () => clearTimeout(t)
-  }, [user, loadStats])
+    return () => {
+      clearTimeout(t)
+      clearTimeout(t2)
+    }
+  }, [user, loadStats, loadTopics])
 
   /**
    * Setzt den Site-Zugangscode neu (invalidiert alle bestehenden Cookies).
@@ -985,13 +1016,17 @@ export default function AdminPage() {
               ) : (
                 (() => {
                   const q = fbSearch.toLowerCase()
-                  const filtered = stats.feedback.latest.filter(
-                    (f) =>
+                  const filtered = stats.feedback.latest.filter((f) => {
+                    const matchesSearch =
                       !q ||
                       f.text.toLowerCase().includes(q) ||
                       (f.email ?? '').toLowerCase().includes(q) ||
                       f.source.toLowerCase().includes(q)
-                  )
+                    const matchesTopic =
+                      !fbTopicFilter ||
+                      ((f as unknown as { topics?: string[] }).topics ?? []).includes(fbTopicFilter)
+                    return matchesSearch && matchesTopic
+                  })
                   const sorted = [...filtered].sort((a, b) => {
                     if (fbSort === 'score') {
                       return (b.aiScore ?? 0) - (a.aiScore ?? 0)
@@ -1158,6 +1193,29 @@ export default function AdminPage() {
                                     KI-Bewertung: {f.aiScore}/5 · Hilfsbereitschaft
                                   </p>
                                 )}
+                                {/* Themen-Pills */}
+                                {(() => {
+                                  const fTopics = (f as unknown as { topics?: string[] }).topics
+                                  if (!fTopics?.length || !topics?.length) return null
+                                  const matched = topics.filter((t) => fTopics.includes(t.id))
+                                  if (!matched.length) return null
+                                  return (
+                                    <div className="flex flex-wrap gap-1 pt-0.5">
+                                      {matched.map((t) => (
+                                        <span
+                                          key={t.id}
+                                          className="rounded-full px-2 py-0.5 text-xs"
+                                          style={{
+                                            background: 'var(--color-bg-elevated)',
+                                            color: 'var(--color-text-secondary)',
+                                          }}
+                                        >
+                                          {t.label}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )
+                                })()}
                               </motion.div>
                             )}
                           </li>
@@ -1166,6 +1224,87 @@ export default function AdminPage() {
                     </ul>
                   )
                 })()
+              )}
+            </Card>
+
+            {/* Feedback-Themen */}
+            <Card title="Feedback-Themen" meta={topics ? `${topics.length} Themen` : undefined}>
+              {topicsLoading && !topics && (
+                <div className="flex gap-2">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="h-7 w-24 animate-pulse rounded-full"
+                      style={{ background: 'var(--color-skeleton)' }}
+                    />
+                  ))}
+                </div>
+              )}
+              {!topicsLoading && topics?.length === 0 && (
+                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  Noch nicht genug Feedback für eine Themenanalyse.
+                </p>
+              )}
+              {topics && topics.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {topics.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setFbTopicFilter(fbTopicFilter === t.id ? null : t.id)}
+                      title={t.description}
+                      className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+                      style={{
+                        background:
+                          fbTopicFilter === t.id
+                            ? 'var(--color-primary)'
+                            : 'var(--color-bg-elevated)',
+                        color: fbTopicFilter === t.id ? 'white' : 'var(--color-text-secondary)',
+                        border: '1px solid var(--color-border-subtle)',
+                      }}
+                    >
+                      <span>{t.label}</span>
+                      <span
+                        className="rounded-full px-1.5 py-0.5 text-xs tabular-nums"
+                        style={{
+                          background:
+                            fbTopicFilter === t.id
+                              ? 'rgba(255,255,255,0.25)'
+                              : 'var(--color-border)',
+                          color: fbTopicFilter === t.id ? 'white' : 'var(--color-text-muted)',
+                        }}
+                      >
+                        {t.count}
+                      </span>
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => loadTopics(true)}
+                    disabled={topicsLoading}
+                    className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs transition-colors"
+                    style={{
+                      background: 'var(--color-bg-elevated)',
+                      color: 'var(--color-text-muted)',
+                      border: '1px solid var(--color-border-subtle)',
+                      opacity: topicsLoading ? 0.5 : 1,
+                    }}
+                    title="Themen neu analysieren"
+                  >
+                    <RefreshCw size={11} aria-hidden="true" />
+                    Neu analysieren
+                  </button>
+                </div>
+              )}
+              {fbTopicFilter && (
+                <p className="mt-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  Filter aktiv — Feedback-Liste zeigt nur Einträge zu diesem Thema.{' '}
+                  <button
+                    onClick={() => setFbTopicFilter(null)}
+                    className="underline"
+                    style={{ color: 'var(--color-primary)' }}
+                  >
+                    Zurücksetzen
+                  </button>
+                </p>
               )}
             </Card>
 
