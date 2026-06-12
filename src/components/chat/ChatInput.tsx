@@ -69,7 +69,10 @@ export function ChatInput({
     }
   }
 
-  const canSend = text.trim().length > 0 && !disabled
+  const WORD_LIMIT = 150
+  const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length
+  const tooLong = wordCount > WORD_LIMIT
+  const canSend = text.trim().length > 0 && !disabled && !tooLong
 
   return (
     <div
@@ -79,6 +82,18 @@ export function ChatInput({
         paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
       }}
     >
+      {tooLong && (
+        <div
+          className="mb-2 px-3 py-2 rounded-2xl text-sm font-medium"
+          style={{
+            background: 'color-mix(in srgb, var(--color-destructive) 12%, transparent)',
+            color: 'var(--color-destructive)',
+            border: '1px solid color-mix(in srgb, var(--color-destructive) 30%, transparent)',
+          }}
+        >
+          Nachricht zu lang — bitte auf 150 Wörter kürzen ({wordCount}/150).
+        </div>
+      )}
       {rec.state !== 'idle' && (
         <p className="mb-1.5 px-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
           {rec.state === 'recording'
