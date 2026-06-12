@@ -120,7 +120,7 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
                   className="text-base font-semibold"
                   style={{ color: 'var(--color-text-primary)' }}
                 >
-                  Wie war deine Erfahrung?
+                  {source === 'landing' ? 'Was möchtest du uns sagen?' : 'Wie war deine Erfahrung?'}
                 </h2>
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   Anonym · kein Account nötig
