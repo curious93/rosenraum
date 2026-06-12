@@ -175,7 +175,7 @@ export default function RoomPage() {
         maxWidth: 'var(--max-width-chat)',
         marginInline: 'auto',
         background: 'var(--color-bg-page)',
-        overflow: 'hidden',
+        overflow: 'clip',
       }}
     >
       {/* ── Header ─────────────────────────────────────────────────────────────── */}
