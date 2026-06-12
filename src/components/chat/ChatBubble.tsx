@@ -79,6 +79,7 @@ export function ChatBubble({ message, isOwn }: ChatBubbleProps) {
           {/* Lern-Dot — rein visuell, erscheint 500ms nach Senden mit einmaligem Pulse */}
           {canLearn && (
             <motion.div
+              key={`dot-${message.id}`}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: [0, 1.35, 1], opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.45, times: [0, 0.6, 1] }}

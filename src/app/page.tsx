@@ -132,28 +132,37 @@ export default function HomePage() {
           animate="visible"
         >
           <motion.div variants={fadeUp} className="space-y-3">
-            <Heart
+            <motion.div
               className="w-14 h-14 mx-auto"
-              style={{
-                color: 'var(--color-primary)',
-                filter:
-                  'drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 30%, transparent))',
+              animate={{ scale: [1, 1.14, 1, 1.08, 1] }}
+              transition={{
+                duration: 1.2,
+                ease: 'easeInOut',
+                repeat: Infinity,
+                repeatDelay: 1.8,
+                times: [0, 0.15, 0.3, 0.5, 1],
               }}
-              fill="var(--color-primary-light)"
-              aria-hidden="true"
-            />
-            <motion.h1
+            >
+              <Heart
+                className="w-full h-full"
+                style={{
+                  color: 'var(--color-primary)',
+                  filter:
+                    'drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 30%, transparent))',
+                }}
+                fill="var(--color-primary-light)"
+                aria-hidden="true"
+              />
+            </motion.div>
+            <h1
               className="font-semibold tracking-tight"
               style={{
                 fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
                 color: 'var(--color-text-primary)',
-                display: 'inline-block',
               }}
-              animate={{ scale: [1, 1.045, 1] }}
-              transition={{ duration: 3.5, ease: 'easeInOut', repeat: Infinity }}
             >
               Rosenraum
-            </motion.h1>
+            </h1>
             <p
               className="text-xl font-medium leading-snug"
               style={{ color: 'var(--color-text-primary)' }}
@@ -171,13 +180,21 @@ export default function HomePage() {
           </motion.div>
 
           <motion.div variants={fadeUp} className="space-y-3">
-            <button
+            <motion.button
               onClick={scrollToCreate}
-              className="glow-primary block w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity hover:opacity-90 active:opacity-80"
+              className="block w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base active:opacity-80"
               style={{ background: 'var(--color-primary)' }}
+              animate={{
+                boxShadow: [
+                  '0 0 0 0px rgba(220, 106, 121, 0.5)',
+                  '0 0 0 10px rgba(220, 106, 121, 0)',
+                  '0 0 0 0px rgba(220, 106, 121, 0.5)',
+                ],
+              }}
+              transition={{ duration: 2.2, ease: 'easeOut', repeat: Infinity }}
             >
               Raum erstellen
-            </button>
+            </motion.button>
             <button
               onClick={() => router.push('/join')}
               className="block w-full py-3.5 px-6 rounded-2xl text-base font-medium transition-opacity hover:opacity-80"
