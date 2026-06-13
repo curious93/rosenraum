@@ -1449,9 +1449,8 @@ export default function AdminPage() {
                                 )}
                                 {/* Themen-Pills */}
                                 {(() => {
-                                  const fTopics = (f as unknown as { topics?: string[] }).topics
-                                  if (!fTopics?.length || !topics?.length) return null
-                                  const matched = topics.filter((t) => fTopics.includes(t.id))
+                                  if (!f.topics?.length || !topics?.length) return null
+                                  const matched = topics.filter((t) => f.topics.includes(t.id))
                                   if (!matched.length) return null
                                   return (
                                     <div className="flex flex-wrap gap-1 pt-0.5">
