@@ -199,6 +199,7 @@ export async function GET(request: NextRequest) {
             roomId: x.roomId ?? null,
             aiScore: x.aiScore ?? null,
             createdAt: x.createdAt?.toMillis?.() ?? null,
+            topics: (x.topics as string[] | undefined) ?? [],
           }
         }),
       },

@@ -82,6 +82,7 @@ interface Stats {
       roomId: string | null
       aiScore: number | null
       createdAt: number | null
+      topics: string[]
     }>
   }
   system: { pinVersion: number | null }
@@ -482,6 +483,38 @@ function Skeleton() {
 }
 
 /**
+ * Markiert Keyword-Treffer im Text mit einem farbigen Span.
+ *
+ * @param text - Feedback-Text
+ * @param keywords - Suchbegriffe (lowercase, >4 Zeichen)
+ * @returns React-Elemente mit hervorgehobenen Treffern
+ */
+function highlightKeywords(text: string, keywords: string[]): React.ReactNode {
+  if (!keywords.length || !text) return text
+  const pattern = new RegExp(
+    `(${keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
+    'gi'
+  )
+  const parts = text.split(pattern)
+  return parts.map((part, i) =>
+    pattern.test(part) ? (
+      <span
+        key={i}
+        style={{
+          background: 'color-mix(in srgb, var(--color-primary) 18%, transparent)',
+          borderRadius: '3px',
+          padding: '0 2px',
+        }}
+      >
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  )
+}
+
+/**
  * /admin — Dashboard mit Google-Login (Allowlist), Auto-Logout nach 10 Minuten.
  *
  * @returns Admin-Seite JSX
@@ -505,6 +538,12 @@ export default function AdminPage() {
   const [fbTopicFilter, setFbTopicFilter] = useState<string | null>(null)
   const [topics, setTopics] = useState<FeedbackTopic[] | null>(null)
   const [topicsLoading, setTopicsLoading] = useState(false)
+  const [topicSort, setTopicSort] = useState<{ field: 'newest' | 'count'; dir: 'asc' | 'desc' }>({
+    field: 'newest',
+    dir: 'desc',
+  })
+  const [topicsExpanded, setTopicsExpanded] = useState(false)
+  const TOPICS_INITIAL_COUNT = 5
   const [backfillMsg, setBackfillMsg] = useState<string | null>(null)
   const logoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -984,6 +1023,145 @@ export default function AdminPage() {
               </div>
             </Card>
 
+            {/* Feedback-Themen */}
+            <Card title="Feedback-Themen" meta={topics ? `${topics.length} Themen` : undefined}>
+              {topicsLoading && !topics && (
+                <div className="flex gap-2">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="h-7 w-24 animate-pulse rounded-full"
+                      style={{ background: 'var(--color-skeleton)' }}
+                    />
+                  ))}
+                </div>
+              )}
+              {!topicsLoading && topics?.length === 0 && (
+                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  Noch nicht genug Feedback für eine Themenanalyse.
+                </p>
+              )}
+              {topics &&
+                topics.length > 0 &&
+                (() => {
+                  const sortedTopics = [...topics].sort((a, b) => {
+                    const mul = topicSort.dir === 'asc' ? 1 : -1
+                    if (topicSort.field === 'count') return mul * (a.count - b.count)
+                    // newest = original API order (index), desc = newest first (0=newest)
+                    return mul * (topics.indexOf(a) - topics.indexOf(b))
+                  })
+                  const visibleTopics = topicsExpanded
+                    ? sortedTopics
+                    : sortedTopics.slice(0, TOPICS_INITIAL_COUNT)
+                  return (
+                    <div className="flex flex-col gap-3">
+                      {/* Sort-Controls */}
+                      <div className="flex items-center gap-1 text-xs">
+                        {(['newest', 'count'] as const).map((field) => {
+                          const active = topicSort.field === field
+                          const label = field === 'newest' ? 'Neueste' : 'Häufigste'
+                          const nextDir = active && topicSort.dir === 'desc' ? 'asc' : 'desc'
+                          return (
+                            <button
+                              key={field}
+                              onClick={() => setTopicSort({ field, dir: nextDir })}
+                              className="flex items-center gap-0.5 rounded-lg px-2 py-1 transition-colors"
+                              style={{
+                                background: active
+                                  ? 'var(--color-primary)'
+                                  : 'var(--color-bg-elevated)',
+                                color: active ? 'white' : 'var(--color-text-secondary)',
+                                border: '1px solid var(--color-border-subtle)',
+                              }}
+                            >
+                              {label}
+                              {active && (
+                                <span style={{ fontSize: '10px', lineHeight: 1 }}>
+                                  {topicSort.dir === 'desc' ? '↓' : '↑'}
+                                </span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {/* Themen-Pills */}
+                      <div className="flex flex-wrap gap-2">
+                        {visibleTopics.map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => setFbTopicFilter(fbTopicFilter === t.id ? null : t.id)}
+                            title={t.description}
+                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+                            style={{
+                              background:
+                                fbTopicFilter === t.id
+                                  ? 'var(--color-primary)'
+                                  : 'var(--color-bg-elevated)',
+                              color:
+                                fbTopicFilter === t.id ? 'white' : 'var(--color-text-secondary)',
+                              border: '1px solid var(--color-border-subtle)',
+                            }}
+                          >
+                            <span>{t.label}</span>
+                            <span
+                              className="rounded-full px-1.5 py-0.5 text-xs tabular-nums"
+                              style={{
+                                background:
+                                  fbTopicFilter === t.id
+                                    ? 'rgba(255,255,255,0.25)'
+                                    : 'var(--color-border)',
+                                color: fbTopicFilter === t.id ? 'white' : 'var(--color-text-muted)',
+                              }}
+                            >
+                              {t.count}
+                            </span>
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => loadTopics(true)}
+                          disabled={topicsLoading}
+                          className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs transition-colors"
+                          style={{
+                            background: 'var(--color-bg-elevated)',
+                            color: 'var(--color-text-muted)',
+                            border: '1px solid var(--color-border-subtle)',
+                            opacity: topicsLoading ? 0.5 : 1,
+                          }}
+                          title="Themen neu analysieren"
+                        >
+                          <RefreshCw size={11} aria-hidden="true" />
+                          Neu analysieren
+                        </button>
+                      </div>
+                      {/* Mehr anzeigen */}
+                      {topics.length > TOPICS_INITIAL_COUNT && (
+                        <button
+                          onClick={() => setTopicsExpanded((v) => !v)}
+                          className="self-start text-xs"
+                          style={{ color: 'var(--color-primary)' }}
+                        >
+                          {topicsExpanded
+                            ? 'Weniger anzeigen ↑'
+                            : `${topics.length - TOPICS_INITIAL_COUNT} weitere anzeigen ↓`}
+                        </button>
+                      )}
+                    </div>
+                  )
+                })()}
+              {fbTopicFilter && (
+                <p className="mt-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  Filter aktiv — Feedback-Liste zeigt nur Einträge zu diesem Thema.{' '}
+                  <button
+                    onClick={() => setFbTopicFilter(null)}
+                    className="underline"
+                    style={{ color: 'var(--color-primary)' }}
+                  >
+                    Zurücksetzen
+                  </button>
+                </p>
+              )}
+            </Card>
+
             {/* Feedback */}
             <Card
               title="Feedback"
@@ -1080,9 +1258,7 @@ export default function AdminPage() {
                       f.text.toLowerCase().includes(q) ||
                       (f.email ?? '').toLowerCase().includes(q) ||
                       f.source.toLowerCase().includes(q)
-                    const matchesTopic =
-                      !fbTopicFilter ||
-                      ((f as unknown as { topics?: string[] }).topics ?? []).includes(fbTopicFilter)
+                    const matchesTopic = !fbTopicFilter || f.topics.includes(fbTopicFilter)
                     return matchesSearch && matchesTopic
                   })
                   const sorted = [...filtered].sort((a, b) => {
@@ -1216,7 +1392,17 @@ export default function AdminPage() {
                                   overflow: isOpen ? 'visible' : 'hidden',
                                 }}
                               >
-                                {f.text || '—'}
+                                {(() => {
+                                  if (!f.text) return '—'
+                                  if (!fbTopicFilter || !topics) return f.text
+                                  const activeTopic = topics.find((t) => t.id === fbTopicFilter)
+                                  if (!activeTopic) return f.text
+                                  const kws = `${activeTopic.label} ${activeTopic.description}`
+                                    .toLowerCase()
+                                    .split(/\s+/)
+                                    .filter((w) => w.length > 4)
+                                  return highlightKeywords(f.text, kws)
+                                })()}
                               </p>
                             </button>
 
@@ -1292,87 +1478,6 @@ export default function AdminPage() {
                     </ul>
                   )
                 })()
-              )}
-            </Card>
-
-            {/* Feedback-Themen */}
-            <Card title="Feedback-Themen" meta={topics ? `${topics.length} Themen` : undefined}>
-              {topicsLoading && !topics && (
-                <div className="flex gap-2">
-                  {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className="h-7 w-24 animate-pulse rounded-full"
-                      style={{ background: 'var(--color-skeleton)' }}
-                    />
-                  ))}
-                </div>
-              )}
-              {!topicsLoading && topics?.length === 0 && (
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  Noch nicht genug Feedback für eine Themenanalyse.
-                </p>
-              )}
-              {topics && topics.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {topics.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => setFbTopicFilter(fbTopicFilter === t.id ? null : t.id)}
-                      title={t.description}
-                      className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
-                      style={{
-                        background:
-                          fbTopicFilter === t.id
-                            ? 'var(--color-primary)'
-                            : 'var(--color-bg-elevated)',
-                        color: fbTopicFilter === t.id ? 'white' : 'var(--color-text-secondary)',
-                        border: '1px solid var(--color-border-subtle)',
-                      }}
-                    >
-                      <span>{t.label}</span>
-                      <span
-                        className="rounded-full px-1.5 py-0.5 text-xs tabular-nums"
-                        style={{
-                          background:
-                            fbTopicFilter === t.id
-                              ? 'rgba(255,255,255,0.25)'
-                              : 'var(--color-border)',
-                          color: fbTopicFilter === t.id ? 'white' : 'var(--color-text-muted)',
-                        }}
-                      >
-                        {t.count}
-                      </span>
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => loadTopics(true)}
-                    disabled={topicsLoading}
-                    className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs transition-colors"
-                    style={{
-                      background: 'var(--color-bg-elevated)',
-                      color: 'var(--color-text-muted)',
-                      border: '1px solid var(--color-border-subtle)',
-                      opacity: topicsLoading ? 0.5 : 1,
-                    }}
-                    title="Themen neu analysieren"
-                  >
-                    <RefreshCw size={11} aria-hidden="true" />
-                    Neu analysieren
-                  </button>
-                </div>
-              )}
-              {fbTopicFilter && (
-                <p className="mt-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  Filter aktiv — Feedback-Liste zeigt nur Einträge zu diesem Thema.{' '}
-                  <button
-                    onClick={() => setFbTopicFilter(null)}
-                    className="underline"
-                    style={{ color: 'var(--color-primary)' }}
-                  >
-                    Zurücksetzen
-                  </button>
-                </p>
               )}
             </Card>
 
