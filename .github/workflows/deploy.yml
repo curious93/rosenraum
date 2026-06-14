@@ -76,4 +76,23 @@ jobs:
           echo "Rollout response: $ROLLOUT"
           echo "$ROLLOUT" | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(1) if 'error' in d else print('Rollout:', d.get('name','?'))" || { echo "Rollout creation failed"; exit 1; }
 
-          echo "Deploy triggered for commit $COMMIT_SHA"
+          echo "Waiting for rollout to become ACTIVE..."
+          for i in $(seq 1 60); do
+            ROLLOUT_STATUS=$(curl -s -H "Authorization: Bearer $TOKEN" "$BASE/rollouts/$ROLLOUT_ID")
+            ROLLOUT_STATE=$(echo "$ROLLOUT_STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('state','UNKNOWN'))")
+            echo "  [$i/60] $ROLLOUT_STATE"
+            if [ "$ROLLOUT_STATE" = "ACTIVE" ]; then break; fi
+            if [ "$ROLLOUT_STATE" = "FAILED" ]; then
+              echo "Rollout failed:"
+              echo "$ROLLOUT_STATUS" | python3 -m json.tool
+              exit 1
+            fi
+            sleep 10
+          done
+
+          if [ "$ROLLOUT_STATE" != "ACTIVE" ]; then
+            echo "Rollout timed out (state: $ROLLOUT_STATE)"
+            exit 1
+          fi
+
+          echo "✅ Deploy complete — commit $COMMIT_SHA is LIVE"
