@@ -128,19 +128,19 @@ export default function HomePage() {
       Icon: MessageCircle,
       title: 'Das unbeabsichtigte Vorwurf',
       quote: '"Du hörst mir nie zu."',
-      body: 'Gemeint war: Ich vermisse das Gefühl, dass dir wichtig ist, was ich fühle. Die Sprache der Bewertung löst Verteidigung aus — nicht Verbindung.',
+      body: 'Gemeint war: Ich vermisse das Gefühl, dass dir wichtig ist, was ich fühle. Die Sprache der Bewertung löst Verteidigung aus. Nicht Verbindung.',
     },
     {
       Icon: MessageSquare,
       title: 'Das Schweigen',
       quote: null,
-      body: 'Wenn Worte fehlen, schweigen wir. Oder wir sagen das Falsche. Nicht weil wir nichts fühlen — sondern weil uns niemand beigebracht hat, Gefühle in Worte zu fassen.',
+      body: 'Wenn Worte fehlen, schweigen wir. Oder wir sagen das Falsche. Nicht weil wir nichts fühlen, sondern weil uns niemand beigebracht hat, Gefühle in Worte zu fassen.',
     },
     {
       Icon: BookOpen,
       title: 'Das Wissen hilft nicht allein',
       quote: null,
-      body: 'Gewaltfreie Kommunikation klingt in der Theorie einfach. Aber in echten Gesprächen, wenn Emotionen hochkommen, fallen wir in alte Muster zurück. GFK lernt man nicht durch Lesen. Man lernt es durch Üben — in echten Gesprächen.',
+      body: 'Gewaltfreie Kommunikation klingt in der Theorie einfach. Aber in echten Gesprächen, wenn Emotionen hochkommen, fallen wir in alte Muster zurück. GFK lernt man nicht durch Lesen. Man lernt es durch Üben, in echten Gesprächen.',
     },
   ]
 
@@ -237,35 +237,39 @@ export default function HomePage() {
             >
               Einem Raum beitreten
             </button>
-            <button
-              onClick={scrollToExplain}
-              className="block w-full py-2.5 text-sm font-medium transition-opacity hover:opacity-70"
-              style={{ color: 'var(--color-text-muted)', background: 'transparent' }}
-            >
-              Erklär mir mehr
-            </button>
           </motion.div>
         </motion.div>
 
-        {/* Scroll-Chevron */}
-        <motion.div
-          className="absolute bottom-8 cursor-pointer"
-          onClick={scrollToExplain}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          style={{ color: 'var(--color-text-muted)' }}
+        {/* Erklär mir mehr + Chevron — wie SectionLink */}
+        <div
+          className="flex flex-col items-center gap-1.5"
+          style={{ position: 'absolute', bottom: '2rem', left: 0, right: 0 }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M6 9l6 6 6-6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </motion.div>
+          <button
+            onClick={scrollToExplain}
+            className="text-base font-medium transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-text-secondary)', background: 'none' }}
+          >
+            Erklär mir mehr
+          </button>
+          <motion.div
+            animate={{ y: [0, 4, 0] }}
+            transition={{ duration: 2.8, ease: 'easeInOut', repeat: Infinity, repeatDelay: 0.6 }}
+            style={{ color: 'var(--color-primary)', opacity: 0.7 }}
+            onClick={scrollToExplain}
+            className="cursor-pointer"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 9l6 6 6-6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </motion.div>
+        </div>
       </section>
 
       {/* ── 2. PROBLEM-SECTION ───────────────────────────────────────────────── */}
@@ -290,7 +294,7 @@ export default function HomePage() {
                 style={{ color: 'var(--color-text-secondary)' }}
               >
                 Nicht weil wir keine Empathie hätten. Sondern weil unsere Sprache voller alter
-                Muster steckt — Muster, die wir nie bewusst gewählt haben.
+                Muster steckt, die wir nie bewusst gewählt haben.
               </p>
             </motion.div>
 
@@ -372,17 +376,17 @@ export default function HomePage() {
                 {
                   num: '2',
                   title: 'Schreib deine Nachricht',
-                  desc: 'Schreib wie immer. Wenn du möchtest, zeigt dir Claude eine Formulierung im Geiste der GFK — weniger Vorwurf, mehr Verbindung.',
+                  desc: 'Schreib wie immer. Wenn du möchtest, zeigt dir Claude eine Formulierung im Geiste der GFK. Weniger Vorwurf, mehr Verbindung.',
                 },
                 {
                   num: '3',
                   title: 'Du entscheidest',
-                  desc: 'Sende deine Version oder die KI-Version — du hast immer die Wahl. Kein Druck, kein Urteil.',
+                  desc: 'Sende deine Version oder die KI-Version. Du hast immer die Wahl. Kein Druck, kein Urteil.',
                 },
                 {
                   num: '4',
                   title: 'Aktives Lernen',
-                  desc: 'Mit jeder Nachricht siehst du, was sich verändert hat — als stille Einladung zur Reflexion, nicht als Bewertung.',
+                  desc: 'Mit jeder Nachricht siehst du, was sich verändert hat. Als stille Einladung zur Reflexion, nicht als Bewertung.',
                 },
               ].map((step) => (
                 <motion.div key={step.num} variants={fadeUp} className="flex gap-4 items-start">
@@ -445,11 +449,11 @@ export default function HomePage() {
             className="text-lg font-medium leading-relaxed italic"
             style={{ color: 'var(--color-text-primary)' }}
           >
-            Hinter jeder Handlung — wie ineffektiv, tragisch oder gewaltsam sie uns auch erscheinen
-            mag — steckt der Versuch, ein Bedürfnis zu erfüllen.
+            Hinter jeder Handlung, wie ineffektiv, tragisch oder gewaltsam sie uns auch erscheinen
+            mag, steckt der Versuch, ein Bedürfnis zu erfüllen.
           </blockquote>
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            — Marshall Rosenberg, Begründer der Gewaltfreien Kommunikation
+            Marshall Rosenberg, Begründer der Gewaltfreien Kommunikation
           </p>
         </motion.div>
       </section>
@@ -486,7 +490,7 @@ export default function HomePage() {
                 {
                   Icon: Users,
                   title: 'Familien',
-                  desc: 'Für schwierige Themen zwischen Eltern, Kindern oder Geschwistern — mit mehr Geduld als im Alltag.',
+                  desc: 'Für schwierige Themen zwischen Eltern, Kindern oder Geschwistern. Mit mehr Geduld als im Alltag.',
                 },
                 {
                   Icon: Briefcase,
@@ -571,7 +575,7 @@ export default function HomePage() {
                 className="text-base leading-relaxed"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                Die KI liest deinen Text nicht um zu urteilen — sondern um zuzuhören.
+                Die KI liest deinen Text nicht um zu urteilen. Sie hört zu.
               </p>
             </motion.div>
 
@@ -581,13 +585,13 @@ export default function HomePage() {
                   Icon: Eye,
                   step: '1',
                   title: 'Bewertungen erkennen',
-                  desc: 'Die KI erkennt Formulierungen, die als Vorwurf ankommen könnten — auch wenn sie das gar nicht so gemeint sind. "Du machst immer…" oder "Du bist nie…"',
+                  desc: 'Die KI erkennt Formulierungen, die als Vorwurf ankommen könnten, auch wenn sie das gar nicht so gemeint sind. "Du machst immer…" oder "Du bist nie…"',
                 },
                 {
                   Icon: Heart,
                   step: '2',
                   title: 'Gefühle freilegen',
-                  desc: 'Hinter jedem Vorwurf steckt ein Gefühl. Die KI sucht nach dem, was du eigentlich ausdrücken möchtest — Enttäuschung, Sehnsucht, Erschöpfung.',
+                  desc: 'Hinter jedem Vorwurf steckt ein Gefühl. Die KI sucht nach dem, was du eigentlich ausdrücken möchtest. Enttäuschung, Sehnsucht, Erschöpfung.',
                 },
                 {
                   Icon: Leaf,
@@ -599,7 +603,7 @@ export default function HomePage() {
                   Icon: Sparkles,
                   step: '4',
                   title: 'Du entscheidest',
-                  desc: 'Der Vorschlag ist ein Angebot — kein Urteil. Du sendest, was sich richtig anfühlt. Immer.',
+                  desc: 'Der Vorschlag ist ein Angebot, kein Urteil. Du sendest, was sich richtig anfühlt. Immer.',
                 },
               ].map((item, i) => (
                 <motion.div
@@ -667,7 +671,7 @@ export default function HomePage() {
                 Tipps für gute Gespräche
               </h2>
               <p className="text-base" style={{ color: 'var(--color-text-secondary)' }}>
-                Nicht als Regeln — sondern als Einladung.
+                Nicht als Regeln, sondern als Einladung.
               </p>
             </motion.div>
 
@@ -679,12 +683,12 @@ export default function HomePage() {
                 },
                 {
                   tip: 'Beobachte, bevor du interpretierst.',
-                  detail: 'Was ist wirklich passiert — ohne Deutung, ohne Geschichte drumherum?',
+                  detail: 'Was ist wirklich passiert? Ohne Deutung, ohne Geschichte drumherum.',
                 },
                 {
                   tip: 'Bedürfnisse sind keine Vorwürfe.',
                   detail:
-                    'Wenn du sagst, was du brauchst, gibst du der anderen Person eine Chance — keine Schuld.',
+                    'Wenn du sagst, was du brauchst, gibst du der anderen Person eine Chance. Keine Schuld.',
                 },
                 {
                   tip: 'Stille ist manchmal das Klügste.',
@@ -762,7 +766,7 @@ export default function HomePage() {
                 style={{ color: 'var(--color-text-secondary)' }}
               >
                 Marshall Rosenberg entwickelte die GFK in den 1960er Jahren. Die Kernidee: Hinter
-                jedem Konflikt stecken unerfüllte Bedürfnisse — keine bösen Absichten. GFK gibt uns
+                jedem Konflikt stecken unerfüllte Bedürfnisse, keine bösen Absichten. GFK gibt uns
                 eine Sprache, die verbindet statt zu trennen.
               </p>
             </motion.div>
@@ -775,16 +779,16 @@ export default function HomePage() {
               <p>
                 Gewaltfreie Kommunikation basiert auf einer einfachen Idee: Hinter jedem Angriff,
                 jedem Schweigen, jeder Überreaktion steckt ein unerfülltes Bedürfnis. Kein böser
-                Wille — nur eine Sprache, die uns nicht beigebracht wurde.
+                Wille. Nur eine Sprache, die uns nicht beigebracht wurde.
               </p>
               <p>
                 Marshall Rosenberg entwickelte in den 1960er Jahren einen Weg, diese Bedürfnisse
-                sichtbar zu machen — ohne Vorwurf, ohne Urteil, ohne Schuld. Aus der Ich-Perspektive
+                sichtbar zu machen. Ohne Vorwurf, ohne Urteil, ohne Schuld. Aus der Ich-Perspektive
                 statt aus der Anklage.
               </p>
               <p>
                 Rosenraum bringt diese Idee in echte Gespräche. Nicht als Theorie, sondern als
-                sanfte Einladung — Nachricht für Nachricht.
+                sanfte Einladung. Nachricht für Nachricht.
               </p>
             </motion.div>
           </motion.div>
@@ -812,7 +816,7 @@ export default function HomePage() {
                 Starte jetzt.
               </h2>
               <p className="text-base" style={{ color: 'var(--color-text-secondary)' }}>
-                Erstelle deinen Raum in einer Sekunde — kein Account nötig.
+                Erstelle deinen Raum in einer Sekunde. Kein Account nötig.
               </p>
             </div>
 
@@ -967,7 +971,7 @@ export default function HomePage() {
             className="glow-primary inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-medium transition-opacity hover:opacity-80"
             style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
           >
-            Feedback geben 🌸
+            Feedback geben
           </motion.button>
         </motion.div>
       </section>

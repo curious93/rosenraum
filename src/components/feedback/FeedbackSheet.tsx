@@ -164,7 +164,7 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="Was hat gut funktioniert? Was war schwierig? (optional)"
+                placeholder="Was denkst du? Was wünschst du dir? (optional)"
                 rows={3}
                 maxLength={2000}
                 className="w-full rounded-2xl p-3 text-sm leading-relaxed resize-none outline-none"
@@ -209,7 +209,7 @@ export function FeedbackSheet({ source, roomId, onClose }: FeedbackSheetProps) {
                   className="flex-[2] py-3 rounded-2xl text-sm font-medium transition-opacity disabled:opacity-40"
                   style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
                 >
-                  {loading ? 'Senden…' : 'Feedback senden 🌸'}
+                  {loading ? 'Senden…' : 'Feedback senden'}
                 </motion.button>
               </div>
             </motion.div>
