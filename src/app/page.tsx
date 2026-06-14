@@ -235,7 +235,7 @@ export default function HomePage() {
       </section>
 
       {/* ── 2. PROBLEM-SECTION ───────────────────────────────────────────────── */}
-      <section className="px-6 py-20">
+      <section id="problem" className="px-6 py-20">
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <motion.div
             className="space-y-10"
@@ -300,10 +300,23 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
+        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
+          <button
+            onClick={() =>
+              document
+                .getElementById('wie-funktioniert')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+            className="text-base font-medium transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-primary)', background: 'none' }}
+          >
+            Wie funktioniert Rosenraum? →
+          </button>
+        </div>
       </section>
 
       {/* ── 3. SO FUNKTIONIERT ES ────────────────────────────────────────────── */}
-      <section ref={explainRef} className="px-6 py-20">
+      <section ref={explainRef} id="wie-funktioniert" className="px-6 py-20">
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <motion.div
             className="space-y-10"
@@ -317,7 +330,7 @@ export default function HomePage() {
               className="text-2xl font-semibold text-center"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              In vier Schritten zu echten Gesprächen.
+              In vier Schritten zu besseren Gesprächen.
             </motion.h2>
 
             <div className="space-y-6">
@@ -369,11 +382,24 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
+        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
+          <button
+            onClick={() =>
+              document
+                .getElementById('fuer-wen')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+            className="text-base font-medium transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-primary)', background: 'none' }}
+          >
+            Für wen ist Rosenraum? →
+          </button>
+        </div>
       </section>
 
       {/* ── 5. ROSENBERG-ZITAT ───────────────────────────────────────────────── */}
       <section
-        className="px-6 py-20 text-center"
+        className="px-6 py-10 text-center"
         style={{
           background: 'var(--color-bg-elevated)',
           borderTop: '1px solid var(--color-border-subtle)',
@@ -405,7 +431,7 @@ export default function HomePage() {
       </section>
 
       {/* ── 6. FÜR WEN? ─────────────────────────────────────────────────────── */}
-      <section className="px-6 py-20">
+      <section id="fuer-wen" className="px-6 py-20">
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <motion.div
             className="space-y-10"
@@ -485,10 +511,24 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
+        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
+          <button
+            onClick={() =>
+              document
+                .getElementById('was-passiert')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+            className="text-base font-medium transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-primary)', background: 'none' }}
+          >
+            Was passiert mit meiner Nachricht? →
+          </button>
+        </div>
       </section>
 
       {/* ── 7. WAS PASSIERT MIT MEINER NACHRICHT? ────────────────────────────── */}
       <section
+        id="was-passiert"
         className="px-6 py-20"
         style={{
           background: 'var(--color-bg-surface)',
@@ -585,10 +625,23 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
+        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
+          <button
+            onClick={() =>
+              document
+                .getElementById('tipps')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+            className="text-base font-medium transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-primary)', background: 'none' }}
+          >
+            Tipps für gute Gespräche →
+          </button>
+        </div>
       </section>
 
       {/* ── 8. TIPPS FÜR GUTE GESPRÄCHE ─────────────────────────────────────── */}
-      <section className="px-6 py-20">
+      <section id="tipps" className="px-6 py-20">
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <motion.div
             className="space-y-8"
@@ -662,10 +715,22 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
+        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
+          <button
+            onClick={() =>
+              document.getElementById('gfk')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+            className="text-base font-medium transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-primary)', background: 'none' }}
+          >
+            Was ist Gewaltfreie Kommunikation? →
+          </button>
+        </div>
       </section>
 
       {/* ── 9. GFK ERKLÄRT ───────────────────────────────────────────────────── */}
       <section
+        id="gfk"
         className="px-6 py-20"
         style={{
           background: 'var(--color-bg-surface)',
@@ -716,6 +781,17 @@ export default function HomePage() {
               </p>
             </motion.div>
           </motion.div>
+        </div>
+        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
+          <button
+            onClick={() =>
+              quickCreateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+            className="text-base font-medium transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-primary)', background: 'none' }}
+          >
+            Jetzt Raum erstellen →
+          </button>
         </div>
       </section>
 
@@ -883,10 +959,6 @@ export default function HomePage() {
           <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Deine Meinung macht Rosenraum besser.
           </h2>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-            Rosenraum ist ein kleines Projekt mit großer Idee. Was hat gut funktioniert? Was war
-            schwierig? Jede Rückmeldung hilft uns.
-          </p>
           <motion.button
             onClick={() => setShowFeedback(true)}
             whileTap={{ scale: 0.96 }}
@@ -913,7 +985,7 @@ export default function HomePage() {
             fill="var(--color-primary)"
             aria-hidden="true"
           />
-          Rosenraum — Ein Raum für echte Gespräche.
+          Rosenraum
         </p>
         <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
           Kein Tracking. Kein Account. Keine Daten.
