@@ -41,6 +41,40 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.1 } },
 }
 
+function SectionLink({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <div
+      className="mt-10 flex flex-col items-center gap-1.5"
+      style={{ maxWidth: '680px', margin: '40px auto 0' }}
+    >
+      <button
+        onClick={onClick}
+        className="text-base font-medium transition-opacity hover:opacity-70"
+        style={{ color: 'var(--color-primary)', background: 'none' }}
+      >
+        {label}
+      </button>
+      <motion.div
+        animate={{ y: [0, 4, 0] }}
+        transition={{ duration: 2.8, ease: 'easeInOut', repeat: Infinity, repeatDelay: 0.6 }}
+        style={{ color: 'var(--color-primary)', opacity: 0.7 }}
+        onClick={onClick}
+        className="cursor-pointer"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M6 9l6 6 6-6"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </motion.div>
+    </div>
+  )
+}
+
 /**
  * Rosenraum Landing Page.
  * Erklärt GFK, zeigt den Nutzen der App und enthält einen Inline-Invite-Flow
@@ -300,19 +334,14 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
-        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
-          <button
-            onClick={() =>
-              document
-                .getElementById('wie-funktioniert')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-            className="text-base font-medium transition-opacity hover:opacity-70"
-            style={{ color: 'var(--color-primary)', background: 'none' }}
-          >
-            Wie funktioniert Rosenraum? →
-          </button>
-        </div>
+        <SectionLink
+          label="Wie funktioniert Rosenraum?"
+          onClick={() =>
+            document
+              .getElementById('wie-funktioniert')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        />
       </section>
 
       {/* ── 3. SO FUNKTIONIERT ES ────────────────────────────────────────────── */}
@@ -382,19 +411,14 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
-        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
-          <button
-            onClick={() =>
-              document
-                .getElementById('fuer-wen')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-            className="text-base font-medium transition-opacity hover:opacity-70"
-            style={{ color: 'var(--color-primary)', background: 'none' }}
-          >
-            Für wen ist Rosenraum? →
-          </button>
-        </div>
+        <SectionLink
+          label="Für wen ist Rosenraum?"
+          onClick={() =>
+            document
+              .getElementById('fuer-wen')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        />
       </section>
 
       {/* ── 5. ROSENBERG-ZITAT ───────────────────────────────────────────────── */}
@@ -511,19 +535,14 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
-        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
-          <button
-            onClick={() =>
-              document
-                .getElementById('was-passiert')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-            className="text-base font-medium transition-opacity hover:opacity-70"
-            style={{ color: 'var(--color-primary)', background: 'none' }}
-          >
-            Was passiert mit meiner Nachricht? →
-          </button>
-        </div>
+        <SectionLink
+          label="Was passiert mit meiner Nachricht?"
+          onClick={() =>
+            document
+              .getElementById('was-passiert')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        />
       </section>
 
       {/* ── 7. WAS PASSIERT MIT MEINER NACHRICHT? ────────────────────────────── */}
@@ -625,19 +644,12 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
-        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
-          <button
-            onClick={() =>
-              document
-                .getElementById('tipps')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-            className="text-base font-medium transition-opacity hover:opacity-70"
-            style={{ color: 'var(--color-primary)', background: 'none' }}
-          >
-            Tipps für gute Gespräche →
-          </button>
-        </div>
+        <SectionLink
+          label="Tipps für gute Gespräche"
+          onClick={() =>
+            document.getElementById('tipps')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        />
       </section>
 
       {/* ── 8. TIPPS FÜR GUTE GESPRÄCHE ─────────────────────────────────────── */}
@@ -715,17 +727,12 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
-        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
-          <button
-            onClick={() =>
-              document.getElementById('gfk')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-            className="text-base font-medium transition-opacity hover:opacity-70"
-            style={{ color: 'var(--color-primary)', background: 'none' }}
-          >
-            Was ist Gewaltfreie Kommunikation? →
-          </button>
-        </div>
+        <SectionLink
+          label="Was ist Gewaltfreie Kommunikation?"
+          onClick={() =>
+            document.getElementById('gfk')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        />
       </section>
 
       {/* ── 9. GFK ERKLÄRT ───────────────────────────────────────────────────── */}
@@ -782,17 +789,12 @@ export default function HomePage() {
             </motion.div>
           </motion.div>
         </div>
-        <div className="mt-10 text-center" style={{ maxWidth: '680px', margin: '40px auto 0' }}>
-          <button
-            onClick={() =>
-              quickCreateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-            className="text-base font-medium transition-opacity hover:opacity-70"
-            style={{ color: 'var(--color-primary)', background: 'none' }}
-          >
-            Jetzt Raum erstellen →
-          </button>
-        </div>
+        <SectionLink
+          label="Jetzt Raum erstellen"
+          onClick={() =>
+            quickCreateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        />
       </section>
 
       {/* ── 10. QUICK-CREATE ──────────────────────────────────────────────────── */}
