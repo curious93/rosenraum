@@ -172,15 +172,7 @@ export default function HomePage() {
               className="text-xl font-medium leading-snug"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              Für Gespräche, bei denen
-              <br />
-              es wirklich zählt.
-            </p>
-            <p
-              className="text-base leading-relaxed"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              Ein privater Raum für zwei — mit sanfter KI-Unterstützung, wenn Worte schwer fallen.
+              Für Kommunikation die dich weiter bringt.
             </p>
           </motion.div>
 
