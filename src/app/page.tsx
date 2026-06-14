@@ -224,7 +224,7 @@ export default function HomePage() {
               }}
               transition={{ duration: 2.2, ease: 'easeOut', repeat: Infinity }}
             >
-              Raum erstellen
+              Einen Raum erstellen
             </motion.button>
             <button
               onClick={() => router.push('/join')}
@@ -235,7 +235,7 @@ export default function HomePage() {
                 border: '2px solid var(--color-border)',
               }}
             >
-              Ich habe einen Code
+              Einem Raum beitreten
             </button>
             <button
               onClick={scrollToExplain}
