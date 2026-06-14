@@ -18,8 +18,10 @@ import {
   Users,
   Briefcase,
   Lightbulb,
+  Share2,
 } from 'lucide-react'
 import { createRoom } from '@/lib/firestore'
+import { shareInvite } from '@/lib/invite'
 import { morphIn, morphOut, morphTo } from '@/lib/motion'
 import { ThemeSheet } from '@/components/ThemeSheet'
 import { FeedbackSheet } from '@/components/feedback/FeedbackSheet'
@@ -90,6 +92,7 @@ export default function HomePage() {
   const [createState, setCreateState] = useState<CreateState>('idle')
   const [createdRoom, setCreatedRoom] = useState<CreatedRoom | null>(null)
   const [copied, setCopied] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
   const [showTheme, setShowTheme] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
 
@@ -121,6 +124,15 @@ export default function HomePage() {
     await navigator.clipboard.writeText(createdRoom.inviteUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function handleShareInvite() {
+    if (!createdRoom) return
+    const result = await shareInvite(createdRoom.inviteUrl, createdRoom.inviteCode)
+    if (result === 'copied') {
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+    }
   }
 
   const problemCards = [
@@ -914,6 +926,22 @@ export default function HomePage() {
                   </div>
 
                   <button
+                    onClick={handleShareInvite}
+                    className="glow-primary w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity hover:opacity-90"
+                    style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+                  >
+                    {shareCopied ? (
+                      <>
+                        <Check className="w-5 h-5" aria-hidden="true" /> Nachricht kopiert!
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="w-5 h-5" aria-hidden="true" /> Einladung teilen
+                      </>
+                    )}
+                  </button>
+
+                  <button
                     onClick={copyLink}
                     className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl text-base font-medium transition-opacity hover:opacity-80"
                     style={{
@@ -934,8 +962,12 @@ export default function HomePage() {
 
                   <button
                     onClick={() => router.push(`/room/${createdRoom!.roomId}`)}
-                    className="glow-primary w-full py-3.5 px-6 rounded-2xl text-primary-foreground font-medium text-base transition-opacity hover:opacity-90"
-                    style={{ background: 'var(--color-primary)' }}
+                    className="w-full py-3.5 px-6 rounded-2xl font-medium text-base transition-opacity hover:opacity-80"
+                    style={{
+                      background: 'transparent',
+                      color: 'var(--color-text-primary)',
+                      border: '2px solid var(--color-border)',
+                    }}
                   >
                     Raum betreten →
                   </button>

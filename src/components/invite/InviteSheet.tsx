@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import { Check, Link2, Hash } from 'lucide-react'
+import { Check, Link2, Hash, Share2 } from 'lucide-react'
+import { shareInvite } from '@/lib/invite'
 
 /** Props für das Invite-Sheet. */
 export interface InviteSheetProps {
@@ -26,11 +27,20 @@ export interface InviteSheetProps {
  */
 export function InviteSheet({ inviteCode, inviteUrl, onClose }: InviteSheetProps) {
   const [copied, setCopied] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
 
   async function copyLink() {
     await navigator.clipboard.writeText(inviteUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function handleShare() {
+    const result = await shareInvite(inviteUrl, inviteCode)
+    if (result === 'copied') {
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+    }
   }
 
   return (
@@ -68,6 +78,23 @@ export function InviteSheet({ inviteCode, inviteUrl, onClose }: InviteSheetProps
         <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
           Jemanden einladen
         </h2>
+
+        {/* Teilen — öffnet den nativen Share-Dialog (WhatsApp, Signal, Mail …) */}
+        <button
+          onClick={handleShare}
+          className="glow-primary w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl text-base font-medium transition-opacity hover:opacity-90"
+          style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+        >
+          {shareCopied ? (
+            <>
+              <Check className="w-5 h-5" aria-hidden="true" /> Nachricht kopiert!
+            </>
+          ) : (
+            <>
+              <Share2 className="w-5 h-5" aria-hidden="true" /> Einladung teilen
+            </>
+          )}
+        </button>
 
         {/* Link kopieren */}
         <button
