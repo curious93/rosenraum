@@ -50,7 +50,7 @@ function SectionLink({ label, onClick }: { label: string; onClick: () => void })
       <button
         onClick={onClick}
         className="text-base font-medium transition-opacity hover:opacity-70"
-        style={{ color: 'var(--color-primary)', background: 'none' }}
+        style={{ color: 'var(--color-text-secondary)', background: 'none' }}
       >
         {label}
       </button>
