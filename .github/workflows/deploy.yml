@@ -15,6 +15,10 @@ jobs:
     name: Firebase App Hosting
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    # Hard infrastructure ceiling — GitHub kills the job at this bound regardless of
+    # what the script does. Real deploy is build (~3 min) + rollout (≤90 s). 10 min is
+    # the catastrophic backstop; the internal caps below (5 min + 3 min) trip first.
+    timeout-minutes: 10
 
     steps:
       - name: Authenticate with Google Cloud
@@ -26,15 +30,39 @@ jobs:
         env:
           COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          TOKEN=$(gcloud auth print-access-token)
+          set -uo pipefail
           PROJECT="rosenraum-app"
           LOCATION="europe-west4"
           BACKEND="rosenraum-1"
           BASE="https://firebaseapphosting.googleapis.com/v1beta/projects/$PROJECT/locations/$LOCATION/backends/$BACKEND"
-          BUILD_ID="build-$(date +%Y%m%d-%H%M%S)"
 
+          TOKEN=$(gcloud auth print-access-token) || { echo "::error::Could not mint access token"; exit 1; }
+
+          # Poll a build/rollout resource to a TERMINAL state. Every network call is
+          # hard-capped (--max-time 30) so a hung request cannot stall the loop. Only
+          # SUCCEEDED/READY counts as success; FAILED/CANCELLED fails immediately;
+          # exhausting the cap without a terminal state is a TRUE failure (never claim
+          # an unverified success). Args: <url> <label> <max-iterations>
+          poll_terminal() {
+            local url="$1" label="$2" max="$3" i state
+            for i in $(seq 1 "$max"); do
+              state=$(curl -s --max-time 30 -H "Authorization: Bearer $TOKEN" "$url" \
+                | python3 -c "import sys,json; print(json.load(sys.stdin).get('state','UNKNOWN'))" 2>/dev/null || echo UNKNOWN)
+              echo "  [$i/$max] $label: $state"
+              case "$state" in
+                SUCCEEDED|READY) return 0 ;;
+                FAILED|CANCELLED) echo "::error::$label reached terminal failure: $state"; return 1 ;;
+              esac
+              sleep 10
+            done
+            echo "::error::$label never reached a terminal state within bound (last: $state)"
+            return 1
+          }
+
+          # ── Build ────────────────────────────────────────────────────────────────
+          BUILD_ID="build-$(date +%Y%m%d-%H%M%S)"
           echo "Creating build $BUILD_ID for commit $COMMIT_SHA..."
-          HTTP_CODE=$(curl -s -o /tmp/build_resp.json -w "%{http_code}" -X POST \
+          HTTP_CODE=$(curl -s --max-time 30 -o /tmp/build_resp.json -w "%{http_code}" -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"source\":{\"codebase\":{\"commit\":\"$COMMIT_SHA\"}}}" \
@@ -42,46 +70,26 @@ jobs:
           BUILD_OP=$(cat /tmp/build_resp.json)
           echo "Build response (HTTP $HTTP_CODE): $BUILD_OP"
           if [ "$HTTP_CODE" = "409" ]; then
-            echo "Another build is already queued — this deploy is superseded. Exiting cleanly."
+            echo "Another build is already queued — newer commit supersedes this one. Exiting cleanly."
             exit 0
           fi
-          echo "$BUILD_OP" | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(1) if 'error' in d else print('Operation:', d.get('name','?'))" || { echo "Build creation failed"; exit 1; }
+          echo "$BUILD_OP" | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(1) if 'error' in d else print('Build op:', d.get('name','?'))" || { echo "::error::Build creation rejected"; exit 1; }
 
-          echo "Waiting for build (real compilation, ~3 min; 5 min backstop)..."
-          for i in $(seq 1 30); do
-            BUILD=$(curl -s -H "Authorization: Bearer $TOKEN" "$BASE/builds/$BUILD_ID")
-            STATE=$(echo "$BUILD" | python3 -c "import sys,json; print(json.load(sys.stdin).get('state','UNKNOWN'))")
-            echo "  [$i/30] $STATE"
-            if [ "$STATE" = "READY" ]; then break; fi
-            if [ "$STATE" = "FAILED" ]; then
-              echo "Build failed:"
-              echo "$BUILD" | python3 -m json.tool
-              exit 1
-            fi
-            sleep 10
-          done
+          echo "Verifying build to READY (real compilation ~3 min; 5 min cap)..."
+          poll_terminal "$BASE/builds/$BUILD_ID" "build" 30 || exit 1
 
-          if [ "$STATE" != "READY" ]; then
-            echo "Build timed out (state: $STATE)"
-            exit 1
-          fi
-
+          # ── Rollout ──────────────────────────────────────────────────────────────
           ROLLOUT_ID="rollout-$(date +%Y%m%d-%H%M%S)"
           echo "Creating rollout $ROLLOUT_ID..."
-          ROLLOUT=$(curl -s -X POST \
+          ROLLOUT=$(curl -s --max-time 30 -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"build\":\"projects/$PROJECT/locations/$LOCATION/backends/$BACKEND/builds/$BUILD_ID\"}" \
             "$BASE/rollouts?rolloutId=$ROLLOUT_ID")
           echo "Rollout response: $ROLLOUT"
-          # Firebase rejects a bad rollout request synchronously. If the API ACCEPTS it
-          # (no error in the response), the rollout completes reliably on Firebase's side
-          # — historically 100% SUCCEEDED. We do NOT poll it to completion: that poll was
-          # the source of 10-minute hangs and false "failure" reports on live deploys.
-          echo "$ROLLOUT" | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(1) if 'error' in d else print('Rollout accepted:', d.get('name','?'))" || { echo "Rollout request rejected by Firebase"; exit 1; }
+          echo "$ROLLOUT" | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(1) if 'error' in d else print('Rollout op:', d.get('name','?'))" || { echo "::error::Rollout creation rejected"; exit 1; }
 
-          # One non-blocking status read, purely for log visibility — no loop, no wait.
-          ROLLOUT_STATE=$(curl -s -H "Authorization: Bearer $TOKEN" "$BASE/rollouts/$ROLLOUT_ID" | python3 -c "import sys,json; print(json.load(sys.stdin).get('state','PENDING'))" 2>/dev/null || echo PENDING)
-          echo "Rollout state at hand-off: $ROLLOUT_STATE (Firebase will finish it)"
+          echo "Verifying rollout to SUCCEEDED (real ≤90 s; 3 min cap)..."
+          poll_terminal "$BASE/rollouts/$ROLLOUT_ID" "rollout" 18 || exit 1
 
-          echo "✅ Deploy accepted by Firebase — commit $COMMIT_SHA is rolling out"
+          echo "✅ Deploy VERIFIED live — commit $COMMIT_SHA reached SUCCEEDED"
