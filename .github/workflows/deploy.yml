@@ -81,7 +81,7 @@ jobs:
             ROLLOUT_STATUS=$(curl -s -H "Authorization: Bearer $TOKEN" "$BASE/rollouts/$ROLLOUT_ID")
             ROLLOUT_STATE=$(echo "$ROLLOUT_STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('state','UNKNOWN'))")
             echo "  [$i/60] $ROLLOUT_STATE"
-            if [ "$ROLLOUT_STATE" = "ACTIVE" ]; then break; fi
+            if [ "$ROLLOUT_STATE" = "ACTIVE" ] || [ "$ROLLOUT_STATE" = "SUCCEEDED" ]; then break; fi
             if [ "$ROLLOUT_STATE" = "FAILED" ]; then
               echo "Rollout failed:"
               echo "$ROLLOUT_STATUS" | python3 -m json.tool
@@ -90,7 +90,7 @@ jobs:
             sleep 10
           done
 
-          if [ "$ROLLOUT_STATE" != "ACTIVE" ]; then
+          if [ "$ROLLOUT_STATE" != "ACTIVE" ] && [ "$ROLLOUT_STATE" != "SUCCEEDED" ]; then
             echo "Rollout timed out (state: $ROLLOUT_STATE)"
             exit 1
           fi
