@@ -31,9 +31,16 @@ jobs:
           COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -uo pipefail
-          PROJECT="rosenraum-app"
-          LOCATION="europe-west4"
-          BACKEND="rosenraum-1"
+          # Per-project config via GitHub repo variables — identical workflow across all
+          # App Hosting projects. Set once: gh variable set FB_PROJECT/FB_LOCATION/FB_BACKEND
+          # (find values via: firebase apphosting:backends:list)
+          PROJECT="${{ vars.FB_PROJECT }}"
+          LOCATION="${{ vars.FB_LOCATION }}"
+          BACKEND="${{ vars.FB_BACKEND }}"
+          if [ -z "$PROJECT" ] || [ -z "$LOCATION" ] || [ -z "$BACKEND" ]; then
+            echo "::error::Missing repo variables FB_PROJECT / FB_LOCATION / FB_BACKEND — set them via 'gh variable set' (values from: firebase apphosting:backends:list)"
+            exit 1
+          fi
           BASE="https://firebaseapphosting.googleapis.com/v1beta/projects/$PROJECT/locations/$LOCATION/backends/$BACKEND"
 
           TOKEN=$(gcloud auth print-access-token) || { echo "::error::Could not mint access token"; exit 1; }
