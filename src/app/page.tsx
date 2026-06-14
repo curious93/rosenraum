@@ -51,6 +51,7 @@ const stagger = {
 export default function HomePage() {
   const router = useRouter()
   const quickCreateRef = useRef<HTMLElement>(null)
+  const explainRef = useRef<HTMLElement>(null)
   const [name, setName] = useState('')
   const [createState, setCreateState] = useState<CreateState>('idle')
   const [createdRoom, setCreatedRoom] = useState<CreatedRoom | null>(null)
@@ -60,6 +61,10 @@ export default function HomePage() {
 
   function scrollToCreate() {
     quickCreateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function scrollToExplain() {
+    explainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   async function handleCreate() {
@@ -206,12 +211,20 @@ export default function HomePage() {
             >
               Ich habe einen Code
             </button>
+            <button
+              onClick={scrollToExplain}
+              className="block w-full py-2.5 text-sm font-medium transition-opacity hover:opacity-70"
+              style={{ color: 'var(--color-text-muted)', background: 'transparent' }}
+            >
+              Erklär mir mehr
+            </button>
           </motion.div>
         </motion.div>
 
         {/* Scroll-Chevron */}
         <motion.div
-          className="absolute bottom-8"
+          className="absolute bottom-8 cursor-pointer"
+          onClick={scrollToExplain}
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
@@ -297,63 +310,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 3. GFK ERKLÄRT ───────────────────────────────────────────────────── */}
-      <section
-        className="px-6 py-20"
-        style={{
-          background: 'var(--color-bg-surface)',
-          borderTop: '1px solid var(--color-border-subtle)',
-          borderBottom: '1px solid var(--color-border-subtle)',
-        }}
-      >
-        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-          <motion.div
-            className="space-y-10"
-            variants={stagger}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-          >
-            <motion.div variants={fadeUp} className="space-y-3 text-center">
-              <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                Was ist Gewaltfreie Kommunikation?
-              </h2>
-              <p
-                className="text-base leading-relaxed"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                Marshall Rosenberg entwickelte die GFK in den 1960er Jahren. Die Kernidee: Hinter
-                jedem Konflikt stecken unerfüllte Bedürfnisse — keine bösen Absichten. GFK gibt uns
-                eine Sprache, die verbindet statt zu trennen.
-              </p>
-            </motion.div>
-
-            <motion.div
-              variants={fadeUp}
-              className="space-y-4 text-base leading-relaxed"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              <p>
-                Gewaltfreie Kommunikation basiert auf einer einfachen Idee: Hinter jedem Angriff,
-                jedem Schweigen, jeder Überreaktion steckt ein unerfülltes Bedürfnis. Kein böser
-                Wille — nur eine Sprache, die uns nicht beigebracht wurde.
-              </p>
-              <p>
-                Marshall Rosenberg entwickelte in den 1960er Jahren einen Weg, diese Bedürfnisse
-                sichtbar zu machen — ohne Vorwurf, ohne Urteil, ohne Schuld. Aus der Ich-Perspektive
-                statt aus der Anklage.
-              </p>
-              <p>
-                Rosenraum bringt diese Idee in echte Gespräche. Nicht als Theorie, sondern als
-                sanfte Einladung — Nachricht für Nachricht.
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── 4. SO FUNKTIONIERT ES ────────────────────────────────────────────── */}
-      <section className="px-6 py-20">
+      {/* ── 3. SO FUNKTIONIERT ES ────────────────────────────────────────────── */}
+      <section ref={explainRef} className="px-6 py-20">
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <motion.div
             className="space-y-10"
@@ -714,7 +672,62 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 9. QUICK-CREATE ──────────────────────────────────────────────────── */}
+      {/* ── 9. GFK ERKLÄRT ───────────────────────────────────────────────────── */}
+      <section
+        className="px-6 py-20"
+        style={{
+          background: 'var(--color-bg-surface)',
+          borderTop: '1px solid var(--color-border-subtle)',
+          borderBottom: '1px solid var(--color-border-subtle)',
+        }}
+      >
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <motion.div
+            className="space-y-10"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+          >
+            <motion.div variants={fadeUp} className="space-y-3 text-center">
+              <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                Was ist Gewaltfreie Kommunikation?
+              </h2>
+              <p
+                className="text-base leading-relaxed"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                Marshall Rosenberg entwickelte die GFK in den 1960er Jahren. Die Kernidee: Hinter
+                jedem Konflikt stecken unerfüllte Bedürfnisse — keine bösen Absichten. GFK gibt uns
+                eine Sprache, die verbindet statt zu trennen.
+              </p>
+            </motion.div>
+
+            <motion.div
+              variants={fadeUp}
+              className="space-y-4 text-base leading-relaxed"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              <p>
+                Gewaltfreie Kommunikation basiert auf einer einfachen Idee: Hinter jedem Angriff,
+                jedem Schweigen, jeder Überreaktion steckt ein unerfülltes Bedürfnis. Kein böser
+                Wille — nur eine Sprache, die uns nicht beigebracht wurde.
+              </p>
+              <p>
+                Marshall Rosenberg entwickelte in den 1960er Jahren einen Weg, diese Bedürfnisse
+                sichtbar zu machen — ohne Vorwurf, ohne Urteil, ohne Schuld. Aus der Ich-Perspektive
+                statt aus der Anklage.
+              </p>
+              <p>
+                Rosenraum bringt diese Idee in echte Gespräche. Nicht als Theorie, sondern als
+                sanfte Einladung — Nachricht für Nachricht.
+              </p>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── 10. QUICK-CREATE ──────────────────────────────────────────────────── */}
       <section ref={quickCreateRef} id="quick-create" className="px-6 py-20">
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <motion.div
